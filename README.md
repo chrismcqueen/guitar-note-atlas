@@ -1,3 +1,0 @@
-# guitar-note-atlas
-
-🤘🤘🤘
