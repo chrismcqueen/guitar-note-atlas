@@ -46,8 +46,6 @@ const Menu = () => {
   const modesOf = <Text style={{ textTransform: "lowercase" }}>modes of </Text>;
 
   const handlePress = (item) => {
-    // console.log(`set selected: ${item.title}`);
-    // console.log(item);
     setGlobalState({ ...globalState, scale: item });
     storeGlobalState({ ...globalState, scale: item });
   };

@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet } from "react-native";
+import React, { useState } from "react";
 import { useFonts } from "expo-font";
 
 import { StoreProvider } from "./Store";

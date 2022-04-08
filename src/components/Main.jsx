@@ -1,14 +1,10 @@
-import React, { useEffect, useRef, useContext } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useContext } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Home } from "./Home";
 import { Footer } from "./Footer";
-import Header from "./Header";
-import Menu from "./Menu";
-import Options from "./Options";
-import { theme } from "../utils/theme";
 import { Store } from "../../Store";
 
-const Main = () => {
+export const Main = () => {
   const { dimensions, showOptions, setShowOptions } = useContext(Store);
 
   const overlay = () => showOptions && setShowOptions(false);
@@ -30,9 +26,6 @@ const Main = () => {
 export default Main;
 
 const styles = StyleSheet.create({
-  // container: {
-  //   // paddingTop: 38,
-  // },
   overlay: {
     backgroundColor: "#000000aa",
     zIndex: 2000,

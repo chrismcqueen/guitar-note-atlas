@@ -3,7 +3,7 @@ import { Text, View, StyleSheet, TouchableWithoutFeedback } from "react-native";
 
 import { theme } from "../utils/theme";
 
-const Footer = () => {
+export const Footer = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Clear</Text>
@@ -53,12 +53,9 @@ const Footer = () => {
   );
 };
 
-export default Footer;
-
 const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.white,
-    // paddingBottom: 10,
     borderBottomColor: theme.colors.blue,
     borderBottomWidth: 10,
     flexDirection: "row",

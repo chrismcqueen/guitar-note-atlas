@@ -39,7 +39,6 @@ const Splash = ({ setLoading }) => {
       const value = await AsyncStorage.getItem("globalState");
       const parsedValue = value !== null ? JSON.parse(value) : null;
       if (parsedValue !== null) {
-        // console.log("parsed value: ", parsedValue);
         setGlobalState(parsedValue);
       } else {
         //if no ls, set to C major scale
@@ -60,7 +59,6 @@ const Splash = ({ setLoading }) => {
   }, []);
 
   let paddingTop = dimensions.height / 9;
-  // paddingTop = 0;
   const paddingLeft = dimensions.width / 100;
 
   return (

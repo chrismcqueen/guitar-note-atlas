@@ -7,7 +7,6 @@ import { storeGlobalState, removeStorage } from "../utils/functions";
 import { theme } from "../utils/theme";
 import { data } from "../../data/GNA";
 
-import Data from "./Data";
 import Neck from "./Neck";
 
 export const Home = () => {
@@ -18,20 +17,13 @@ export const Home = () => {
   // useEffect(() => console.log(`global key: ${globalState?.key}`), []);
 
   const handlePressArrow = (direction) => {
-    // console.log(`press arrow ${direction}`);
-    // console.log(data.keys);
     data.keys.forEach((key, i) => {
-      // console.log(key.title);
-      // console.log(i);
-      // console.log(`data: ${key.title}, global: ${globalState?.key}`);
       if (key.title === globalState?.key.title) {
         const value = data.keys[i === 11 && direction === "right" ? 0 : i === 0 && direction === "left" ? 11 : direction === "right" ? i + 1 : i - 1];
         setGlobalState({ ...globalState, key: value });
         storeGlobalState({ ...globalState, key: value });
       }
     });
-
-    // setGlobalState({ ...globalState, key: direction });
   };
 
   return (
@@ -45,7 +37,6 @@ export const Home = () => {
           <View style={[styles.arrow, styles.arrowRight]}></View>
         </Pressable>
       </View>
-      {/* <Data /> */}
       <Neck />
     </View>
   );

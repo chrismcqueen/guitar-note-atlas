@@ -1,10 +1,9 @@
 import React, { useContext } from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { NavigationContainer } from "@react-navigation/native";
 
 import { Home } from "../screens/Home";
-import Menu from "./Menu";
 import { Store } from "../../Store";
 
 export const Navigator = () => {

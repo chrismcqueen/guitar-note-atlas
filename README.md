@@ -1,6 +1,6 @@
 # guitar-note-atlas
 
-Offsets:
+## Offsets:
 C: 0
 C#/Db: 1
 D: 2
