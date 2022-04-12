@@ -1,6 +1,5 @@
 import React, { useContext, useEffect } from "react";
 import { StyleSheet, View, Text, Pressable } from "react-native";
-import Svg, { Path, Circle, Rect } from "react-native-svg";
 import { Store } from "../../Store";
 import { storeGlobalState, removeStorage } from "../utils/functions";
 

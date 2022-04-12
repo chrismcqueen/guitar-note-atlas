@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.white,
     borderBottomColor: theme.colors.blue,
-    borderBottomWidth: 10,
+    borderBottomWidth: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
