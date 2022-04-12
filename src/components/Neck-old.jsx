@@ -250,7 +250,7 @@ const NeckSVG = () => {
             stroke="white"
             fontSize="20"
             fontWeight="bold"
-            x="58"
+            x="60"
             y="56"
           >
             {getScaleDegree(1, secondString)}
@@ -261,12 +261,32 @@ const NeckSVG = () => {
         <>
           <Path fill="#000" d="M114 62c6.627 0 12-5.373 12-12s-5.373-12-12-12-12 5.373-12 12 5.373 12 12 12z" />
           <Path stroke="#000" strokeWidth="4" d="M114 61.556c6.382 0 11.556-5.174 11.556-11.556 0-6.382-5.174-11.556-11.556-11.556-6.382 0-11.556 5.174-11.556 11.556 0 6.382 5.174 11.556 11.556 11.556z" />
+          <Text
+            fill="white"
+            stroke="white"
+            fontSize="20"
+            fontWeight="bold"
+            x="106"
+            y="56"
+          >
+            {getScaleDegree(2, secondString)}
+          </Text>
         </>
       )}
       {isNote(3, secondString) && (
         <>
           <Path fill="#000" d="M164 62c6.627 0 12-5.373 12-12s-5.373-12-12-12-12 5.373-12 12 5.373 12 12 12z" />
           <Path stroke="#000" strokeWidth="4" d="M164 61.556c6.382 0 11.556-5.174 11.556-11.556 0-6.382-5.174-11.556-11.556-11.556-6.382 0-11.556 5.174-11.556 11.556 0 6.382 5.174 11.556 11.556 11.556z" />
+          <Text
+            fill="white"
+            stroke="white"
+            fontSize="20"
+            fontWeight="bold"
+            x="157"
+            y="56"
+          >
+            {getScaleDegree(3, secondString)}
+          </Text>
         </>
       )}
       {isNote(4, secondString) && (
