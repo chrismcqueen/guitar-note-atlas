@@ -1,8 +1,10 @@
 import React from 'react'
 import { Path } from "react-native-svg";
+
 import { theme } from '../../utils/theme'
 
 const AnchorFrets = () => {
+  // TODO: replace fret paths
   return (
     <>
       <Path d="M164,233a3.5,3.5,0,1,0-3.5-3.5A3.5,3.5,0,0,0,164,233Z" transform="translate(-0.482 -0.481)"/>
