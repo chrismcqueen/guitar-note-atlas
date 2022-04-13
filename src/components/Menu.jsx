@@ -1,15 +1,13 @@
 import React, { useContext, useRef, useEffect } from "react";
 import { StyleSheet, Text, View, Pressable, Animated } from "react-native";
-import { storeGlobalState } from "../utils/functions";
 
-import { theme } from "../utils/theme";
-
-import { data } from "../../data/GNA";
+import { data } from "../../data";
 import { Store } from "../../Store";
+import { storeGlobalState } from "../utils/functions";
+import { theme } from "../utils/theme";
 
 const Menu = () => {
   const { dimensions, showMenu, globalState, setGlobalState } = useContext(Store);
-
   const menuAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {

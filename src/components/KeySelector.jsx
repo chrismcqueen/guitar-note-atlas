@@ -1,19 +1,13 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { StyleSheet, View, Text, Pressable } from "react-native";
 import { Store } from "../../Store";
-import { storeGlobalState, removeStorage } from "../utils/functions";
+import { storeGlobalState } from "../utils/functions";
 
 import { theme } from "../utils/theme";
-import { data } from "../../data/GNA";
+import { data } from "../../data";
 
-import Neck from "./Neck";
-
-export const Home = () => {
+const KeySelector = () => {
   const { globalState, setGlobalState } = useContext(Store);
-  // useEffect(() => {
-  //   removeStorage();
-  // }, []);
-  // useEffect(() => console.log(`global key: ${globalState?.key}`), []);
 
   const handlePressArrow = (direction) => {
     data.keys.forEach((key, i) => {
@@ -26,7 +20,6 @@ export const Home = () => {
   };
 
   return (
-    <View style={styles.container}>
       <View style={styles.titleContainer}>
         <Pressable style={styles.arrowContainer} onPress={() => handlePressArrow("left")}>
           <View style={[styles.arrow, styles.arrowLeft]}></View>
@@ -36,34 +29,14 @@ export const Home = () => {
           <View style={[styles.arrow, styles.arrowRight]}></View>
         </Pressable>
       </View>
-      <Neck />
-    </View>
   );
 };
+
+export default KeySelector;
 
 const arrowSize = 22;
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: theme.colors.white,
-    justifyContent: "center",
-    alignItems: "center",
-    flex: 1,
-  },
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  title: {
-    fontFamily: "proletarsk",
-    letterSpacing: 6,
-    fontSize: 26,
-    textAlign: "center",
-    paddingHorizontal: 15,
-  },
-  arrowContainer: {
-    padding: 20,
-  },
   arrow: {
     width: 0,
     height: 0,
@@ -72,6 +45,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: arrowSize,
     borderBottomColor: "transparent",
   },
+  arrowContainer: {
+    padding: 20,
+  },
   arrowRight: {
     borderLeftWidth: arrowSize,
     borderLeftColor: theme.colors.blue,
@@ -79,5 +55,16 @@ const styles = StyleSheet.create({
   arrowLeft: {
     borderRightWidth: arrowSize,
     borderRightColor: theme.colors.blue,
+  },
+  title: {
+    fontFamily: "proletarsk",
+    letterSpacing: 6,
+    fontSize: 26,
+    textAlign: "center",
+    paddingHorizontal: 15,
+  },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });

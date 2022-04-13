@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { useFonts } from "expo-font";
 
-import { StoreProvider } from "./Store";
-
-import Main from "./src/components/Main";
+import Header from "./src/components/Header";
 import Menu from "./src/components/Menu";
 import Options from "./src/components/Options";
-import Header from "./src/components/Header";
-import { Splash } from "./src/screens/splash";
+import Main from "./src/components/Main";
+import { Splash } from "./src/components/Splash";
+import { StoreProvider } from "./Store";
 
 export default function App() {
   let [fontsLoaded] = useFonts({

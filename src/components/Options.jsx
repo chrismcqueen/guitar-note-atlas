@@ -6,7 +6,6 @@ import { theme } from "../utils/theme";
 
 const Options = () => {
   const { dimensions, showOptions, globalState, setGlobalState } = useContext(Store);
-
   const optionsAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {

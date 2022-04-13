@@ -2,6 +2,7 @@ import React from 'react'
 import { Path } from "react-native-svg";
 
 const Strings = () => {
+  // TODO: replace fret paths
   return (
     <>
       <Path id="Path_1" data-name="Path 1" d="M39,14.5H837" transform="translate(-0.482 -0.481)" fill="none" stroke="#000" strokeWidth="4"/>
