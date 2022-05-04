@@ -1,5 +1,5 @@
-import React, { useContext } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import React, { useContext, useEffect, useRef } from "react";
+import { Animated, Pressable, StyleSheet, View } from "react-native";
 
 import KeySelector from "./KeySelector";
 import Neck from "./Neck";
@@ -14,10 +14,32 @@ export const Main = () => {
   const fullDimensions = { height: dimensions.height, width: dimensions.width };
   const fullScreen = { height: "100%", width: "100%" };
 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    showOptions 
+    ? Animated.timing(
+      fadeAnim,
+      {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }
+    ).start()
+    : Animated.timing(
+      fadeAnim,
+      {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }
+    ).start()
+  }, [fadeAnim, showOptions])
+
   return (
     <View style={[styles.container, fullDimensions]}>
       <Pressable style={fullScreen} onPress={overlay}>
-        {showOptions && <View style={styles.overlay} />}
+        {showOptions && <Animated.View style={[styles.overlay, {opacity: fadeAnim}]} />}
         <View style={styles.container}>
           <KeySelector />
           <Neck />
