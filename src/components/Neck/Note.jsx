@@ -159,7 +159,7 @@ const Note = ({ fret, string }) => {
     <G transform={`translate(${x}, ${y})`}  >
       <Svg width={fret === 0 ? noteSize + 4 : noteSize} height={fret === 0 ? noteSize + 4 : noteSize}>
         <Circle cx={fret === 0 ? (noteSize / 2) + 2 : noteSize / 2} cy={fret === 0 ? (noteSize / 2) + 2 : noteSize / 2} r="12" stroke={fret === 0 ? theme.colors.grey : theme.colors.black} fill={fret === 0 ? theme.colors.white : scaleDegree === "1" ? theme.colors.white : theme.colors.black} strokeWidth={fret === 0 ? 2 : 4} />
-        <Text fontFamily={processFontFamily("basicManual")} textAnchor="middle" x="49%" y="68%" fontSize={16} stroke={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white} fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}>
+        <Text fontFamily={processFontFamily("basicManual")} textAnchor="middle" x="51.5%" y="68%" fontSize={16} stroke={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white} fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}>
           {scaleDegree}
         </Text>
       </Svg>
