@@ -1,5 +1,5 @@
-import React, { useContext } from "react";
-import { Text, View, StyleSheet, Pressable } from "react-native";
+import React, { useContext, useEffect, useRef } from "react";
+import { Animated, Text, View, StyleSheet, Pressable } from "react-native";
 
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
@@ -9,6 +9,28 @@ const Header = () => {
   const { globalState, showMenu, setShowMenu, showOptions, setShowOptions } = useContext(Store);
   const overlay = () => showOptions && setShowOptions(false);
   const fullScreen = { height: "100%", width: "100%" };
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    showOptions 
+    ? Animated.timing(
+      fadeAnim,
+      {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }
+    ).start()
+    : Animated.timing(
+      fadeAnim,
+      {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }
+    ).start()
+  }, [fadeAnim, showOptions])
 
   return (
     <View style={styles.container}>
@@ -20,7 +42,7 @@ const Header = () => {
         <Pressable style={styles.settingsButtonContainer} onPress={() => !showMenu && setShowOptions(!showOptions)}>
           <Text style={[styles.settingsButton, showMenu && styles.disableOptions]}>● ● ●</Text>
         </Pressable>
-        {showOptions && <View style={styles.overlay}/>}
+        {showOptions && <Animated.View style={[styles.overlay, {opacity: fadeAnim}]} />}
       </Pressable>
     </View>
   );
@@ -74,6 +96,10 @@ const styles = StyleSheet.create({
   settingsButton: {
     color: theme.colors.white,
     fontSize: 6,
+    paddingHorizontal: 40,
+    paddingVertical: 30,
+    marginHorizontal: -40,
+    marginVertical: -30,
   },
   settingsButtonContainer: {
     position: "absolute",
