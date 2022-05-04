@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useRef } from "react";
 import { StyleSheet, Text, Animated, Pressable } from "react-native";
+import * as Linking from 'expo-linking';
 
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
@@ -43,6 +44,12 @@ const Options = () => {
       case "Hide Anchor Frets":
         setGlobalState({ ...globalState, options: { ...globalState.options, hideAnchorFrets: !globalState.options.hideAnchorFrets } })
         break;
+      case "Rate Us":
+        Linking.openURL('https://apps.apple.com/us/app/guitar-note-atlas/id971847390');
+        // TODO: android/google play url
+        break;
+      case "Give Us Feedback":
+        Linking.openURL("mailto:guitarnoteatlas@gmail.com?subject=Feedback!")
     }
   };
 
