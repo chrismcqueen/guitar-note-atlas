@@ -15,7 +15,12 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.com.guitar-note-atlas",
+      "buildNumber": "1.0.0",
+      "config": { 
+        "usesNonExemptEncryption": false 
+      } 
     },
     "android": {
       "adaptiveIcon": {
