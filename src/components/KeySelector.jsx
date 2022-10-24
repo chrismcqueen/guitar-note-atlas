@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     textAlign: "center",
     paddingHorizontal: 15,
+    width: 400,
   },
   titleContainer: {
     flexDirection: "row",
