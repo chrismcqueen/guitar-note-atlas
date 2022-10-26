@@ -1,1 +1,1 @@
-export { default } from './Neck'
+export { default } from "./Neck";

@@ -4,7 +4,6 @@ import { Animated, Text, View, StyleSheet, Pressable } from "react-native";
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
 
-
 const Header = () => {
   const { globalState, showMenu, setShowMenu, showOptions, setShowOptions } = useContext(Store);
   const overlay = () => showOptions && setShowOptions(false);
@@ -13,24 +12,18 @@ const Header = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    showOptions 
-    ? Animated.timing(
-      fadeAnim,
-      {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-      }
-    ).start()
-    : Animated.timing(
-      fadeAnim,
-      {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }
-    ).start()
-  }, [fadeAnim, showOptions])
+    showOptions
+      ? Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }).start()
+      : Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }).start();
+  }, [fadeAnim, showOptions]);
 
   return (
     <View style={styles.container}>
@@ -42,7 +35,7 @@ const Header = () => {
         <Pressable style={styles.settingsButtonContainer} onPress={() => !showMenu && setShowOptions(!showOptions)}>
           <Text style={[styles.settingsButton, showMenu && styles.disableOptions]}>● ● ●</Text>
         </Pressable>
-        {showOptions && <Animated.View style={[styles.overlay, {opacity: fadeAnim}]} />}
+        {showOptions && <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />}
       </Pressable>
     </View>
   );
@@ -90,7 +83,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.overlay,
     zIndex: 2000,
     position: "absolute",
-    width: '100%',
+    width: "100%",
     height: headerHeight + 20,
   },
   settingsButton: {
