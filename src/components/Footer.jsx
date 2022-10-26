@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { Text, View, StyleSheet, Pressable } from "react-native";
 import { Store } from "../../Store";
 
@@ -158,10 +158,43 @@ const Accidental = ({ children }) => {
   return <Text style={styles.accidental}>{children}</Text>;
 };
 
-const Label = ({ children }) => {
+const Label = ({ children, onPress }) => {
+  const { globalState, setGlobalState } = useContext(Store);
+
+  const [prevScale, setPrevScale] = useState();
+  const [undo, setUndo] = useState(false);
+
+  const isMounted = useRef(false);
+
+  useEffect(() => {
+    if (isMounted.current) {
+      setUndo(!undo);
+    } else {
+      isMounted.current = true;
+    }
+  }, [globalState.scale]);
+
   const handlePress = () => {
-    console.log(`press ${children}`);
+    setPrevScale(globalState.scale);
+    // setUndo(true);
+    onPress();
   };
+
+  const handleUndo = () => {
+    setGlobalState({
+      ...globalState,
+      scale: prevScale,
+    });
+    // setUndo(false);
+  };
+  if (undo) {
+    return (
+      <Pressable onPress={handleUndo}>
+        <Text style={styles.label}>Undo</Text>
+      </Pressable>
+    );
+  }
+
   return (
     <Pressable onPress={handlePress}>
       <Text style={styles.label}>{children}</Text>
@@ -174,9 +207,33 @@ const degrees = [{ d: 0 }, { d: 1 }, { d: 2 }, { d: 3.1, e: 3 }, { d: 4 }, { d: 
 const Footer = () => {
   const { globalState, setGlobalState } = useContext(Store);
 
+  const handleClear = () => {
+    setGlobalState({
+      ...globalState,
+      scale: {
+        title: "",
+        long_title: "",
+        menu_title: "",
+        degrees: [],
+      },
+    });
+  };
+
+  const handleAll = () => {
+    setGlobalState({
+      ...globalState,
+      scale: {
+        title: "Chromatic Scale",
+        long_title: "Chromatic Scale",
+        menu_title: "Chromatic Scale",
+        degrees: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      },
+    });
+  };
+
   return (
     <View style={styles.container}>
-      <Label>Clear</Label>
+      <Label onPress={handleClear}>Clear</Label>
       <View style={styles.scaleDegreeContainer}>
         {degrees.map((d, i) => {
           const selected = globalState.scale.degrees.includes(d.d);
@@ -184,7 +241,7 @@ const Footer = () => {
           return <ScaleDegree key={i} d={d.d} e={d.e} selected={selected} altSelected={altSelected} />;
         })}
       </View>
-      <Label>All</Label>
+      <Label onPress={handleAll}>All</Label>
     </View>
   );
 };
