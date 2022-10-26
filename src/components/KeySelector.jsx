@@ -20,15 +20,15 @@ const KeySelector = () => {
   };
 
   return (
-      <View style={styles.titleContainer}>
-        <Pressable style={styles.arrowContainer} onPress={() => handlePressArrow("left")}>
-          <View style={[styles.arrow, styles.arrowLeft]}></View>
-        </Pressable>
-        <Text style={styles.title}>KEY CENTER - {globalState?.key.title}</Text>
-        <Pressable style={styles.arrowContainer} onPress={() => handlePressArrow("right")}>
-          <View style={[styles.arrow, styles.arrowRight]}></View>
-        </Pressable>
-      </View>
+    <View style={styles.titleContainer}>
+      <Pressable style={styles.arrowContainer} onPress={() => handlePressArrow("left")}>
+        <View style={[styles.arrow, styles.arrowLeft]}></View>
+      </Pressable>
+      <Text style={styles.title}>KEY CENTER - {globalState?.key.title}</Text>
+      <Pressable style={styles.arrowContainer} onPress={() => handlePressArrow("right")}>
+        <View style={[styles.arrow, styles.arrowRight]}></View>
+      </Pressable>
+    </View>
   );
 };
 

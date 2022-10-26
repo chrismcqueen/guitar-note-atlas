@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef } from "react";
 import { StyleSheet, Text, Animated, Pressable } from "react-native";
-import * as Linking from 'expo-linking';
+import * as Linking from "expo-linking";
 
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
@@ -12,15 +12,15 @@ const Options = () => {
   useEffect(() => {
     showOptions
       ? Animated.timing(optionsAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }).start()
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: false,
+        }).start()
       : Animated.timing(optionsAnim, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: false,
-      }).start();
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: false,
+        }).start();
   }, [showOptions]);
 
   const width = dimensions.width / 3;
@@ -30,26 +30,26 @@ const Options = () => {
   const handlePress = (option) => {
     switch (option) {
       case "Show Scale Degree":
-        setGlobalState({ ...globalState, options: { ...globalState.options, showScaleDegree: !globalState.options.showScaleDegree } })
+        setGlobalState({ ...globalState, options: { ...globalState.options, showScaleDegree: !globalState.options.showScaleDegree } });
         break;
       case "Enable Bass Mode":
-        setGlobalState({ ...globalState, options: { ...globalState.options, bassMode: !globalState.options.bassMode } })
+        setGlobalState({ ...globalState, options: { ...globalState.options, bassMode: !globalState.options.bassMode } });
         break;
       case "Enable Left Hand":
-        setGlobalState({ ...globalState, options: { ...globalState.options, leftHand: !globalState.options.leftHand } })
+        setGlobalState({ ...globalState, options: { ...globalState.options, leftHand: !globalState.options.leftHand } });
         break;
       case "Flip Upside Down":
-        setGlobalState({ ...globalState, options: { ...globalState.options, upsideDown: !globalState.options.upsideDown } })
+        setGlobalState({ ...globalState, options: { ...globalState.options, upsideDown: !globalState.options.upsideDown } });
         break;
       case "Hide Anchor Frets":
-        setGlobalState({ ...globalState, options: { ...globalState.options, hideAnchorFrets: !globalState.options.hideAnchorFrets } })
+        setGlobalState({ ...globalState, options: { ...globalState.options, hideAnchorFrets: !globalState.options.hideAnchorFrets } });
         break;
       case "Rate Us":
-        Linking.openURL('https://apps.apple.com/us/app/guitar-note-atlas/id971847390');
+        Linking.openURL("https://apps.apple.com/us/app/guitar-note-atlas/id971847390");
         // TODO: android/google play url
         break;
       case "Give Us Feedback":
-        Linking.openURL("mailto:guitarnoteatlas@gmail.com?subject=Feedback!")
+        Linking.openURL("mailto:guitarnoteatlas@gmail.com?subject=Feedback!");
     }
   };
 

@@ -1,7 +1,7 @@
-import React from 'react'
+import React from "react";
 import Svg, { Line, Defs, ClipPath, G, Path, Circle, Rect } from "react-native-svg";
 
-import { theme } from '../../utils/theme'
+import { theme } from "../../utils/theme";
 
 const NeckSVG = ({ dimensions }) => {
   const { colors } = theme;

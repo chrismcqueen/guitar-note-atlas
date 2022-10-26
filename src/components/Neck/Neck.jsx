@@ -1,11 +1,11 @@
-import React, { useContext } from 'react';
-import { View } from 'react-native';
+import React, { useContext } from "react";
+import { View } from "react-native";
 import Svg from "react-native-svg";
 
-import AnchorFrets from './AnchorFrets';
-import Note from './Note';
-import Frets from './Frets';
-import Strings from './Strings';
+import AnchorFrets from "./AnchorFrets";
+import Note from "./Note";
+import Frets from "./Frets";
+import Strings from "./Strings";
 import { Store } from "../../../Store";
 
 const Neck = () => {
@@ -20,10 +20,10 @@ const Neck = () => {
         <Strings />
         <Frets />
         {globalState.options.hideAnchorFrets && <AnchorFrets />}
-        {strings.map(s => frets.map((f, i)=> <Note key={i} fret={f} string={s+1}/>))}
+        {strings.map((s) => frets.map((f, i) => <Note key={i} fret={f} string={s + 1} />))}
       </Svg>
     </View>
-  )
-}
+  );
+};
 
 export default Neck;

@@ -1,12 +1,12 @@
 import React, { useEffect, useContext } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import TitleSVG from './TitleSVG'
-import NeckSVG from './NeckSVG'
+import TitleSVG from "./TitleSVG";
+import NeckSVG from "./NeckSVG";
 
 import { StyleSheet, View } from "react-native";
 import { Store } from "../../../Store";
-import { storeGlobalState, removeStorage } from "../../utils/functions"
+import { storeGlobalState, removeStorage } from "../../utils/functions";
 import { theme } from "../../utils/theme";
 
 const Splash = ({ setLoading }) => {
@@ -30,7 +30,7 @@ const Splash = ({ setLoading }) => {
       leftHand: false,
       upsideDown: false,
       hideAnchorFrets: false,
-    }
+    },
   };
 
   //check local storage for previous global state
@@ -53,7 +53,7 @@ const Splash = ({ setLoading }) => {
 
   //check for ls on mount
   useEffect(() => {
-    getLocalStorage()
+    getLocalStorage();
   }, []);
 
   let paddingTop = dimensions.height / 9;

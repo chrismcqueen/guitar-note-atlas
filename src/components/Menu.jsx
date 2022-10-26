@@ -13,15 +13,15 @@ const Menu = () => {
   useEffect(() => {
     showMenu
       ? Animated.timing(menuAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }).start()
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: false,
+        }).start()
       : Animated.timing(menuAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: false,
+        }).start();
   }, [showMenu]);
 
   const splitToColumns = (arr) => {
@@ -53,7 +53,7 @@ const Menu = () => {
       style={[
         styles.menu,
         {
-          height: dimensions.height - 85,
+          height: dimensions.height - 110,
           width: dimensions.width,
           top: menuAnim.interpolate({
             inputRange: [0, 1],
