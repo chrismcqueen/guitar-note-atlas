@@ -3,7 +3,7 @@ import { Animated, Pressable, StyleSheet, View } from "react-native";
 
 import KeySelector from "./KeySelector";
 import Neck from "./Neck";
-import Footer from "./Footer";
+import { Footer } from "./Footer";
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { headerHeight } from "./Header";

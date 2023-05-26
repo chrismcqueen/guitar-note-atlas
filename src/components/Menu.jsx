@@ -53,7 +53,7 @@ const Menu = () => {
       style={[
         styles.menu,
         {
-          height: dimensions.height - 110,
+          height: dimensions.height - 108,
           width: dimensions.width,
           top: menuAnim.interpolate({
             inputRange: [0, 1],
