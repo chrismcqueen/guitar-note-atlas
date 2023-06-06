@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useState } from "react";
 import { Text, StyleSheet, Pressable } from "react-native";
 import { Store } from "../../../Store";
 
@@ -9,16 +9,6 @@ export const FooterButton = ({ children, onPress }) => {
 
   const [prevScale, setPrevScale] = useState();
   const [undo, setUndo] = useState(false);
-
-  // const isMounted = useRef(false);
-
-  // useEffect(() => {
-  //   if (isMounted.current && undo) {
-  //     setUndo(false);
-  //   } else {
-  //     isMounted.current = true;
-  //   }
-  // }, [globalState.scale]);
 
   const handlePress = () => {
     setPrevScale(globalState.scale);
