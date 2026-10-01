@@ -95,6 +95,5 @@ export const styles = StyleSheet.create({
   },
   phoneContent: {
     alignItems: "center",
-    transform: [{ translateY: 11 }],
   },
 });
