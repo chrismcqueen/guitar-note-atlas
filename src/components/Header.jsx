@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     position: "absolute",
     top: 13,
-    fontSize: 22,
+    fontSize: 26,
   },
   menuButton: {
     position: "absolute",
