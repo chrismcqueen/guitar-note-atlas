@@ -39,7 +39,15 @@ const Splash = ({ setLoading }) => {
       const value = await AsyncStorage.getItem("globalState");
       const parsedValue = value !== null ? JSON.parse(value) : null;
       if (parsedValue !== null) {
-        setGlobalState(parsedValue);
+        const migratedValue = {
+          ...initialValue,
+          ...parsedValue,
+          key: { ...initialValue.key, ...parsedValue.key },
+          scale: { ...initialValue.scale, ...parsedValue.scale },
+          options: { ...initialValue.options, ...parsedValue.options },
+        };
+        setGlobalState(migratedValue);
+        storeGlobalState(migratedValue);
       } else {
         //if no ls, set to C major scale
         setGlobalState(initialValue);

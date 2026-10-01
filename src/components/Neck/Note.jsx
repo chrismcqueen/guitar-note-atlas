@@ -3,14 +3,14 @@ import Svg, { G, Circle, Text } from "react-native-svg";
 
 import { Store } from "../../../Store";
 import { theme } from "../../utils/theme";
+import { getNoteName, getScaleDegreeLabel, normalizePitchClass } from "../../utils/music.mjs";
 
 const Note = ({ fret, leftHand, string, stringCount, stringOffset }) => {
   const { globalState } = useContext(Store);
   const degrees = globalState.scale.degrees;
 
   const getOffset = (f, stringOffset) => {
-    const offset = Math.floor(f) + stringOffset - globalState.key.key_offset;
-    return ((offset % 12) + 12) % 12;
+    return normalizePitchClass(f + stringOffset - globalState.key.key_offset);
   };
 
   const isNote = (f, stringOffset) => {
@@ -22,53 +22,7 @@ const Note = ({ fret, leftHand, string, stringCount, stringOffset }) => {
     const offset = getOffset(fret, stringOffset);
     const selectedDegree = degrees.find((degree) => Math.floor(degree) === offset) ?? offset;
 
-    switch (selectedDegree) {
-      case 0:
-        return "1";
-        break;
-      case 1:
-        return "b2";
-        break;
-      case 2:
-        return "2";
-        break;
-      case 3:
-        return "b3";
-        break;
-      case 3.1:
-        return "#2";
-        break;
-      case 4:
-        return "3";
-        break;
-      case 5:
-        return "4";
-        break;
-      case 6:
-        return "b5";
-        break;
-      case 6.1:
-        return "#4";
-        break;
-      case 7:
-        return "5";
-        break;
-      case 8:
-        return "b6";
-        break;
-      case 8.1:
-        return "#5";
-        break;
-      case 9:
-        return "6";
-        break;
-      case 10:
-        return "b7";
-        break;
-      case 11:
-        return "7";
-        break;
-    }
+    return getScaleDegreeLabel(selectedDegree);
   };
 
   const getFretTranslate = (f) => {
@@ -134,6 +88,8 @@ const Note = ({ fret, leftHand, string, stringCount, stringOffset }) => {
   const x = leftHand ? 864 - noteSize - fretTranslate : fretTranslate;
   const y = getStringTranslate(string);
   const scaleDegree = getScaleDegree(fret, stringOffset);
+  const noteName = getNoteName(fret + stringOffset, globalState.key.title.includes("b"));
+  const noteLabel = globalState.options.showScaleDegree ? scaleDegree : noteName;
 
   if (isNote(fret, stringOffset))
     return (
@@ -156,7 +112,7 @@ const Note = ({ fret, leftHand, string, stringCount, stringOffset }) => {
             stroke={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
             fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
           >
-            {scaleDegree}
+            {noteLabel}
           </Text>
         </Svg>
       </G>

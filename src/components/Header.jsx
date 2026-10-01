@@ -61,10 +61,11 @@ const styles = StyleSheet.create({
     fontFamily: "blackout",
     color: theme.colors.white,
     textAlign: "center",
-    fontSize: 60,
+    fontSize: 34,
+    lineHeight: headerHeight,
     left: 0,
     right: 0,
-    top: -4,
+    top: 0,
   },
   menu: {
     fontFamily: "blackout",
