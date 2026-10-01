@@ -9,7 +9,7 @@ import { theme } from "../../utils/theme";
 export const ScaleDegreeButton = (props) => {
   const { globalState, setGlobalState } = useContext(Store);
   const { selected, altSelected, d, e } = props;
-  const { getScaleDegree } = useFooter();
+  const { getScaleDegree, getMatchingScale } = useFooter();
   const [accidental, degree] = getScaleDegree(d).length === 2 ? getScaleDegree(d).split("") : [undefined, getScaleDegree(d)];
   const [altAccidental, altDegree] = e === undefined ? [] : getScaleDegree(e).split("");
 
@@ -26,7 +26,11 @@ export const ScaleDegreeButton = (props) => {
     }
 
     nextDegrees.sort((a, b) => a - b);
-    setGlobalState({ ...globalState, scale: { ...globalState.scale, degrees: nextDegrees } });
+    const matchingScale = getMatchingScale(nextDegrees);
+    const scale = matchingScale
+      ? { ...matchingScale, degrees: nextDegrees }
+      : { title: "", long_title: "", menu_title: "", degrees: nextDegrees };
+    setGlobalState({ ...globalState, scale });
   };
 
   if (altDegree) {

@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { Store } from "../../../Store";
+import { data } from "../../../data";
 
 export const useFooter = () => {
   const { globalState, setGlobalState } = useContext(Store);
@@ -80,5 +81,14 @@ export const useFooter = () => {
     }
   };
 
-  return { handleClear, handleAll, getScaleDegree, degrees };
+  const getMatchingScale = (selectedDegrees) => {
+    const matchesDegrees = (scale) =>
+      scale.degrees.length === selectedDegrees.length && scale.degrees.every((degree, index) => degree === selectedDegrees[index]);
+
+    return Object.values(data.scales)
+      .flat()
+      .find(matchesDegrees);
+  };
+
+  return { handleClear, handleAll, getScaleDegree, getMatchingScale, degrees };
 };
