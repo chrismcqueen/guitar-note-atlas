@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     width: 470,
   },
   arrowButton: {
-    marginHorizontal: 30,
+    marginHorizontal: 45,
     padding: 20,
   },
   arrow: {
