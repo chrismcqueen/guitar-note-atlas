@@ -11,7 +11,8 @@ import { Store } from "../../../Store";
 const Neck = () => {
   const { globalState } = useContext(Store);
   const frets = [...Array(17).keys()];
-  const tuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
+  const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
+  const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
 
   return (
     // TODO: make container responsive
