@@ -26,13 +26,16 @@ const Header = () => {
   }, [fadeAnim, showOptions]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { height: headerHeight + insets.top }]}>
       <Pressable style={fullScreen} onPress={overlay}>
-        <Pressable style={[styles.menuButton, { left: insets.left }]} onPress={() => setShowMenu(!showMenu)}>
+        <Pressable style={[styles.menuButton, { left: insets.left, top: insets.top }]} onPress={() => setShowMenu(!showMenu)}>
           <Text style={styles.menu}>Menu</Text>
         </Pressable>
-        {!showMenu && <Text style={styles.heading}>{globalState?.scale.title}</Text>}
-        <Pressable style={[styles.settingsButtonContainer, { right: 35 + insets.right }]} onPress={() => !showMenu && setShowOptions(!showOptions)}>
+        {!showMenu && <Text style={[styles.heading, { top: insets.top - 18 }]}>{globalState?.scale.title}</Text>}
+        <Pressable
+          style={[styles.settingsButtonContainer, { right: 35 + insets.right, top: insets.top + 2 }]}
+          onPress={() => !showMenu && setShowOptions(!showOptions)}
+        >
           <Text style={[styles.settingsButton, showMenu && styles.disableOptions]}>● ● ●</Text>
         </Pressable>
         {showOptions && <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />}
