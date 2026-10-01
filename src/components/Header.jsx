@@ -5,7 +5,8 @@ import { Store } from "../../Store";
 import { theme } from "../utils/theme";
 
 const Header = () => {
-  const { globalState, insets, showMenu, setShowMenu, showOptions, setShowOptions } = useContext(Store);
+  const { dimensions, globalState, insets, showMenu, setShowMenu, showOptions, setShowOptions } = useContext(Store);
+  const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const overlay = () => showOptions && setShowOptions(false);
   const fullScreen = { height: "100%", width: "100%" };
 
@@ -31,7 +32,9 @@ const Header = () => {
         <Pressable style={[styles.menuButton, { left: insets.left, top: insets.top }]} onPress={() => setShowMenu(!showMenu)}>
           <Text style={styles.menu}>Menu</Text>
         </Pressable>
-        {!showMenu && <Text style={[styles.heading, { top: insets.top - 18 }]}>{globalState?.scale.title}</Text>}
+        {!showMenu && (
+          <Text style={[styles.heading, isTablet && styles.tabletHeading, { top: insets.top - (isTablet ? 30 : 18) }]}>{globalState?.scale.title}</Text>
+        )}
         <Pressable
           style={[styles.settingsButtonContainer, { right: 35 + insets.right, top: insets.top + 2 }]}
           onPress={() => !showMenu && setShowOptions(!showOptions)}
@@ -70,6 +73,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     top: -18,
+  },
+  tabletHeading: {
+    fontSize: 104,
+    lineHeight: 110,
   },
   menu: {
     fontFamily: "blackout",
