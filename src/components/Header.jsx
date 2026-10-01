@@ -13,13 +13,13 @@ const Header = () => {
     <View style={[styles.container, { height: headerHeight + insets.top }]}>
       <View style={fullScreen}>
         <Pressable style={[styles.menuButton, { left: isTablet ? insets.left : 0, top: insets.top }]} onPress={() => setShowMenu(!showMenu)}>
-          <Text style={[styles.menu, isTablet && styles.tabletMenu, { left: isTablet ? 25 : 12 }]}>Menu</Text>
+          <Text style={[styles.menu, isTablet && styles.tabletMenu, { left: isTablet ? 25 : 18 }]}>Menu</Text>
         </Pressable>
         {!showMenu && (
           <Text style={[styles.heading, isTablet && styles.tabletHeading, { top: insets.top - (isTablet ? 52 : 18) }]}>{globalState?.scale.title}</Text>
         )}
         <Pressable
-          style={[styles.settingsButtonContainer, { right: isTablet ? 25 + insets.right : 12, top: insets.top + 2 }]}
+          style={[styles.settingsButtonContainer, { right: isTablet ? 25 + insets.right : 18, top: insets.top + 2 }]}
           onPress={() => !showMenu && setShowOptions(!showOptions)}
         >
           <Text style={[styles.settingsButton, showMenu && styles.disableOptions]}>● ● ●</Text>
