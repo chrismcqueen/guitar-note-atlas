@@ -94,7 +94,7 @@ const Note = ({ fret, labelFontSize = 25, leftHand, string, stringCount, stringO
   if (isNote(fret, stringOffset))
     return (
       <G transform={`translate(${x}, ${y})`}>
-        <Svg width={noteSize} height={noteSize}>
+        <Svg width={noteSize} height={noteSize} overflow="visible">
           <Circle
             cx={noteSize / 2}
             cy={noteSize / 2}

@@ -41,7 +41,6 @@ const PositionZoom = () => {
                 <Note
                   key={`${string}-${fret}`}
                   fret={fret}
-                  labelFontSize={18}
                   leftHand={globalState.options.leftHand}
                   string={string + 1}
                   stringCount={tuning.length}
