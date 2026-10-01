@@ -110,7 +110,7 @@ const Note = ({ fret, leftHand, string, stringCount, stringOffset }) => {
             y="78%"
             fontSize={25}
             stroke={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
-            strokeWidth={0.4}
+            strokeWidth={0.25}
             fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
           >
             {noteLabel}
