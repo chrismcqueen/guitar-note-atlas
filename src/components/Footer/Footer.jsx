@@ -2,7 +2,9 @@ import React, { useContext } from "react";
 import { View, StyleSheet } from "react-native";
 
 import { Store } from "../../../Store";
-import { FooterButton, ScaleDegreeButton, useFooter } from ".";
+import { FooterButton } from "./FooterButton";
+import { ScaleDegreeButton } from "./ScaleDegreeButton";
+import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
 
 export const Footer = () => {

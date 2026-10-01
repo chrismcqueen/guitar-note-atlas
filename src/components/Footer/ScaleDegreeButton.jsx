@@ -2,7 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 import { Text, View, StyleSheet, Pressable } from "react-native";
 import { Store } from "../../../Store";
 
-import { Accidental, useFooter } from ".";
+import { Accidental } from "./Accidental";
+import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
 
 export const ScaleDegreeButton = (props) => {

@@ -3,7 +3,6 @@ import Svg, { G, Circle, Text } from "react-native-svg";
 
 import { Store } from "../../../Store";
 import { theme } from "../../utils/theme";
-import { processFontFamily } from "expo-font";
 
 const Note = ({ fret, string }) => {
   const { globalState } = useContext(Store);
@@ -168,7 +167,7 @@ const Note = ({ fret, string }) => {
             strokeWidth={fret === 0 ? 2 : 4}
           />
           <Text
-            fontFamily={processFontFamily("basicManual")}
+            fontFamily="basicManual"
             textAnchor="middle"
             x="51.5%"
             y="68%"
