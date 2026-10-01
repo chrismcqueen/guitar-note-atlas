@@ -94,19 +94,19 @@ const styles = StyleSheet.create({
   },
   arrow: {
     borderBottomColor: "transparent",
-    borderBottomWidth: 58,
+    borderBottomWidth: 75,
     borderTopColor: "transparent",
-    borderTopWidth: 58,
+    borderTopWidth: 75,
     height: 0,
     width: 0,
   },
   arrowLeft: {
     borderRightColor: theme.colors.blue,
-    borderRightWidth: 55,
+    borderRightWidth: 68,
   },
   arrowRight: {
     borderLeftColor: theme.colors.blue,
-    borderLeftWidth: 55,
+    borderLeftWidth: 68,
   },
   disabled: {
     opacity: 0.25,
