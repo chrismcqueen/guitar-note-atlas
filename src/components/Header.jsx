@@ -75,8 +75,8 @@ const styles = StyleSheet.create({
     top: -18,
   },
   tabletHeading: {
-    fontSize: 125,
-    lineHeight: 132,
+    fontSize: 118,
+    lineHeight: 125,
   },
   menu: {
     fontFamily: "blackout",
