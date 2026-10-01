@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { StyleSheet } from "react-native";
 import { useFonts } from "expo-font";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import Header from "./src/components/Header";
 import Menu from "./src/components/Menu";
@@ -9,7 +8,6 @@ import Options from "./src/components/Options";
 import Main from "./src/components/Main";
 import { Splash } from "./src/components/Splash";
 import { StoreProvider } from "./Store";
-import { theme } from "./src/utils/theme";
 
 export default function App() {
   let [fontsLoaded] = useFonts({
@@ -22,27 +20,18 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.safeArea}>
-        <StoreProvider>
-          {!fontsLoaded || loading ? (
-            <Splash setLoading={setLoading} />
-          ) : (
-            <>
-              <Main />
-              <Menu />
-              <Header />
-              <Options />
-            </>
-          )}
-        </StoreProvider>
-      </SafeAreaView>
+      <StoreProvider>
+        {!fontsLoaded || loading ? (
+          <Splash setLoading={setLoading} />
+        ) : (
+          <>
+            <Main />
+            <Menu />
+            <Header />
+            <Options />
+          </>
+        )}
+      </StoreProvider>
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: theme.colors.blue,
-    flex: 1,
-  },
-});

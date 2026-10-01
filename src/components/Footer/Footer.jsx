@@ -8,11 +8,11 @@ import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
 
 export const Footer = () => {
-  const { globalState } = useContext(Store);
+  const { globalState, insets } = useContext(Store);
   const { degrees, handleClear, handleAll } = useFooter();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingLeft: insets.left, paddingRight: insets.right }]}>
       <FooterButton onPress={handleClear}>Clear</FooterButton>
       <View style={styles.scaleDegreeContainer}>
         {degrees.map((d, i) => {

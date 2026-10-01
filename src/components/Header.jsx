@@ -5,7 +5,7 @@ import { Store } from "../../Store";
 import { theme } from "../utils/theme";
 
 const Header = () => {
-  const { globalState, showMenu, setShowMenu, showOptions, setShowOptions } = useContext(Store);
+  const { globalState, insets, showMenu, setShowMenu, showOptions, setShowOptions } = useContext(Store);
   const overlay = () => showOptions && setShowOptions(false);
   const fullScreen = { height: "100%", width: "100%" };
 
@@ -28,11 +28,11 @@ const Header = () => {
   return (
     <View style={styles.container}>
       <Pressable style={fullScreen} onPress={overlay}>
-        <Pressable style={styles.menuButton} onPress={() => setShowMenu(!showMenu)}>
+        <Pressable style={[styles.menuButton, { left: insets.left }]} onPress={() => setShowMenu(!showMenu)}>
           <Text style={styles.menu}>Menu</Text>
         </Pressable>
-        <Text style={styles.heading}>{globalState?.scale.title}</Text>
-        <Pressable style={styles.settingsButtonContainer} onPress={() => !showMenu && setShowOptions(!showOptions)}>
+        {!showMenu && <Text style={styles.heading}>{globalState?.scale.title}</Text>}
+        <Pressable style={[styles.settingsButtonContainer, { right: 35 + insets.right }]} onPress={() => !showMenu && setShowOptions(!showOptions)}>
           <Text style={[styles.settingsButton, showMenu && styles.disableOptions]}>● ● ●</Text>
         </Pressable>
         {showOptions && <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />}
@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   menuButton: {
+    position: "absolute",
     zIndex: 100,
     width: 100,
     height: 50,
@@ -97,7 +98,6 @@ const styles = StyleSheet.create({
   settingsButtonContainer: {
     position: "absolute",
     top: 2,
-    right: 35,
     padding: 15,
   },
 });

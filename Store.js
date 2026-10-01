@@ -15,13 +15,11 @@ export const StoreProvider = ({ children }) => {
 
   const windowDimensions = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const dimensions = {
-    height: windowDimensions.height - insets.top - insets.bottom,
-    width: windowDimensions.width - insets.left - insets.right,
-  };
+  const dimensions = windowDimensions;
 
   const value = {
     dimensions,
+    insets,
     showMenu,
     setShowMenu,
     showOptions,

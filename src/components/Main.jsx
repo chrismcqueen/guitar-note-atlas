@@ -9,7 +9,7 @@ import { theme } from "../utils/theme";
 import { headerHeight } from "./Header";
 
 export const Main = () => {
-  const { dimensions, showOptions, setShowOptions } = useContext(Store);
+  const { dimensions, insets, showOptions, setShowOptions } = useContext(Store);
   const overlay = () => showOptions && setShowOptions(false);
   const fullDimensions = { height: dimensions.height, width: dimensions.width };
   const fullScreen = { height: "100%", width: "100%" };
@@ -34,11 +34,11 @@ export const Main = () => {
     <View style={[styles.container, fullDimensions]}>
       <Pressable style={fullScreen} onPress={overlay}>
         {showOptions && <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />}
-        <View style={styles.container}>
+        <View style={[styles.content, { paddingLeft: insets.left, paddingRight: insets.right }]}>
           <KeySelector />
           <Neck />
         </View>
-        <Footer style={styles.footer} />
+        <Footer />
       </Pressable>
     </View>
   );
@@ -52,6 +52,11 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flex: 1,
+  },
+  content: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
   },
   overlay: {
     backgroundColor: theme.colors.overlay,

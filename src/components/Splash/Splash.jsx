@@ -56,17 +56,16 @@ const Splash = ({ setLoading }) => {
     getLocalStorage();
   }, []);
 
-  let paddingTop = dimensions.height / 9;
   const paddingLeft = dimensions.width / 100;
 
   return (
     <>
-      <View style={[styles.container, { paddingTop: paddingTop, width: dimensions.width, height: dimensions.height }]}>
-        <View style={{ paddingLeft: paddingLeft, height: dimensions.height / 2 }}>
+      <View style={[styles.container, { width: dimensions.width, height: dimensions.height }]}>
+        <View style={[styles.title, { paddingLeft: paddingLeft }]}>
           <TitleSVG />
         </View>
-        <View style={[styles.neck, { height: dimensions.height / 2 }]}>
-          <View style={{ justifyContent: "flex-end" }}>
+        <View style={styles.neck}>
+          <View style={styles.neckContent}>
             <NeckSVG dimensions={dimensions} />
           </View>
         </View>
@@ -84,6 +83,14 @@ const styles = StyleSheet.create({
   },
 
   neck: {
+    flex: 0.4,
     justifyContent: "flex-end",
+  },
+  neckContent: {
+    justifyContent: "flex-end",
+  },
+  title: {
+    flex: 0.6,
+    justifyContent: "center",
   },
 });

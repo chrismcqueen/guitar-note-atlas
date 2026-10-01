@@ -9,11 +9,12 @@ import Strings from "./Strings";
 import { Store } from "../../../Store";
 
 const Neck = () => {
-  const { dimensions, globalState } = useContext(Store);
+  const { dimensions, globalState, insets } = useContext(Store);
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
-  const scale = Math.min((dimensions.width - 32) / 864, (dimensions.height * 0.42) / 233, 1.3);
+  const safeWidth = dimensions.width - insets.left - insets.right;
+  const scale = Math.min((safeWidth - 32) / 864, (dimensions.height * 0.42) / 233, 1.3);
   const neckDimensions = { height: 233 * scale, width: 864 * scale };
 
   return (

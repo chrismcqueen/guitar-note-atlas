@@ -7,7 +7,7 @@ import { storeGlobalState } from "../utils/functions";
 import { theme } from "../utils/theme";
 
 const Menu = () => {
-  const { dimensions, showMenu, globalState, setGlobalState } = useContext(Store);
+  const { dimensions, insets, showMenu, globalState, setGlobalState } = useContext(Store);
   const menuAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -55,7 +55,7 @@ const Menu = () => {
       style={[
         styles.menu,
         {
-          height: dimensions.height - 108,
+          height: dimensions.height - 38,
           width: dimensions.width,
           top: menuAnim.interpolate({
             inputRange: [0, 1],
@@ -63,6 +63,7 @@ const Menu = () => {
           }),
         },
       ]}
+      contentContainerStyle={{ paddingLeft: insets.left, paddingRight: insets.right }}
       stickyHeaderIndices={[0, 2, 4, 6, 8, 10, 12]}
     >
       {/* SCALES */}
@@ -227,6 +228,7 @@ const styles = StyleSheet.create({
   menu: {
     backgroundColor: theme.colors.blue,
     position: "absolute",
+    zIndex: 1000,
   },
   menuHeader: {
     textAlign: "center",
