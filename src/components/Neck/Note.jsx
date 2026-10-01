@@ -11,17 +11,20 @@ const Note = ({ fret, string }) => {
   const getString = (s) => globalState.strings[s - 1];
 
   const getOffset = (f, stringOffset) => {
-    let offset = Math.floor(f) + stringOffset;
-    offset -= globalState.key.key_offset;
-    offset = offset < 0 ? offset + 12 : offset > 11 ? offset - 12 : offset;
-    return offset;
+    const offset = Math.floor(f) + stringOffset - globalState.key.key_offset;
+    return ((offset % 12) + 12) % 12;
   };
 
-  const isNote = (f, stringOffset) => (degrees.includes(getOffset(f, stringOffset)) ? true : false);
+  const isNote = (f, stringOffset) => {
+    const offset = getOffset(f, stringOffset);
+    return degrees.some((degree) => Math.floor(degree) === offset);
+  };
 
   const getScaleDegree = (fret, stringOffset) => {
     const offset = getOffset(fret, stringOffset);
-    switch (offset) {
+    const selectedDegree = degrees.find((degree) => Math.floor(degree) === offset) ?? offset;
+
+    switch (selectedDegree) {
       case 0:
         return "1";
         break;
