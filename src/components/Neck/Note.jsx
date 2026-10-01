@@ -108,7 +108,7 @@ const Note = ({ fret, leftHand, string, stringCount, stringOffset }) => {
             textAnchor="middle"
             x="55%"
             y="71%"
-            fontSize={21}
+            fontSize={23}
             fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
           >
             {noteLabel}
