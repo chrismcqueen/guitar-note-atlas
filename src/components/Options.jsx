@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { StyleSheet, Text, View, Animated, Pressable } from "react-native";
+import { StyleSheet, Text, View, Animated, Modal, Pressable } from "react-native";
 import * as Linking from "expo-linking";
 
 import { Store } from "../../Store";
@@ -85,39 +85,59 @@ const Options = () => {
   };
 
   return (
-    <Animated.View
-      style={[
-        styles.options,
-        {
-          width: width,
-          height: dimensions.height,
-          right: optionsAnim.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, -width],
-          }),
-        },
-      ]}
+    <Modal
+      animationType="none"
+      onRequestClose={() => setShowOptions(false)}
+      presentationStyle="overFullScreen"
+      statusBarTranslucent
+      supportedOrientations={["landscape", "landscape-left", "landscape-right"]}
+      transparent
+      visible={showOptions}
     >
-      {options.map((option, i) => (
-        <Pressable key={i} onPress={() => handlePress(option)}>
-          <View style={styles.itemRow}>
-            <Text style={styles.item}>{option}</Text>
-            {isSelected(option) && <Text style={styles.checkmark}>✓</Text>}
-          </View>
-        </Pressable>
-      ))}
-    </Animated.View>
+      <Pressable accessibilityLabel="Close options" onPress={() => setShowOptions(false)} style={styles.modalContainer}>
+        <Animated.View
+          style={[
+            styles.options,
+            {
+              width: width,
+              right: optionsAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, -width],
+              }),
+            },
+          ]}
+        >
+          <Pressable onPress={(event) => event.stopPropagation()} style={styles.optionsContent}>
+            {options.map((option, i) => (
+              <Pressable key={i} onPress={() => handlePress(option)}>
+                <View style={styles.itemRow}>
+                  <Text style={styles.item}>{option}</Text>
+                  {isSelected(option) && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+              </Pressable>
+            ))}
+          </Pressable>
+        </Animated.View>
+      </Pressable>
+    </Modal>
   );
 };
 
 export default Options;
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    backgroundColor: "rgba(0, 0, 0, 0.67)",
+    flex: 1,
+  },
   options: {
+    bottom: 0,
     position: "absolute",
     top: 0,
-    zIndex: 2001,
     backgroundColor: theme.colors.blue,
+  },
+  optionsContent: {
+    flex: 1,
   },
   item: {
     color: theme.colors.pureWhite,

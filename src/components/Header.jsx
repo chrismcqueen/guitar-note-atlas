@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useRef } from "react";
-import { Animated, Text, View, StyleSheet, Pressable } from "react-native";
+import React, { useContext } from "react";
+import { Text, View, StyleSheet, Pressable } from "react-native";
 
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
@@ -7,28 +7,11 @@ import { theme } from "../utils/theme";
 const Header = () => {
   const { dimensions, globalState, insets, showMenu, setShowMenu, showOptions, setShowOptions } = useContext(Store);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const overlay = () => showOptions && setShowOptions(false);
   const fullScreen = { height: "100%", width: "100%" };
-
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    showOptions
-      ? Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 150,
-          useNativeDriver: true,
-        }).start()
-      : Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 150,
-          useNativeDriver: true,
-        }).start();
-  }, [fadeAnim, showOptions]);
 
   return (
     <View style={[styles.container, { height: headerHeight + insets.top }]}>
-      <Pressable style={fullScreen} onPress={overlay}>
+      <View style={fullScreen}>
         <Pressable style={[styles.menuButton, { left: insets.left, top: insets.top }]} onPress={() => setShowMenu(!showMenu)}>
           <Text style={styles.menu}>Menu</Text>
         </Pressable>
@@ -41,8 +24,7 @@ const Header = () => {
         >
           <Text style={[styles.settingsButton, showMenu && styles.disableOptions]}>● ● ●</Text>
         </Pressable>
-        {showOptions && <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />}
-      </Pressable>
+      </View>
     </View>
   );
 };
@@ -91,13 +73,6 @@ const styles = StyleSheet.create({
     zIndex: 100,
     width: 100,
     height: 50,
-  },
-  overlay: {
-    backgroundColor: theme.colors.overlay,
-    zIndex: 2000,
-    position: "absolute",
-    width: "100%",
-    height: headerHeight + 20,
   },
   settingsButton: {
     color: theme.colors.white,

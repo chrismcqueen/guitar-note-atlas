@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useFonts } from "expo-font";
+import { StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import Header from "./src/components/Header";
@@ -25,20 +26,32 @@ export default function App() {
         {!fontsLoaded || loading ? (
           <Splash setLoading={setLoading} />
         ) : (
-          <>
-            <Main />
-            <Menu />
-            <Header />
-            <Options />
-            <TutorialGate />
-          </>
+          <AppContent />
         )}
       </StoreProvider>
     </SafeAreaProvider>
   );
 }
 
+const AppContent = () => {
+  return (
+    <View style={styles.app}>
+      <Main />
+      <Menu />
+      <Header />
+      <Options />
+      <TutorialGate />
+    </View>
+  );
+};
+
 const TutorialGate = () => {
   const { showTutorial } = React.useContext(Store);
   return showTutorial ? <Tutorial /> : null;
 };
+
+const styles = StyleSheet.create({
+  app: {
+    flex: 1,
+  },
+});
