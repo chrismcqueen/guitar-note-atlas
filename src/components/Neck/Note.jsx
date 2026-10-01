@@ -5,7 +5,18 @@ import { Store } from "../../../Store";
 import { theme } from "../../utils/theme";
 import { getNoteName, getScaleDegreeLabel, normalizePitchClass } from "../../utils/music.mjs";
 
-const Note = ({ fret, labelFontSize = 25, leftHand, string, stringCount, stringOffset, stringSpan = 180 }) => {
+const Note = ({
+  circleRadius = 13,
+  circleStrokeWidth,
+  fret,
+  labelFontSize = 25,
+  leftHand,
+  noteSizeOverride,
+  string,
+  stringCount,
+  stringOffset,
+  stringSpan = 180,
+}) => {
   const { globalState } = useContext(Store);
   const degrees = globalState.scale.degrees;
 
@@ -83,7 +94,7 @@ const Note = ({ fret, labelFontSize = 25, leftHand, string, stringCount, stringO
 
   const getStringTranslate = (s) => (stringSpan / (stringCount - 1)) * (s - 1);
 
-  const noteSize = fret === 0 ? 34 : 30;
+  const noteSize = noteSizeOverride ?? (fret === 0 ? 34 : 30);
   const fretTranslate = getFretTranslate(fret);
   const x = leftHand ? 864 - noteSize - fretTranslate : fretTranslate;
   const y = getStringTranslate(string);
@@ -98,10 +109,10 @@ const Note = ({ fret, labelFontSize = 25, leftHand, string, stringCount, stringO
           <Circle
             cx={noteSize / 2}
             cy={noteSize / 2}
-            r="13"
+            r={circleRadius}
             stroke={fret === 0 ? theme.colors.grey : theme.colors.black}
             fill={fret === 0 ? theme.colors.white : scaleDegree === "1" ? theme.colors.white : theme.colors.black}
-            strokeWidth={fret === 0 ? 2 : 3.5}
+            strokeWidth={circleStrokeWidth ?? (fret === 0 ? 2 : 3.5)}
           />
           <Text
             fontFamily="basicManual"
