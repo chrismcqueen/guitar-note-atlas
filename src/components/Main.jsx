@@ -50,7 +50,9 @@ export const Main = () => {
           ) : (
             <View style={styles.phoneContent}>
               <KeySelector />
-              <Neck />
+              <View style={styles.phoneNeck}>
+                <Neck />
+              </View>
             </View>
           )}
         </View>
@@ -95,5 +97,8 @@ export const styles = StyleSheet.create({
   },
   phoneContent: {
     alignItems: "center",
+  },
+  phoneNeck: {
+    transform: [{ translateY: 10 }],
   },
 });
