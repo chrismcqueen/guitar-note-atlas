@@ -69,7 +69,7 @@ export default PositionZoom;
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    height: 300,
+    height: 312,
     marginBottom: 24,
     width: "100%",
   },
@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
     fontFamily: "proletarsk",
     fontSize: 40,
     letterSpacing: 6,
+    marginBottom: 12,
   },
   row: {
     alignItems: "center",
