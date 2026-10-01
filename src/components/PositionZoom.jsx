@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     height: 312,
-    marginBottom: 24,
+    marginBottom: 48,
     width: "100%",
   },
   title: {
