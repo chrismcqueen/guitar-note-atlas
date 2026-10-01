@@ -6,10 +6,11 @@ import AnchorFrets from "./AnchorFrets";
 import Note from "./Note";
 import Frets from "./Frets";
 import Strings from "./Strings";
+import PositionBars from "./PositionBars";
 import { Store } from "../../../Store";
 
 const Neck = () => {
-  const { dimensions, globalState, insets } = useContext(Store);
+  const { dimensions, globalState, insets, positionFret } = useContext(Store);
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
@@ -23,6 +24,7 @@ const Neck = () => {
     // TODO: make container responsive
     <View style={[styles.container, neckDimensions]}>
       <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 864 233">
+        {isTablet && <PositionBars leftHand={globalState.options.leftHand} positionFret={positionFret} />}
         <Strings count={tuning.length} />
         <Frets leftHand={globalState.options.leftHand} />
         {!globalState.options.hideAnchorFrets && <AnchorFrets leftHand={globalState.options.leftHand} />}

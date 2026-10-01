@@ -7,6 +7,7 @@ import AnchorFrets from "./Neck/AnchorFrets";
 import Frets from "./Neck/Frets";
 import Note from "./Neck/Note";
 import Strings from "./Neck/Strings";
+import PositionBars from "./Neck/PositionBars";
 import { theme } from "../utils/theme";
 
 const PositionZoom = () => {
@@ -33,6 +34,7 @@ const PositionZoom = () => {
         </Pressable>
         <View style={styles.neck}>
           <Svg width="100%" height="100%" viewBox={`${viewX} 0 294 210`}>
+            <PositionBars leftHand={globalState.options.leftHand} positionFret={positionFret} />
             <Strings count={tuning.length} />
             <Frets leftHand={globalState.options.leftHand} />
             {!globalState.options.hideAnchorFrets && <AnchorFrets leftHand={globalState.options.leftHand} />}
