@@ -22,7 +22,7 @@ const PositionZoom = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>POSITION · FRETS {positionFret}–{positionFret + 5}</Text>
+      <Text style={styles.title}>POSITION // FRETS {positionFret}–{positionFret + 5}</Text>
       <View style={styles.row}>
         <Pressable
           accessibilityLabel="Previous position"
@@ -75,8 +75,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: "proletarsk",
-    fontSize: 20,
-    letterSpacing: 4,
+    fontSize: 32,
+    letterSpacing: 6,
   },
   row: {
     alignItems: "center",
