@@ -33,7 +33,7 @@ const Header = () => {
           <Text style={styles.menu}>Menu</Text>
         </Pressable>
         {!showMenu && (
-          <Text style={[styles.heading, isTablet && styles.tabletHeading, { top: insets.top - (isTablet ? 30 : 18) }]}>{globalState?.scale.title}</Text>
+          <Text style={[styles.heading, isTablet && styles.tabletHeading, { top: insets.top - (isTablet ? 52 : 18) }]}>{globalState?.scale.title}</Text>
         )}
         <Pressable
           style={[styles.settingsButtonContainer, { right: 35 + insets.right, top: insets.top + 2 }]}
@@ -75,8 +75,8 @@ const styles = StyleSheet.create({
     top: -18,
   },
   tabletHeading: {
-    fontSize: 104,
-    lineHeight: 110,
+    fontSize: 125,
+    lineHeight: 132,
   },
   menu: {
     fontFamily: "blackout",
