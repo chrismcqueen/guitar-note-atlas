@@ -90,24 +90,24 @@ const styles = StyleSheet.create({
     width: 470,
   },
   arrowButton: {
-    marginHorizontal: 45,
+    marginHorizontal: 60,
     padding: 20,
   },
   arrow: {
     borderBottomColor: "transparent",
-    borderBottomWidth: 75,
+    borderBottomWidth: 90,
     borderTopColor: "transparent",
-    borderTopWidth: 75,
+    borderTopWidth: 90,
     height: 0,
     width: 0,
   },
   arrowLeft: {
     borderRightColor: theme.colors.blue,
-    borderRightWidth: 68,
+    borderRightWidth: 82,
   },
   arrowRight: {
     borderLeftColor: theme.colors.blue,
-    borderLeftWidth: 68,
+    borderLeftWidth: 82,
   },
   disabled: {
     opacity: 0.25,
