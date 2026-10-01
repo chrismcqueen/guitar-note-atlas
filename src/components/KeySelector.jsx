@@ -6,7 +6,7 @@ import { storeGlobalState } from "../utils/functions";
 import { theme } from "../utils/theme";
 import { data } from "../../data";
 
-const KeySelector = () => {
+const KeySelector = ({ compact = false }) => {
   const { globalState, setGlobalState } = useContext(Store);
 
   const handlePressArrow = (direction) => {
@@ -18,6 +18,22 @@ const KeySelector = () => {
       }
     });
   };
+
+  if (compact) {
+    return (
+      <View style={styles.compactContainer}>
+        <View>
+          <Pressable accessibilityLabel="Next key" onPress={() => handlePressArrow("right")} style={styles.compactArrowButton}>
+            <View style={[styles.compactArrow, styles.arrowUp]} />
+          </Pressable>
+          <Pressable accessibilityLabel="Previous key" onPress={() => handlePressArrow("left")} style={styles.compactArrowButton}>
+            <View style={[styles.compactArrow, styles.arrowDown]} />
+          </Pressable>
+        </View>
+        <Text style={styles.compactTitle}>KEY: {globalState?.key.title}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.titleContainer}>
@@ -67,5 +83,36 @@ const styles = StyleSheet.create({
   titleContainer: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  compactContainer: {
+    alignItems: "center",
+    flexDirection: "row",
+    paddingHorizontal: 8,
+    width: 105,
+  },
+  compactTitle: {
+    fontFamily: "proletarsk",
+    fontSize: 14,
+    marginLeft: 6,
+  },
+  compactArrowButton: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  compactArrow: {
+    borderLeftColor: "transparent",
+    borderLeftWidth: 8,
+    borderRightColor: "transparent",
+    borderRightWidth: 8,
+    height: 0,
+    width: 0,
+  },
+  arrowUp: {
+    borderBottomColor: theme.colors.grey,
+    borderBottomWidth: 12,
+  },
+  arrowDown: {
+    borderTopColor: theme.colors.grey,
+    borderTopWidth: 12,
   },
 });

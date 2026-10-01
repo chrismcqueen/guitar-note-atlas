@@ -14,6 +14,7 @@ export const Main = () => {
   const overlay = () => showOptions && setShowOptions(false);
   const fullDimensions = { height: dimensions.height, width: dimensions.width };
   const fullScreen = { height: "100%", width: "100%" };
+  const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -36,9 +37,22 @@ export const Main = () => {
       <Pressable style={fullScreen} onPress={overlay}>
         {showOptions && <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />}
         <View style={[styles.content, { paddingLeft: insets.left, paddingRight: insets.right }]}>
-          {dimensions.width >= 1000 && dimensions.height >= 550 && <PositionZoom />}
-          <KeySelector />
-          <Neck />
+          {isTablet ? (
+            <>
+              <PositionZoom />
+              <View style={styles.tabletNeckRow}>
+                <View style={styles.tabletKeySelector}>
+                  <KeySelector compact />
+                </View>
+                <Neck />
+              </View>
+            </>
+          ) : (
+            <>
+              <KeySelector />
+              <Neck />
+            </>
+          )}
         </View>
         <Footer />
       </Pressable>
@@ -59,6 +73,17 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     justifyContent: "center",
+  },
+  tabletNeckRow: {
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    width: "100%",
+  },
+  tabletKeySelector: {
+    left: "4%",
+    position: "absolute",
+    top: -22,
   },
   overlay: {
     backgroundColor: theme.colors.overlay,
