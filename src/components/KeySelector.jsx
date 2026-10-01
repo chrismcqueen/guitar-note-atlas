@@ -93,12 +93,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     paddingHorizontal: 8,
-    width: 105,
+    width: 145,
   },
   compactTitle: {
     fontFamily: "proletarsk",
-    fontSize: 14,
-    marginLeft: 6,
+    fontSize: 18,
+    marginLeft: 8,
   },
   compactArrowButton: {
     paddingHorizontal: 6,
@@ -106,18 +106,18 @@ const styles = StyleSheet.create({
   },
   compactArrow: {
     borderLeftColor: "transparent",
-    borderLeftWidth: 8,
+    borderLeftWidth: 12,
     borderRightColor: "transparent",
-    borderRightWidth: 8,
+    borderRightWidth: 12,
     height: 0,
     width: 0,
   },
   arrowUp: {
     borderBottomColor: theme.colors.grey,
-    borderBottomWidth: 12,
+    borderBottomWidth: 18,
   },
   arrowDown: {
     borderTopColor: theme.colors.grey,
-    borderTopWidth: 12,
+    borderTopWidth: 18,
   },
 });

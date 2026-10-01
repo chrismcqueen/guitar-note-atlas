@@ -41,6 +41,7 @@ const PositionZoom = () => {
                 <Note
                   key={`${string}-${fret}`}
                   fret={fret}
+                  labelFontSize={18}
                   leftHand={globalState.options.leftHand}
                   string={string + 1}
                   stringCount={tuning.length}
@@ -69,6 +70,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     height: 210,
+    marginBottom: 24,
     width: "100%",
   },
   title: {
@@ -87,23 +89,23 @@ const styles = StyleSheet.create({
     width: 330,
   },
   arrowButton: {
-    padding: 24,
+    padding: 18,
   },
   arrow: {
     borderBottomColor: "transparent",
-    borderBottomWidth: 28,
+    borderBottomWidth: 40,
     borderTopColor: "transparent",
-    borderTopWidth: 28,
+    borderTopWidth: 40,
     height: 0,
     width: 0,
   },
   arrowLeft: {
     borderRightColor: theme.colors.blue,
-    borderRightWidth: 28,
+    borderRightWidth: 40,
   },
   arrowRight: {
     borderLeftColor: theme.colors.blue,
-    borderLeftWidth: 28,
+    borderLeftWidth: 40,
   },
   disabled: {
     opacity: 0.25,

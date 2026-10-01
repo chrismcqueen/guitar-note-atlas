@@ -5,7 +5,7 @@ import { Store } from "../../../Store";
 import { theme } from "../../utils/theme";
 import { getNoteName, getScaleDegreeLabel, normalizePitchClass } from "../../utils/music.mjs";
 
-const Note = ({ fret, leftHand, string, stringCount, stringOffset }) => {
+const Note = ({ fret, labelFontSize = 25, leftHand, string, stringCount, stringOffset }) => {
   const { globalState } = useContext(Store);
   const degrees = globalState.scale.degrees;
 
@@ -108,7 +108,7 @@ const Note = ({ fret, leftHand, string, stringCount, stringOffset }) => {
             textAnchor="middle"
             x="55%"
             y="78%"
-            fontSize={25}
+            fontSize={labelFontSize}
             stroke={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
             strokeWidth={0.25}
             fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}

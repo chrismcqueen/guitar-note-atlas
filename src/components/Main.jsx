@@ -83,9 +83,9 @@ export const styles = StyleSheet.create({
     width: "100%",
   },
   tabletKeySelector: {
-    left: "4%",
+    left: "1.5%",
     position: "absolute",
-    top: -22,
+    top: -46,
   },
   overlay: {
     backgroundColor: theme.colors.overlay,
