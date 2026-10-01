@@ -83,7 +83,7 @@ const Note = ({ fret, leftHand, string, stringCount, stringOffset }) => {
 
   const getStringTranslate = (s) => (180 / (stringCount - 1)) * (s - 1);
 
-  const noteSize = fret === 0 ? 32 : 28;
+  const noteSize = fret === 0 ? 34 : 30;
   const fretTranslate = getFretTranslate(fret);
   const x = leftHand ? 864 - noteSize - fretTranslate : fretTranslate;
   const y = getStringTranslate(string);
@@ -98,17 +98,17 @@ const Note = ({ fret, leftHand, string, stringCount, stringOffset }) => {
           <Circle
             cx={noteSize / 2}
             cy={noteSize / 2}
-            r="12"
+            r="13"
             stroke={fret === 0 ? theme.colors.grey : theme.colors.black}
             fill={fret === 0 ? theme.colors.white : scaleDegree === "1" ? theme.colors.white : theme.colors.black}
-            strokeWidth={fret === 0 ? 2 : 4}
+            strokeWidth={fret === 0 ? 2 : 3.5}
           />
           <Text
             fontFamily="basicManual"
             textAnchor="middle"
-            x="51.5%"
-            y="68%"
-            fontSize={16}
+            x="54%"
+            y="70%"
+            fontSize={18}
             stroke={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
             fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
           >

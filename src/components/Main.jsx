@@ -48,10 +48,10 @@ export const Main = () => {
               </View>
             </>
           ) : (
-            <>
+            <View style={styles.phoneContent}>
               <KeySelector />
               <Neck />
-            </>
+            </View>
           )}
         </View>
         <Footer />
@@ -92,5 +92,9 @@ export const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     marginTop: headerHeight + 20,
+  },
+  phoneContent: {
+    alignItems: "center",
+    transform: [{ translateY: 11 }],
   },
 });

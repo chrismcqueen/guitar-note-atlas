@@ -43,12 +43,13 @@ const Header = () => {
 
 export default Header;
 
-export const headerHeight = 38;
+export const headerHeight = 44;
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.blue,
     height: headerHeight,
+    overflow: "hidden",
     position: "absolute",
     top: 0,
     width: "100%",
@@ -61,19 +62,19 @@ const styles = StyleSheet.create({
     fontFamily: "blackout",
     color: theme.colors.white,
     textAlign: "center",
-    fontSize: 34,
-    lineHeight: headerHeight,
+    fontSize: 64,
+    lineHeight: 70,
     left: 0,
     right: 0,
-    top: 0,
+    top: -7,
   },
   menu: {
     fontFamily: "blackout",
     color: theme.colors.white,
     position: "absolute",
-    top: 15,
+    top: 13,
     left: 35,
-    fontSize: 18,
+    fontSize: 22,
   },
   menuButton: {
     position: "absolute",

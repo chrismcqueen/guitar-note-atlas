@@ -50,35 +50,37 @@ const KeySelector = ({ compact = false }) => {
 
 export default KeySelector;
 
-const arrowSize = 22;
+const arrowHeight = 24;
+const arrowDepth = 29;
 
 const styles = StyleSheet.create({
   arrow: {
     width: 0,
     height: 0,
-    borderTopWidth: arrowSize,
+    borderTopWidth: arrowHeight,
     borderTopColor: "transparent",
-    borderBottomWidth: arrowSize,
+    borderBottomWidth: arrowHeight,
     borderBottomColor: "transparent",
   },
   arrowContainer: {
     padding: 20,
   },
   arrowRight: {
-    borderLeftWidth: arrowSize,
+    borderLeftWidth: arrowDepth,
     borderLeftColor: theme.colors.blue,
   },
   arrowLeft: {
-    borderRightWidth: arrowSize,
+    borderRightWidth: arrowDepth,
     borderRightColor: theme.colors.blue,
   },
   title: {
     fontFamily: "proletarsk",
-    letterSpacing: 6,
-    fontSize: 26,
+    fontSize: 31,
+    fontWeight: "600",
+    letterSpacing: 7,
     textAlign: "center",
-    paddingHorizontal: 15,
-    width: 400,
+    paddingHorizontal: 12,
+    width: 430,
   },
   titleContainer: {
     flexDirection: "row",

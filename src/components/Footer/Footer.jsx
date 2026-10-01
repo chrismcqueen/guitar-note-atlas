@@ -30,15 +30,14 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.white,
     borderBottomColor: theme.colors.blue,
-    borderBottomWidth: 20,
+    borderBottomWidth: 10,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    transform: [{ translateY: 4 }],
+    minHeight: 68,
   },
   scaleDegreeContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
+    justifyContent: "center",
   },
 });
