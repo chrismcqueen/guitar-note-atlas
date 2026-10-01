@@ -1,5 +1,6 @@
 import React, { useState, createContext, useEffect } from "react";
 import { useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const Store = createContext(null);
 
@@ -12,7 +13,12 @@ export const StoreProvider = ({ children }) => {
     //
   }, [globalState]);
 
-  const dimensions = useWindowDimensions();
+  const windowDimensions = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const dimensions = {
+    height: windowDimensions.height - insets.top - insets.bottom,
+    width: windowDimensions.width - insets.left - insets.right,
+  };
 
   const value = {
     dimensions,

@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { StyleSheet } from "react-native";
 import { useFonts } from "expo-font";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import Header from "./src/components/Header";
 import Menu from "./src/components/Menu";
@@ -18,17 +20,28 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   return (
-    <StoreProvider>
-      {!fontsLoaded || loading ? (
-        <Splash setLoading={setLoading} />
-      ) : (
-        <>
-          <Main />
-          <Menu />
-          <Header />
-          <Options />
-        </>
-      )}
-    </StoreProvider>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea}>
+        <StoreProvider>
+          {!fontsLoaded || loading ? (
+            <Splash setLoading={setLoading} />
+          ) : (
+            <>
+              <Main />
+              <Menu />
+              <Header />
+              <Options />
+            </>
+          )}
+        </StoreProvider>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: "#4069AE",
+    flex: 1,
+  },
+});
