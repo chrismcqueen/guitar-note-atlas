@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.blue,
   },
   item: {
-    color: "white",
+    color: theme.colors.pureWhite,
     fontFamily: "proletarsk",
     flex: 1,
   },

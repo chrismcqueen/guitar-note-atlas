@@ -9,6 +9,7 @@ import Options from "./src/components/Options";
 import Main from "./src/components/Main";
 import { Splash } from "./src/components/Splash";
 import { StoreProvider } from "./Store";
+import { theme } from "./src/utils/theme";
 
 export default function App() {
   let [fontsLoaded] = useFonts({
@@ -41,7 +42,7 @@ export default function App() {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: "#4069AE",
+    backgroundColor: theme.colors.blue,
     flex: 1,
   },
 });

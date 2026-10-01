@@ -56,7 +56,7 @@ const NeckSVG = ({ dimensions }) => {
         <Circle cx="39" cy="39" r="39" stroke="none" />
         <Circle cx="39" cy="39" r="32.5" fill={colors.black} />
       </G>
-      <G id="Ellipse_11" dataName="Ellipse 11" transform="translate(102.009)" fill="#f6f5d7" stroke={colors.black} strokeWidth="13">
+      <G id="Ellipse_11" dataName="Ellipse 11" transform="translate(102.009)" fill={colors.splashCream} stroke={colors.black} strokeWidth="13">
         <Circle cx="39" cy="39" r="39" stroke="none" />
         <Circle cx="39" cy="39" r="32.5" fill="none" />
       </G>
@@ -81,7 +81,7 @@ const NeckSVG = ({ dimensions }) => {
         </G>
       </G>
       <G id="Mask_Group_3" dataName="Mask Group 3" transform="translate(0.009 -924)" clipPath="url(#clip-path-3)">
-        <G id="Ellipse_4" dataName="Ellipse 4" transform="translate(456 1207)" fill="#f6f5d7" stroke={colors.black} strokeWidth="13">
+        <G id="Ellipse_4" dataName="Ellipse 4" transform="translate(456 1207)" fill={colors.splashCream} stroke={colors.black} strokeWidth="13">
           <Circle cx="39" cy="39" r="39" stroke="none" />
           <Circle cx="39" cy="39" r="32.5" fill="none" />
         </G>

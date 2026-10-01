@@ -7,6 +7,7 @@ export const theme = {
     lightBlue: "#9AAECD",
     overlay: "#000000AA",
     pureWhite: "#FFF",
+    splashCream: "#F6F5D7",
     white: "#FAFAF1",
   },
 };

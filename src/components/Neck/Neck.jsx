@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Svg from "react-native-svg";
 
 import AnchorFrets from "./AnchorFrets";
@@ -16,7 +16,7 @@ const Neck = () => {
 
   return (
     // TODO: make container responsive
-    <View style={{ right: 20, width: 838, height: 233 }}>
+    <View style={styles.container}>
       <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
         <Strings count={tuning.length} />
         <Frets leftHand={globalState.options.leftHand} />
@@ -39,3 +39,11 @@ const Neck = () => {
 };
 
 export default Neck;
+
+const styles = StyleSheet.create({
+  container: {
+    height: 233,
+    right: 20,
+    width: 838,
+  },
+});

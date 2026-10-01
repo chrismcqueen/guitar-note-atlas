@@ -1,5 +1,6 @@
 import React from "react";
 import { Line } from "react-native-svg";
+import { theme } from "../../utils/theme";
 
 const Strings = ({ count }) => {
   return (
@@ -11,7 +12,7 @@ const Strings = ({ count }) => {
           x1="800"
           transform={`translate(42 ${14 + (180 / (count - 1)) * string})`}
           fill="none"
-          stroke="#000"
+          stroke={theme.colors.black}
           strokeWidth="4"
         />
       ))}

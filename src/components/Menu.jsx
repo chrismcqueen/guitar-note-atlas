@@ -41,7 +41,7 @@ const Menu = () => {
   const melodicMinorModes = splitToColumns(data.scales["Melodic Minor"]);
   const harmonicMinorModes = splitToColumns(data.scales["Harmonic Minor"]);
   const harmonicMajorModes = splitToColumns(data.scales["Harmonic Major"]);
-  const modesOf = <Text style={{ textTransform: "lowercase" }}>modes of </Text>;
+  const modesOf = <Text style={styles.lowercase}>modes of </Text>;
 
   const handlePress = (item) => {
     setGlobalState({ ...globalState, scale: item });
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
   },
   menuItem: {
-    color: "white",
+    color: theme.colors.pureWhite,
     textAlign: "center",
     paddingVertical: 4,
     fontSize: 18,
@@ -254,5 +254,8 @@ const styles = StyleSheet.create({
   },
   menuColumn: {
     width: 350,
+  },
+  lowercase: {
+    textTransform: "lowercase",
   },
 });
