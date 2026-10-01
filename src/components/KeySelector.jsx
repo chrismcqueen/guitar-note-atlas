@@ -92,32 +92,32 @@ const styles = StyleSheet.create({
   compactContainer: {
     alignItems: "center",
     flexDirection: "row",
-    paddingHorizontal: 8,
-    width: 145,
+    paddingHorizontal: 10,
+    width: 190,
   },
   compactTitle: {
-    fontFamily: "proletarsk",
-    fontSize: 18,
-    marginLeft: 8,
+    fontSize: 24,
+    fontWeight: "700",
+    marginLeft: 12,
   },
   compactArrowButton: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
   compactArrow: {
     borderLeftColor: "transparent",
-    borderLeftWidth: 12,
+    borderLeftWidth: 14,
     borderRightColor: "transparent",
-    borderRightWidth: 12,
+    borderRightWidth: 14,
     height: 0,
     width: 0,
   },
   arrowUp: {
     borderBottomColor: theme.colors.grey,
-    borderBottomWidth: 18,
+    borderBottomWidth: 24,
   },
   arrowDown: {
     borderTopColor: theme.colors.grey,
-    borderTopWidth: 18,
+    borderTopWidth: 24,
   },
 });
