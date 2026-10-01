@@ -16,8 +16,9 @@ const PositionZoom = () => {
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
-  const cropX = 40 + 49 * (positionFret - 1);
-  const viewX = globalState.options.leftHand ? 864 - cropX - 294 : cropX;
+  const viewWidth = 390;
+  const cropX = Math.max(0, 49 * (positionFret - 1) - 20);
+  const viewX = globalState.options.leftHand ? 864 - cropX - viewWidth : cropX;
 
   return (
     <View style={styles.container}>
@@ -32,7 +33,7 @@ const PositionZoom = () => {
           <View style={[styles.arrow, styles.arrowLeft, positionFret === 1 && styles.disabled]} />
         </Pressable>
         <View style={styles.neck}>
-          <Svg width="100%" height="100%" viewBox={`${viewX} 0 294 210`}>
+          <Svg width="100%" height="100%" viewBox={`${viewX} 0 ${viewWidth} 210`}>
             <Strings count={tuning.length} />
             <Frets leftHand={globalState.options.leftHand} />
             {!globalState.options.hideAnchorFrets && <AnchorFrets leftHand={globalState.options.leftHand} />}
@@ -88,23 +89,24 @@ const styles = StyleSheet.create({
     width: 470,
   },
   arrowButton: {
-    padding: 18,
+    marginHorizontal: 30,
+    padding: 20,
   },
   arrow: {
     borderBottomColor: "transparent",
-    borderBottomWidth: 40,
+    borderBottomWidth: 58,
     borderTopColor: "transparent",
-    borderTopWidth: 40,
+    borderTopWidth: 58,
     height: 0,
     width: 0,
   },
   arrowLeft: {
     borderRightColor: theme.colors.blue,
-    borderRightWidth: 40,
+    borderRightWidth: 55,
   },
   arrowRight: {
     borderLeftColor: theme.colors.blue,
-    borderLeftWidth: 40,
+    borderLeftWidth: 55,
   },
   disabled: {
     opacity: 0.25,
