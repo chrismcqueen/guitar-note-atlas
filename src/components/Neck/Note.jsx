@@ -106,10 +106,9 @@ const Note = ({ fret, leftHand, string, stringCount, stringOffset }) => {
           <Text
             fontFamily="basicManual"
             textAnchor="middle"
-            x="54%"
-            y="70%"
-            fontSize={18}
-            stroke={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
+            x="55%"
+            y="71%"
+            fontSize={19}
             fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
           >
             {noteLabel}
