@@ -13,7 +13,7 @@ const Header = () => {
     <View style={[styles.container, { height: headerHeight + insets.top }]}>
       <View style={fullScreen}>
         <Pressable style={[styles.menuButton, { left: insets.left, top: insets.top }]} onPress={() => setShowMenu(!showMenu)}>
-          <Text style={[styles.menu, { left: isTablet ? 25 : 10 }]}>Menu</Text>
+          <Text style={[styles.menu, isTablet && styles.tabletMenu, { left: isTablet ? 25 : 10 }]}>Menu</Text>
         </Pressable>
         {!showMenu && (
           <Text style={[styles.heading, isTablet && styles.tabletHeading, { top: insets.top - (isTablet ? 52 : 18) }]}>{globalState?.scale.title}</Text>
@@ -72,6 +72,9 @@ const styles = StyleSheet.create({
     zIndex: 100,
     width: 100,
     height: 50,
+  },
+  tabletMenu: {
+    fontSize: 24,
   },
   settingsButton: {
     color: theme.colors.white,
