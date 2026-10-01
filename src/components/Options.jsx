@@ -1,9 +1,10 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { StyleSheet, Text, Animated, Pressable } from "react-native";
+import { StyleSheet, Text, View, Animated, Pressable } from "react-native";
 import * as Linking from "expo-linking";
 
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
+import { storeGlobalState } from "../utils/functions";
 
 const Options = () => {
   const { dimensions, showOptions, globalState, setGlobalState } = useContext(Store);
@@ -25,24 +26,50 @@ const Options = () => {
 
   const width = dimensions.width / 3;
 
-  const options = ["View Tutorial", "Show Scale Degree", "Enable Bass Mode", "Enable Left Hand", "Flip Upside Down", "Hide Anchor Frets", "Rate Us", "Give Us Feedback"];
+  const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Flip Upside Down", "Hide Anchor Frets", "Rate Us", "Give Us Feedback"];
+
+  const updateOption = (name) => {
+    const nextState = {
+      ...globalState,
+      options: { ...globalState.options, [name]: !globalState.options[name] },
+    };
+    setGlobalState(nextState);
+    storeGlobalState(nextState);
+  };
+
+  const isSelected = (option) => {
+    switch (option) {
+      case "Show Scale Degrees":
+        return globalState.options.showScaleDegree;
+      case "Enable Bass Mode":
+        return globalState.options.bassMode;
+      case "Enable Left Hand":
+        return globalState.options.leftHand;
+      case "Flip Upside Down":
+        return globalState.options.upsideDown;
+      case "Hide Anchor Frets":
+        return globalState.options.hideAnchorFrets;
+      default:
+        return false;
+    }
+  };
 
   const handlePress = (option) => {
     switch (option) {
-      case "Show Scale Degree":
-        setGlobalState({ ...globalState, options: { ...globalState.options, showScaleDegree: !globalState.options.showScaleDegree } });
+      case "Show Scale Degrees":
+        updateOption("showScaleDegree");
         break;
       case "Enable Bass Mode":
-        setGlobalState({ ...globalState, options: { ...globalState.options, bassMode: !globalState.options.bassMode } });
+        updateOption("bassMode");
         break;
       case "Enable Left Hand":
-        setGlobalState({ ...globalState, options: { ...globalState.options, leftHand: !globalState.options.leftHand } });
+        updateOption("leftHand");
         break;
       case "Flip Upside Down":
-        setGlobalState({ ...globalState, options: { ...globalState.options, upsideDown: !globalState.options.upsideDown } });
+        updateOption("upsideDown");
         break;
       case "Hide Anchor Frets":
-        setGlobalState({ ...globalState, options: { ...globalState.options, hideAnchorFrets: !globalState.options.hideAnchorFrets } });
+        updateOption("hideAnchorFrets");
         break;
       case "Rate Us":
         Linking.openURL("https://apps.apple.com/us/app/guitar-note-atlas/id971847390");
@@ -69,7 +96,10 @@ const Options = () => {
     >
       {options.map((option, i) => (
         <Pressable key={i} onPress={() => handlePress(option)}>
-          <Text style={styles.item}>{option}</Text>
+          <View style={styles.itemRow}>
+            <Text style={styles.item}>{option}</Text>
+            {isSelected(option) && <Text style={styles.checkmark}>✓</Text>}
+          </View>
         </Pressable>
       ))}
     </Animated.View>
@@ -88,7 +118,16 @@ const styles = StyleSheet.create({
   item: {
     color: "white",
     fontFamily: "proletarsk",
+    flex: 1,
+  },
+  itemRow: {
+    alignItems: "center",
+    flexDirection: "row",
     margin: 5,
     padding: 8,
+  },
+  checkmark: {
+    color: theme.colors.white,
+    fontSize: 18,
   },
 });
