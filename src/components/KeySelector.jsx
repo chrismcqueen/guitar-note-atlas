@@ -76,8 +76,10 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "proletarsk",
     fontSize: 31,
-    fontWeight: "600",
     letterSpacing: 7,
+    textShadowColor: theme.colors.black,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 0.65,
     textAlign: "center",
     paddingHorizontal: 12,
     width: 430,
