@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
   titleContainer: {
     flexDirection: "row",
     alignItems: "center",
+    transform: [{ translateY: 16 }],
   },
   compactContainer: {
     alignItems: "center",
