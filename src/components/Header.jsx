@@ -19,7 +19,7 @@ const Header = () => {
           <Text style={[styles.heading, isTablet && styles.tabletHeading, { top: insets.top - (isTablet ? 52 : 18) }]}>{globalState?.scale.title}</Text>
         )}
         <Pressable
-          style={[styles.settingsButtonContainer, { right: 35 + insets.right, top: insets.top + 2 }]}
+          style={[styles.settingsButtonContainer, { right: 20 + insets.right, top: insets.top + 2 }]}
           onPress={() => !showMenu && setShowOptions(!showOptions)}
         >
           <Text style={[styles.settingsButton, showMenu && styles.disableOptions]}>● ● ●</Text>
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     position: "absolute",
     top: 13,
-    left: 35,
+    left: 20,
     fontSize: 22,
   },
   menuButton: {
