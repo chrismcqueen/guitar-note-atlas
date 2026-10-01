@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { Text, View, StyleSheet, Pressable } from "react-native";
 import { Store } from "../../../Store";
 
@@ -9,51 +9,24 @@ import { theme } from "../../utils/theme";
 export const ScaleDegreeButton = (props) => {
   const { globalState, setGlobalState } = useContext(Store);
   const { selected, altSelected, d, e } = props;
-  const [degree, setDegree] = useState();
-  const [altDegree, setAltDegree] = useState();
-  const [accidental, setAccidental] = useState();
-  const [altAccidental, setAltAccidental] = useState();
-
   const { getScaleDegree } = useFooter();
-
-  useEffect(() => {
-    const deg = getScaleDegree(d);
-    switch (deg.length) {
-      case 1:
-        setDegree(deg);
-        break;
-      case 2:
-        const items = getScaleDegree(d).split("");
-        setAccidental(items[0]);
-        setDegree(items[1]);
-        break;
-    }
-
-    if (!e) return;
-    const altDeg = getScaleDegree(e);
-    switch (altDeg.length) {
-      case 1:
-        setAltDegree(deg);
-        break;
-      case 2:
-        const items = getScaleDegree(e).split("");
-        setAltAccidental(items[0]);
-        setAltDegree(items[1]);
-        break;
-      default:
-        break;
-    }
-  }, []);
+  const [accidental, degree] = getScaleDegree(d).length === 2 ? getScaleDegree(d).split("") : [undefined, getScaleDegree(d)];
+  const [altAccidental, altDegree] = e === undefined ? [] : getScaleDegree(e).split("");
 
   const onPressScaleDegree = () => {
-    if (globalState.scale.degrees.includes(d)) {
-      setGlobalState({ ...globalState, scale: { degrees: globalState.scale.degrees.filter((i) => i !== d) } });
+    const currentDegrees = globalState.scale.degrees;
+    let nextDegrees;
+
+    if (e !== undefined && currentDegrees.includes(e)) {
+      nextDegrees = [...currentDegrees.filter((degree) => degree !== e), d];
+    } else if (currentDegrees.includes(d)) {
+      nextDegrees = currentDegrees.filter((degree) => degree !== d);
     } else {
-      const degrees = globalState.scale.degrees;
-      degrees.push(d);
-      degrees.sort((a, b) => a - b);
-      setGlobalState({ ...globalState, scale: { degrees } });
+      nextDegrees = [...currentDegrees, e ?? d];
     }
+
+    nextDegrees.sort((a, b) => a - b);
+    setGlobalState({ ...globalState, scale: { ...globalState.scale, degrees: nextDegrees } });
   };
 
   if (altDegree) {
