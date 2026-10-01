@@ -5,7 +5,7 @@ import { Store } from "../../../Store";
 import { theme } from "../../utils/theme";
 import { getNoteName, getScaleDegreeLabel, normalizePitchClass } from "../../utils/music.mjs";
 
-const Note = ({ fret, labelFontSize = 25, leftHand, string, stringCount, stringOffset }) => {
+const Note = ({ fret, labelFontSize = 25, leftHand, string, stringCount, stringOffset, stringSpan = 180 }) => {
   const { globalState } = useContext(Store);
   const degrees = globalState.scale.degrees;
 
@@ -81,7 +81,7 @@ const Note = ({ fret, labelFontSize = 25, leftHand, string, stringCount, stringO
     }
   };
 
-  const getStringTranslate = (s) => (180 / (stringCount - 1)) * (s - 1);
+  const getStringTranslate = (s) => (stringSpan / (stringCount - 1)) * (s - 1);
 
   const noteSize = fret === 0 ? 34 : 30;
   const fretTranslate = getFretTranslate(fret);

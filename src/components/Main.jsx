@@ -4,6 +4,7 @@ import { Animated, Pressable, StyleSheet, View } from "react-native";
 import KeySelector from "./KeySelector";
 import Neck from "./Neck";
 import PositionZoom from "./PositionZoom";
+import TabletNeck from "./TabletNeck";
 import { Footer } from "./Footer";
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
@@ -44,7 +45,7 @@ export const Main = () => {
                 <View style={styles.tabletKeySelector}>
                   <KeySelector compact />
                 </View>
-                <Neck />
+                <TabletNeck />
               </View>
             </>
           ) : (

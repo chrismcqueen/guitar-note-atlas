@@ -2,7 +2,7 @@ import React from "react";
 import { Line } from "react-native-svg";
 import { theme } from "../../utils/theme";
 
-const Strings = ({ count }) => {
+const Strings = ({ count, span = 180 }) => {
   return (
     <>
       {[...Array(count).keys()].map((string) => (
@@ -10,7 +10,7 @@ const Strings = ({ count }) => {
           key={string}
           id={`string-${string + 1}`}
           x1="800"
-          transform={`translate(42 ${14 + (180 / (count - 1)) * string})`}
+          transform={`translate(42 ${14 + (span / (count - 1)) * string})`}
           fill="none"
           stroke={theme.colors.black}
           strokeWidth="4"
