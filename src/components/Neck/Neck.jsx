@@ -15,8 +15,9 @@ const Neck = () => {
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
   const safeWidth = dimensions.width - insets.left - insets.right;
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const heightRatio = isTablet ? 0.25 : 0.49;
-  const scale = Math.min((safeWidth - 32) / 864, (dimensions.height * heightRatio) / 233, 1.3);
+  const horizontalMargin = isTablet ? 32 : 8;
+  const heightRatio = isTablet ? 0.25 : 0.56;
+  const scale = Math.min((safeWidth - horizontalMargin) / 864, (dimensions.height * heightRatio) / 233, 1.3);
   const neckDimensions = { height: 233 * scale, width: 864 * scale };
 
   return (
