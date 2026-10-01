@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   menuColumn: {
-    width: 350,
+    width: "50%",
   },
   lowercase: {
     textTransform: "lowercase",

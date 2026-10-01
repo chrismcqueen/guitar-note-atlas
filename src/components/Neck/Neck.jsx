@@ -9,15 +9,17 @@ import Strings from "./Strings";
 import { Store } from "../../../Store";
 
 const Neck = () => {
-  const { globalState } = useContext(Store);
+  const { dimensions, globalState } = useContext(Store);
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
+  const scale = Math.min((dimensions.width - 32) / 864, (dimensions.height * 0.42) / 233, 1.3);
+  const neckDimensions = { height: 233 * scale, width: 864 * scale };
 
   return (
     // TODO: make container responsive
-    <View style={styles.container}>
-      <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+    <View style={[styles.container, neckDimensions]}>
+      <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 864 233">
         <Strings count={tuning.length} />
         <Frets leftHand={globalState.options.leftHand} />
         {!globalState.options.hideAnchorFrets && <AnchorFrets leftHand={globalState.options.leftHand} />}
@@ -42,8 +44,7 @@ export default Neck;
 
 const styles = StyleSheet.create({
   container: {
-    height: 233,
-    right: 20,
-    width: 838,
+    maxHeight: 303,
+    maxWidth: 1123,
   },
 });
