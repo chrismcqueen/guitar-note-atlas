@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
   },
   settingsButton: {
     color: theme.colors.white,
-    fontSize: 9,
+    fontSize: 8,
     paddingHorizontal: 40,
     paddingVertical: 30,
     marginHorizontal: -40,
