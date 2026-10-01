@@ -7,7 +7,7 @@ import { theme } from "../utils/theme";
 import { storeGlobalState } from "../utils/functions";
 
 const Options = () => {
-  const { dimensions, showOptions, globalState, setGlobalState } = useContext(Store);
+  const { dimensions, showOptions, setShowOptions, setShowTutorial, globalState, setGlobalState } = useContext(Store);
   const optionsAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -56,6 +56,10 @@ const Options = () => {
 
   const handlePress = (option) => {
     switch (option) {
+      case "View Tutorial":
+        setShowOptions(false);
+        setShowTutorial(true);
+        break;
       case "Show Scale Degrees":
         updateOption("showScaleDegree");
         break;

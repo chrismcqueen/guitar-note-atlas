@@ -7,6 +7,7 @@ export const Store = createContext(null);
 export const StoreProvider = ({ children }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [globalState, setGlobalState] = useState({});
 
   useEffect(() => {
@@ -24,6 +25,8 @@ export const StoreProvider = ({ children }) => {
     setShowMenu,
     showOptions,
     setShowOptions,
+    showTutorial,
+    setShowTutorial,
     globalState,
     setGlobalState,
   };

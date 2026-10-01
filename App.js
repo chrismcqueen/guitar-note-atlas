@@ -6,8 +6,9 @@ import Header from "./src/components/Header";
 import Menu from "./src/components/Menu";
 import Options from "./src/components/Options";
 import Main from "./src/components/Main";
+import Tutorial from "./src/components/Tutorial";
 import { Splash } from "./src/components/Splash";
-import { StoreProvider } from "./Store";
+import { Store, StoreProvider } from "./Store";
 
 export default function App() {
   let [fontsLoaded] = useFonts({
@@ -29,9 +30,15 @@ export default function App() {
             <Menu />
             <Header />
             <Options />
+            <TutorialGate />
           </>
         )}
       </StoreProvider>
     </SafeAreaProvider>
   );
 }
+
+const TutorialGate = () => {
+  const { showTutorial } = React.useContext(Store);
+  return showTutorial ? <Tutorial /> : null;
+};
