@@ -35,6 +35,7 @@ const TabletNeck = () => {
           {tuning.map((stringOffset, string) =>
             frets.map((fret) => (
               <Note
+                centerInFrets
                 circleRadius={9.5}
                 circleStrokeWidth={2.5}
                 key={`${string}-${fret}`}

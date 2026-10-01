@@ -8,6 +8,7 @@ import { getNoteName, getScaleDegreeLabel, normalizePitchClass } from "../../uti
 const Note = ({
   circleRadius = 13,
   circleStrokeWidth,
+  centerInFrets = false,
   fret,
   labelFontSize = 25,
   leftHand,
@@ -95,7 +96,8 @@ const Note = ({
   const getStringTranslate = (s) => (stringSpan / (stringCount - 1)) * (s - 1);
 
   const noteSize = noteSizeOverride ?? (fret === 0 ? 34 : 30);
-  const fretTranslate = getFretTranslate(fret);
+  const fretCenter = fret === 1 ? 64.5 : 114 + 49 * (fret - 2);
+  const fretTranslate = centerInFrets && fret > 0 ? fretCenter - noteSize / 2 : getFretTranslate(fret);
   const x = leftHand ? 864 - noteSize - fretTranslate : fretTranslate;
   const y = getStringTranslate(string);
   const scaleDegree = getScaleDegree(fret, stringOffset);
