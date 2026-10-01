@@ -1,11 +1,11 @@
 import React from "react";
-import { Line } from "react-native-svg";
+import { G, Line } from "react-native-svg";
 
 import { theme } from "../../utils/theme";
 
-const Frets = () => {
+const Frets = ({ leftHand }) => {
   return (
-    <>
+    <G transform={leftHand ? "translate(864 0) scale(-1 1)" : undefined}>
       <Line id="fret-0" x2="0.018" y2="183.519" transform="translate(39.5 12)" stroke={theme.colors.black} strokeWidth="6" />
       <Line id="fret-01" x2="0.018" y2="183.519" transform="translate(89.5 12)" stroke={theme.colors.black} strokeWidth="4" />
       <Line id="fret-02" x2="0.018" y2="183.519" transform="translate(138.5 12)" stroke={theme.colors.black} strokeWidth="4" />
@@ -23,7 +23,7 @@ const Frets = () => {
       <Line id="fret-14" x2="0.018" y2="183.519" transform="translate(726.5 12)" stroke={theme.colors.black} strokeWidth="4" />
       <Line id="fret-15" x2="0.018" y2="183.519" transform="translate(775.5 12)" stroke={theme.colors.black} strokeWidth="4" />
       <Line id="fret-16" x2="0.018" y2="183.519" transform="translate(824.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-    </>
+    </G>
   );
 };
 

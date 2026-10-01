@@ -4,7 +4,7 @@ import Svg, { G, Circle, Text } from "react-native-svg";
 import { Store } from "../../../Store";
 import { theme } from "../../utils/theme";
 
-const Note = ({ fret, string, stringCount, stringOffset }) => {
+const Note = ({ fret, leftHand, string, stringCount, stringOffset }) => {
   const { globalState } = useContext(Store);
   const degrees = globalState.scale.degrees;
 
@@ -129,18 +129,19 @@ const Note = ({ fret, string, stringCount, stringOffset }) => {
 
   const getStringTranslate = (s) => (180 / (stringCount - 1)) * (s - 1);
 
-  const x = getFretTranslate(fret);
+  const noteSize = fret === 0 ? 32 : 28;
+  const fretTranslate = getFretTranslate(fret);
+  const x = leftHand ? 864 - noteSize - fretTranslate : fretTranslate;
   const y = getStringTranslate(string);
   const scaleDegree = getScaleDegree(fret, stringOffset);
-  const noteSize = 28;
 
   if (isNote(fret, stringOffset))
     return (
       <G transform={`translate(${x}, ${y})`}>
-        <Svg width={fret === 0 ? noteSize + 4 : noteSize} height={fret === 0 ? noteSize + 4 : noteSize}>
+        <Svg width={noteSize} height={noteSize}>
           <Circle
-            cx={fret === 0 ? noteSize / 2 + 2 : noteSize / 2}
-            cy={fret === 0 ? noteSize / 2 + 2 : noteSize / 2}
+            cx={noteSize / 2}
+            cy={noteSize / 2}
             r="12"
             stroke={fret === 0 ? theme.colors.grey : theme.colors.black}
             fill={fret === 0 ? theme.colors.white : scaleDegree === "1" ? theme.colors.white : theme.colors.black}

@@ -18,13 +18,14 @@ const Neck = () => {
     <View style={{ right: 20, width: 838, height: 233 }}>
       <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
         <Strings count={tuning.length} />
-        <Frets />
-        {globalState.options.hideAnchorFrets && <AnchorFrets />}
+        <Frets leftHand={globalState.options.leftHand} />
+        {globalState.options.hideAnchorFrets && <AnchorFrets leftHand={globalState.options.leftHand} />}
         {tuning.map((stringOffset, string) =>
           frets.map((fret) => (
             <Note
               key={`${string}-${fret}`}
               fret={fret}
+              leftHand={globalState.options.leftHand}
               string={string + 1}
               stringCount={tuning.length}
               stringOffset={stringOffset}
