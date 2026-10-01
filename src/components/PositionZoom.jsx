@@ -69,7 +69,7 @@ export default PositionZoom;
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    height: 210,
+    height: 300,
     marginBottom: 24,
     width: "100%",
   },
@@ -85,8 +85,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   neck: {
-    height: 170,
-    width: 330,
+    height: 270,
+    width: 470,
   },
   arrowButton: {
     padding: 18,
