@@ -1,15 +1,20 @@
 import React from "react";
 import { Line } from "react-native-svg";
 
-const Strings = () => {
+const Strings = ({ count }) => {
   return (
     <>
-      <Line id="string-1" x1="800" transform="translate(42 14)" fill="none" stroke="#000" strokeWidth="4" />
-      <Line id="string-2" x1="800" transform="translate(42 50)" fill="none" stroke="#000" strokeWidth="4" />
-      <Line id="string-3" x1="800" transform="translate(42 86)" fill="none" stroke="#000" strokeWidth="4" />
-      <Line id="string-4" x1="800" transform="translate(42 122)" fill="none" stroke="#000" strokeWidth="4" />
-      <Line id="string-5" x1="800" transform="translate(42 158)" fill="none" stroke="#000" strokeWidth="4" />
-      <Line id="string-6" x1="800" transform="translate(42 194)" fill="none" stroke="#000" strokeWidth="4" />
+      {[...Array(count).keys()].map((string) => (
+        <Line
+          key={string}
+          id={`string-${string + 1}`}
+          x1="800"
+          transform={`translate(42 ${14 + (180 / (count - 1)) * string})`}
+          fill="none"
+          stroke="#000"
+          strokeWidth="4"
+        />
+      ))}
     </>
   );
 };

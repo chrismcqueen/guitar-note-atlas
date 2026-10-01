@@ -4,11 +4,9 @@ import Svg, { G, Circle, Text } from "react-native-svg";
 import { Store } from "../../../Store";
 import { theme } from "../../utils/theme";
 
-const Note = ({ fret, string }) => {
+const Note = ({ fret, string, stringCount, stringOffset }) => {
   const { globalState } = useContext(Store);
   const degrees = globalState.scale.degrees;
-
-  const getString = (s) => globalState.strings[s - 1];
 
   const getOffset = (f, stringOffset) => {
     const offset = Math.floor(f) + stringOffset - globalState.key.key_offset;
@@ -129,35 +127,14 @@ const Note = ({ fret, string }) => {
     }
   };
 
-  const getStringTranslate = (s) => {
-    switch (s) {
-      case 1:
-        return 0;
-        break;
-      case 2:
-        return 35;
-        break;
-      case 3:
-        return 70;
-        break;
-      case 4:
-        return 105;
-        break;
-      case 5:
-        return 140;
-        break;
-      case 6:
-        return 175;
-        break;
-    }
-  };
+  const getStringTranslate = (s) => (180 / (stringCount - 1)) * (s - 1);
 
   const x = getFretTranslate(fret);
   const y = getStringTranslate(string);
-  const scaleDegree = getScaleDegree(fret, getString(string));
+  const scaleDegree = getScaleDegree(fret, stringOffset);
   const noteSize = 28;
 
-  if (isNote(fret, getString(string)))
+  if (isNote(fret, stringOffset))
     return (
       <G transform={`translate(${x}, ${y})`}>
         <Svg width={fret === 0 ? noteSize + 4 : noteSize} height={fret === 0 ? noteSize + 4 : noteSize}>

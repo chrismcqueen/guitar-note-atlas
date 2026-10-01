@@ -11,16 +11,26 @@ import { Store } from "../../../Store";
 const Neck = () => {
   const { globalState } = useContext(Store);
   const frets = [...Array(17).keys()];
-  const strings = [...Array(6).keys()];
+  const tuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
 
   return (
     // TODO: make container responsive
     <View style={{ right: 20, width: 838, height: 233 }}>
       <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-        <Strings />
+        <Strings count={tuning.length} />
         <Frets />
         {globalState.options.hideAnchorFrets && <AnchorFrets />}
-        {strings.map((s) => frets.map((f, i) => <Note key={i} fret={f} string={s + 1} />))}
+        {tuning.map((stringOffset, string) =>
+          frets.map((fret) => (
+            <Note
+              key={`${string}-${fret}`}
+              fret={fret}
+              string={string + 1}
+              stringCount={tuning.length}
+              stringOffset={stringOffset}
+            />
+          )),
+        )}
       </Svg>
     </View>
   );
