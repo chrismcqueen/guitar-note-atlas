@@ -37,7 +37,7 @@ export const Main = () => {
     <View style={[styles.container, fullDimensions]}>
       <Pressable style={fullScreen} onPress={overlay}>
         {showOptions && <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />}
-        <View style={[styles.content, { paddingLeft: insets.left, paddingRight: insets.right }]}>
+        <View style={[styles.content, isTablet && styles.tabletContent, { paddingLeft: insets.left, paddingRight: insets.right }]}>
           {isTablet ? (
             <>
               <PositionZoom />
@@ -82,6 +82,9 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     position: "relative",
     width: "100%",
+  },
+  tabletContent: {
+    transform: [{ translateY: 36 }],
   },
   tabletKeySelector: {
     left: "1.5%",
