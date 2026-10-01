@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: "proletarsk",
-    fontSize: 32,
+    fontSize: 40,
     letterSpacing: 6,
   },
   row: {
