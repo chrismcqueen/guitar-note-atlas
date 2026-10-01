@@ -3,6 +3,7 @@ import { Animated, Pressable, StyleSheet, View } from "react-native";
 
 import KeySelector from "./KeySelector";
 import Neck from "./Neck";
+import PositionZoom from "./PositionZoom";
 import { Footer } from "./Footer";
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
@@ -35,6 +36,7 @@ export const Main = () => {
       <Pressable style={fullScreen} onPress={overlay}>
         {showOptions && <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />}
         <View style={[styles.content, { paddingLeft: insets.left, paddingRight: insets.right }]}>
+          {dimensions.width >= 1000 && dimensions.height >= 550 && <PositionZoom />}
           <KeySelector />
           <Neck />
         </View>

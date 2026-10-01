@@ -8,6 +8,7 @@ export const StoreProvider = ({ children }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [positionFret, setPositionFret] = useState(1);
   const [globalState, setGlobalState] = useState({});
 
   useEffect(() => {
@@ -27,6 +28,8 @@ export const StoreProvider = ({ children }) => {
     setShowOptions,
     showTutorial,
     setShowTutorial,
+    positionFret,
+    setPositionFret,
     globalState,
     setGlobalState,
   };
