@@ -16,7 +16,9 @@ const Header = () => {
           <Text style={[styles.menu, isTablet && styles.tabletMenu, { left: isTablet ? 25 : 30 }]}>Menu</Text>
         </Pressable>
         {!showMenu && (
-          <Text style={[styles.heading, isTablet && styles.tabletHeading, { top: insets.top - (isTablet ? 52 : 18) }]}>{globalState?.scale.title}</Text>
+          <Text style={[styles.heading, isTablet && styles.tabletHeading, { top: insets.top - (isTablet ? 52 : 18) }]}>
+            {globalState?.scale.title?.toUpperCase()}
+          </Text>
         )}
         <Pressable
           style={[styles.settingsButtonContainer, { right: isTablet ? 25 + insets.right : 30, top: insets.top + 2 }]}
