@@ -10,7 +10,7 @@ import { storeGlobalState, removeStorage } from "../../utils/functions";
 import { theme } from "../../utils/theme";
 
 const Splash = ({ setLoading }) => {
-  const { setGlobalState, dimensions } = useContext(Store);
+  const { setGlobalState, setShowTutorial, dimensions } = useContext(Store);
 
   const initialValue = {
     key: {
@@ -31,6 +31,7 @@ const Splash = ({ setLoading }) => {
       upsideDown: false,
       hideAnchorFrets: false,
     },
+    displayedTutorial: false,
   };
 
   //check local storage for previous global state
@@ -46,12 +47,17 @@ const Splash = ({ setLoading }) => {
           scale: { ...initialValue.scale, ...parsedValue.scale },
           options: { ...initialValue.options, ...parsedValue.options },
         };
-        setGlobalState(migratedValue);
-        storeGlobalState(migratedValue);
+        const shouldShowTutorial = !migratedValue.displayedTutorial;
+        const nextValue = { ...migratedValue, displayedTutorial: true };
+        setGlobalState(nextValue);
+        storeGlobalState(nextValue);
+        setShowTutorial(shouldShowTutorial);
       } else {
         //if no ls, set to C major scale
-        setGlobalState(initialValue);
-        storeGlobalState(initialValue);
+        const nextValue = { ...initialValue, displayedTutorial: true };
+        setGlobalState(nextValue);
+        storeGlobalState(nextValue);
+        setShowTutorial(true);
       }
       setTimeout(() => setLoading(false), 500);
     } catch (e) {
