@@ -1,5 +1,5 @@
-import React, { useContext, useRef, useState } from "react";
-import { Animated, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useContext, useState } from "react";
+import { Image, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
@@ -53,9 +53,6 @@ const IOS_LANDSCAPE_CUTOUT_INSET = 72;
 const Tutorial = () => {
   const { dimensions, globalState, insets, setShowTutorial } = useContext(Store);
   const [page, setPage] = useState(0);
-  const [incomingPage, setIncomingPage] = useState(null);
-  const transitionOpacity = useRef(new Animated.Value(0)).current;
-  const transitioning = useRef(false);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const reportedSideInset = isTablet
     ? Math.max(insets.left, insets.right)
@@ -68,39 +65,22 @@ const Tutorial = () => {
     : (isTablet ? tabletRightPages : phoneRightPages);
 
   const advance = () => {
-    if (transitioning.current) return;
     if (page === pages.length - 1) {
       setShowTutorial(false);
       return;
     }
 
-    transitioning.current = true;
-    const nextPage = page + 1;
-    transitionOpacity.setValue(0);
-    setIncomingPage(nextPage);
-    Animated.timing(transitionOpacity, { duration: 300, toValue: 1, useNativeDriver: true }).start(() => {
-      setPage(nextPage);
-      setIncomingPage(null);
-      transitionOpacity.setValue(0);
-      transitioning.current = false;
-    });
+    setPage((currentPage) => currentPage + 1);
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingHorizontal: sideInset }]}>
       <Pressable
         accessibilityLabel="Next tutorial page"
         onPress={advance}
-        style={[styles.pageButton, { marginHorizontal: sideInset }]}
+        style={styles.pageButton}
       >
-        <Animated.Image source={pages[page]} resizeMode="stretch" style={styles.image} />
-        {incomingPage !== null && (
-          <Animated.Image
-            source={pages[incomingPage]}
-            resizeMode="stretch"
-            style={[styles.incomingImage, { opacity: transitionOpacity }]}
-          />
-        )}
+        <Image source={pages[page]} resizeMode="stretch" style={styles.baseImage} />
       </Pressable>
       <Pressable
         style={[styles.exit, { right: sideInset + 18, top: insets.top + 12 }]}
@@ -124,17 +104,13 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.tutorialPaper,
     zIndex: 4000,
   },
-  image: {
-    height: "100%",
-    width: "100%",
-  },
-  incomingImage: {
-    ...StyleSheet.absoluteFillObject,
+  baseImage: {
     height: "100%",
     width: "100%",
   },
   pageButton: {
-    ...StyleSheet.absoluteFillObject,
+    height: "100%",
+    width: "100%",
   },
   exit: {
     position: "absolute",
