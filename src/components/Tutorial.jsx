@@ -53,7 +53,8 @@ const IOS_LANDSCAPE_CUTOUT_INSET = 72;
 const Tutorial = () => {
   const { dimensions, globalState, insets, setShowTutorial } = useContext(Store);
   const [page, setPage] = useState(0);
-  const opacity = useRef(new Animated.Value(1)).current;
+  const [incomingPage, setIncomingPage] = useState(null);
+  const transitionOpacity = useRef(new Animated.Value(0)).current;
   const transitioning = useRef(false);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const reportedSideInset = isTablet
@@ -74,11 +75,14 @@ const Tutorial = () => {
     }
 
     transitioning.current = true;
-    Animated.timing(opacity, { duration: 150, toValue: 0, useNativeDriver: true }).start(() => {
-      setPage((currentPage) => currentPage + 1);
-      Animated.timing(opacity, { duration: 150, toValue: 1, useNativeDriver: true }).start(() => {
-        transitioning.current = false;
-      });
+    const nextPage = page + 1;
+    transitionOpacity.setValue(0);
+    setIncomingPage(nextPage);
+    Animated.timing(transitionOpacity, { duration: 300, toValue: 1, useNativeDriver: true }).start(() => {
+      setPage(nextPage);
+      setIncomingPage(null);
+      transitionOpacity.setValue(0);
+      transitioning.current = false;
     });
   };
 
@@ -89,7 +93,14 @@ const Tutorial = () => {
         onPress={advance}
         style={[styles.pageButton, { marginHorizontal: sideInset }]}
       >
-        <Animated.Image source={pages[page]} resizeMode="stretch" style={[styles.image, { opacity }]} />
+        <Animated.Image source={pages[page]} resizeMode="stretch" style={styles.image} />
+        {incomingPage !== null && (
+          <Animated.Image
+            source={pages[incomingPage]}
+            resizeMode="stretch"
+            style={[styles.incomingImage, { opacity: transitionOpacity }]}
+          />
+        )}
       </Pressable>
       <Pressable
         style={[styles.exit, { right: sideInset + 18, top: insets.top + 12 }]}
@@ -114,6 +125,11 @@ const styles = StyleSheet.create({
     zIndex: 4000,
   },
   image: {
+    height: "100%",
+    width: "100%",
+  },
+  incomingImage: {
+    ...StyleSheet.absoluteFillObject,
     height: "100%",
     width: "100%",
   },
