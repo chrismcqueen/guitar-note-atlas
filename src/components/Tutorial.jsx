@@ -57,7 +57,9 @@ const Tutorial = () => {
   const reportedSideInset = isTablet
     ? Math.max(insets.left, insets.right)
     : Math.max(insets.left, insets.right, insets.top, insets.bottom);
-  const sideInset = !isTablet && Platform.OS === "ios" && reportedSideInset === 0 ? 59 : reportedSideInset;
+  const sideInset = !isTablet && Platform.OS === "ios"
+    ? Math.max(reportedSideInset, 59)
+    : reportedSideInset;
   const pages = globalState.options.leftHand
     ? (isTablet ? tabletLeftPages : phoneLeftPages)
     : (isTablet ? tabletRightPages : phoneRightPages);
