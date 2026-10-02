@@ -8,6 +8,7 @@ export const theme = {
     overlay: "#000000AA",
     pureWhite: "#FFF",
     splashCream: "#F6F5D7",
+    tutorialPaper: "#FBFAF1",
     white: "#FAFAF1",
   },
 };

@@ -54,6 +54,10 @@ const Tutorial = () => {
   const opacity = useRef(new Animated.Value(1)).current;
   const transitioning = useRef(false);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const reportedSideInset = isTablet
+    ? Math.max(insets.left, insets.right)
+    : Math.max(insets.left, insets.right, insets.top, insets.bottom);
+  const sideInset = !isTablet && reportedSideInset === 0 ? 59 : reportedSideInset;
   const pages = globalState.options.leftHand
     ? (isTablet ? tabletLeftPages : phoneLeftPages)
     : (isTablet ? tabletRightPages : phoneRightPages);
@@ -76,11 +80,15 @@ const Tutorial = () => {
 
   return (
     <View style={styles.container}>
-      <Pressable accessibilityLabel="Next tutorial page" onPress={advance} style={styles.pageButton}>
+      <Pressable
+        accessibilityLabel="Next tutorial page"
+        onPress={advance}
+        style={[styles.pageButton, { left: sideInset, right: sideInset }]}
+      >
         <Animated.Image source={pages[page]} resizeMode="stretch" style={[styles.image, { opacity }]} />
       </Pressable>
       <Pressable
-        style={[styles.exit, { right: insets.right + 18, top: insets.top + 12 }]}
+        style={[styles.exit, { right: sideInset + 18, top: insets.top + 12 }]}
         onPress={(event) => {
           event.stopPropagation();
           setShowTutorial(false);
@@ -98,7 +106,7 @@ export default Tutorial;
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.tutorialPaper,
     zIndex: 4000,
   },
   image: {
