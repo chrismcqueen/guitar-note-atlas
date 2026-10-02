@@ -86,7 +86,11 @@ const Tutorial = () => {
         onPress={advance}
         style={[styles.pageButton, { marginHorizontal: sideInset }]}
       >
-        <Image source={pages[page]} resizeMode="stretch" style={styles.baseImage} />
+        <Image
+          source={pages[page]}
+          resizeMode="stretch"
+          style={[styles.baseImage, !isTablet && styles.phoneImage]}
+        />
       </Pressable>
       <Pressable
         style={[styles.exit, { right: exitRight, top: insets.top + 12 }]}
@@ -139,9 +143,11 @@ const styles = StyleSheet.create({
     color: theme.colors.grey,
     fontFamily: "proletarsk",
   },
+  phoneImage: {
+    height: "94%",
+  },
   pageFooter: {
     alignItems: "center",
-    backgroundColor: theme.colors.tutorialPaper,
     bottom: 0,
     justifyContent: "flex-start",
     position: "absolute",
