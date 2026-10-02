@@ -61,10 +61,11 @@ const Tutorial = () => {
     ? Math.max(reportedSideInset, IOS_LANDSCAPE_CUTOUT_INSET)
     : reportedSideInset;
   const exitRight = isTablet
-    ? sideInset + 18
+    ? (sideInset * 2) + 18
     : Platform.OS === "ios"
-      ? Math.max(insets.right + 18, 48)
+      ? (insets.right > insets.left ? insets.right + 18 : 0)
       : insets.right + 18;
+  const footerHeight = Math.max(insets.bottom, isTablet ? 12 : 18) + 18;
   const pages = globalState.options.leftHand
     ? (isTablet ? tabletLeftPages : phoneLeftPages)
     : (isTablet ? tabletRightPages : phoneRightPages);
@@ -79,11 +80,11 @@ const Tutorial = () => {
   };
 
   return (
-    <View style={[styles.container, { paddingHorizontal: sideInset }]}>
+    <View style={styles.container}>
       <Pressable
         accessibilityLabel="Next tutorial page"
         onPress={advance}
-        style={styles.pageButton}
+        style={[styles.pageButton, { marginHorizontal: sideInset }]}
       >
         <Image source={pages[page]} resizeMode="stretch" style={styles.baseImage} />
       </Pressable>
@@ -96,7 +97,15 @@ const Tutorial = () => {
       >
         <Text style={styles.exitText}>Exit</Text>
       </Pressable>
-      <Text style={[styles.page, { bottom: insets.bottom + 8 }]}>{page + 1} / {pages.length}</Text>
+      <View
+        pointerEvents="none"
+        style={[
+          styles.pageFooter,
+          { height: footerHeight, left: sideInset, right: sideInset },
+        ]}
+      >
+        <Text style={styles.page}>{page + 1} / {pages.length}</Text>
+      </View>
     </View>
   );
 };
@@ -115,7 +124,6 @@ const styles = StyleSheet.create({
   },
   pageButton: {
     height: "100%",
-    width: "100%",
   },
   exit: {
     position: "absolute",
@@ -128,9 +136,14 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   page: {
-    alignSelf: "center",
     color: theme.colors.grey,
     fontFamily: "proletarsk",
+  },
+  pageFooter: {
+    alignItems: "center",
+    backgroundColor: theme.colors.tutorialPaper,
+    bottom: 0,
+    justifyContent: "flex-start",
     position: "absolute",
   },
 });
