@@ -60,6 +60,11 @@ const Tutorial = () => {
   const sideInset = !isTablet && Platform.OS === "ios"
     ? Math.max(reportedSideInset, IOS_LANDSCAPE_CUTOUT_INSET)
     : reportedSideInset;
+  const exitRight = isTablet
+    ? sideInset + 18
+    : Platform.OS === "ios"
+      ? Math.max(insets.right + 18, 48)
+      : insets.right + 18;
   const pages = globalState.options.leftHand
     ? (isTablet ? tabletLeftPages : phoneLeftPages)
     : (isTablet ? tabletRightPages : phoneRightPages);
@@ -83,7 +88,7 @@ const Tutorial = () => {
         <Image source={pages[page]} resizeMode="stretch" style={styles.baseImage} />
       </Pressable>
       <Pressable
-        style={[styles.exit, { right: sideInset + 18, top: insets.top + 12 }]}
+        style={[styles.exit, { right: exitRight, top: insets.top + 12 }]}
         onPress={(event) => {
           event.stopPropagation();
           setShowTutorial(false);
