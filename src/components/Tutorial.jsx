@@ -63,7 +63,7 @@ const Tutorial = () => {
   const exitRight = isTablet
     ? (sideInset * 2) + 18
     : Platform.OS === "ios"
-      ? (insets.right > insets.left ? insets.right + 18 : 0)
+      ? 24
       : insets.right + 18;
   const footerHeight = Math.max(insets.bottom, isTablet ? 12 : 18) + 18;
   const pages = globalState.options.leftHand
