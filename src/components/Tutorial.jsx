@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useState } from "react";
-import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
+import { Animated, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
@@ -57,7 +57,7 @@ const Tutorial = () => {
   const reportedSideInset = isTablet
     ? Math.max(insets.left, insets.right)
     : Math.max(insets.left, insets.right, insets.top, insets.bottom);
-  const sideInset = !isTablet && reportedSideInset === 0 ? 59 : reportedSideInset;
+  const sideInset = !isTablet && Platform.OS === "ios" && reportedSideInset === 0 ? 59 : reportedSideInset;
   const pages = globalState.options.leftHand
     ? (isTablet ? tabletLeftPages : phoneLeftPages)
     : (isTablet ? tabletRightPages : phoneRightPages);
