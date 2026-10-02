@@ -127,7 +127,7 @@ export default Options;
 
 const styles = StyleSheet.create({
   modalContainer: {
-    backgroundColor: "rgba(0, 0, 0, 0.67)",
+    backgroundColor: theme.colors.overlay,
     flex: 1,
   },
   options: {
