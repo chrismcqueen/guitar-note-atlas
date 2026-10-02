@@ -48,6 +48,8 @@ const phoneLeftPages = [
   require("../../assets/tutorial/phone-left/22.png"), require("../../assets/tutorial/phone-left/23.png"),
 ];
 
+const IOS_LANDSCAPE_CUTOUT_INSET = 72;
+
 const Tutorial = () => {
   const { dimensions, globalState, insets, setShowTutorial } = useContext(Store);
   const [page, setPage] = useState(0);
@@ -58,7 +60,7 @@ const Tutorial = () => {
     ? Math.max(insets.left, insets.right)
     : Math.max(insets.left, insets.right, insets.top, insets.bottom);
   const sideInset = !isTablet && Platform.OS === "ios"
-    ? Math.max(reportedSideInset, 59)
+    ? Math.max(reportedSideInset, IOS_LANDSCAPE_CUTOUT_INSET)
     : reportedSideInset;
   const pages = globalState.options.leftHand
     ? (isTablet ? tabletLeftPages : phoneLeftPages)
@@ -85,7 +87,7 @@ const Tutorial = () => {
       <Pressable
         accessibilityLabel="Next tutorial page"
         onPress={advance}
-        style={[styles.pageButton, { left: sideInset, right: sideInset }]}
+        style={[styles.pageButton, { marginHorizontal: sideInset }]}
       >
         <Animated.Image source={pages[page]} resizeMode="stretch" style={[styles.image, { opacity }]} />
       </Pressable>
