@@ -3,7 +3,7 @@ import Svg, { G, Circle, Text } from "react-native-svg";
 
 import { Store } from "../../../Store";
 import { theme } from "../../utils/theme";
-import { getNoteName, getScaleDegreeLabel, normalizePitchClass } from "../../utils/music.mjs";
+import { getScaleDegreeLabel, normalizePitchClass } from "../../utils/music.mjs";
 
 const Note = ({
   circleRadius = 13,
@@ -101,8 +101,6 @@ const Note = ({
   const x = leftHand ? 864 - noteSize - fretTranslate : fretTranslate;
   const y = getStringTranslate(string);
   const scaleDegree = getScaleDegree(fret, stringOffset);
-  const noteName = getNoteName(fret + stringOffset, globalState.key.title.includes("b"));
-  const noteLabel = globalState.options.showScaleDegree ? scaleDegree : noteName;
 
   if (isNote(fret, stringOffset))
     return (
@@ -116,18 +114,20 @@ const Note = ({
             fill={fret === 0 ? theme.colors.white : scaleDegree === "1" ? theme.colors.white : theme.colors.black}
             strokeWidth={circleStrokeWidth ?? (fret === 0 ? 2 : 3.5)}
           />
-          <Text
-            fontFamily="basicManual"
-            textAnchor="middle"
-            x="55%"
-            y="78%"
-            fontSize={labelFontSize}
-            stroke={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
-            strokeWidth={0.25}
-            fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
-          >
-            {noteLabel}
-          </Text>
+          {globalState.options.showScaleDegree && (
+            <Text
+              fontFamily="basicManual"
+              textAnchor="middle"
+              x="55%"
+              y="78%"
+              fontSize={labelFontSize}
+              stroke={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
+              strokeWidth={0.25}
+              fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
+            >
+              {scaleDegree}
+            </Text>
+          )}
         </Svg>
       </G>
     );
