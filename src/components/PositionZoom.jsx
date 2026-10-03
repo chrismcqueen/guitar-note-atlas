@@ -23,6 +23,7 @@ const PositionZoom = ({ compact = false }) => {
   const cropWidth = fretCount * 49 + 42;
   const cropX = Math.max(0, Math.min(864 - cropWidth, 40 + startFret * 49 - 22));
   const viewX = globalState.options.leftHand ? 864 - cropX - cropWidth : cropX;
+  const colorName = `position${position.color[0].toUpperCase()}${position.color.slice(1)}`;
   const bandX = globalState.options.leftHand
     ? 864 - (40 + (startFret + position.baseFret) * 49) - 49
     : 40 + (startFret + position.baseFret) * 49;
@@ -36,7 +37,7 @@ const PositionZoom = ({ compact = false }) => {
           y={globalState.options.upsideDown ? (6 - position.height) * 36 : 0}
           width={49}
           height={position.height * 36}
-          fill={theme.colors.blue}
+          fill={theme.colors[colorName]}
         />
       )}
       <Strings count={tuning.length} />

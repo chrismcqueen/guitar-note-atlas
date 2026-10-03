@@ -6,6 +6,7 @@ import AnchorFrets from "./AnchorFrets";
 import Note from "./Note";
 import Frets from "./Frets";
 import Strings from "./Strings";
+import PositionBands from "./PositionBands";
 import { Store } from "../../../Store";
 import { positionForFret } from "../../utils/positions.mjs";
 
@@ -37,6 +38,9 @@ const Neck = () => {
       style={[styles.container, neckDimensions]}
     >
       <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 864 233">
+        {!globalState.options.hideColors && (
+          <PositionBands bassMode={globalState.options.bassMode} leftHand={globalState.options.leftHand} upsideDown={globalState.options.upsideDown} />
+        )}
         <Strings count={tuning.length} />
         <Frets leftHand={globalState.options.leftHand} />
         {!globalState.options.hideAnchorFrets && <AnchorFrets leftHand={globalState.options.leftHand} />}

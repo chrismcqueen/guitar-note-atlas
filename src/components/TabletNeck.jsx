@@ -7,6 +7,7 @@ import AnchorFrets from "./Neck/AnchorFrets";
 import Frets from "./Neck/Frets";
 import Note from "./Neck/Note";
 import Strings from "./Neck/Strings";
+import PositionBands from "./Neck/PositionBands";
 
 const VIEWBOX_HEIGHT = 175;
 const STRING_SPAN = 120;
@@ -23,6 +24,9 @@ const TabletNeck = () => {
     <View style={{ height, width }}>
       <Svg width="100%" height="100%" viewBox={`0 0 864 ${VIEWBOX_HEIGHT}`}>
         <G opacity={0.58}>
+          {!globalState.options.hideColors && (
+            <PositionBands bassMode={globalState.options.bassMode} leftHand={globalState.options.leftHand} muted upsideDown={globalState.options.upsideDown} />
+          )}
           <Strings count={tuning.length} span={STRING_SPAN} />
           <G transform="translate(0 4) scale(1 0.67)">
             <Frets leftHand={globalState.options.leftHand} />
