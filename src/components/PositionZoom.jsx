@@ -11,11 +11,9 @@ import { theme } from "../utils/theme";
 
 const LEGACY_DEGREE_ID = { 0: 0, 1: 1, 2: 2, 3: 3, 3.1: 12, 4: 4, 5: 5, 6: 6, 6.1: 13, 7: 7, 8: 8, 8.1: 14, 9: 9, 10: 10, 11: 11 };
 const WIDTH = 642;
-const HEIGHT = 260;
 const SPACING_X = 100;
 const OFFSET_X = 21;
 const OFFSET_Y = 24;
-const STRING_GAP = 31;
 const PHONE_HEIGHT = 290;
 const PHONE_STRING_GAP = 44;
 
@@ -55,11 +53,29 @@ const PositionZoom = ({ compact = false }) => {
   const title = bassMode ? position.bassTitle : position.title;
   const colorName = `position${position.color[0].toUpperCase()}${position.color.slice(1)}`;
   const labels = position.short ? ["1", "2", "3", "4", "(4)"] : ["(1)", "1", "2", "3", "4", "(4)"];
-  const noteRadius = 16;
+  const safeSideInset = Math.max(insets.left, insets.right);
+  const safeWidth = dimensions.width - safeSideInset * 2;
+  const compactNeckWidth = safeWidth * 0.53;
+  const compactNeckHeight = compactNeckWidth * (PHONE_HEIGHT / WIDTH);
+  const compactArrowRegionWidth = (safeWidth - compactNeckWidth) / 2;
+  const compactArrowHeight = dimensions.height * 0.32;
+  const tabletNeckWidth = Math.min(dimensions.width * 0.5, safeWidth * 0.56, 650);
+  // The legacy controller's height excluded the iOS navigation chrome. On a
+  // modern full-screen window that works out to roughly 320 points.
+  const tabletNeckHeight = Math.min(dimensions.height * 0.45, 320);
+  const tabletViewBoxHeight = WIDTH * (tabletNeckHeight / tabletNeckWidth);
+  const tabletRadius = tabletViewBoxHeight / 6.6 / 2.3;
+  const noteRadius = compact ? 16 : tabletRadius * 0.75;
+  const noteStrokeWidth = compact ? 4 : tabletRadius / 4;
+  const lineWidth = compact ? 4 : tabletRadius / 5.1;
+  const labelFontSize = compact ? 27 : tabletRadius * 1.5;
   const horizontalOffset = OFFSET_X + (position.short ? SPACING_X / 2 : 0);
-  const stringGap = compact ? PHONE_STRING_GAP * (bassMode ? 1.3 : 1) : STRING_GAP;
-  const verticalOffset = compact && bassMode ? OFFSET_Y * 2.1 : OFFSET_Y;
-  const viewBoxHeight = compact ? PHONE_HEIGHT : HEIGHT;
+  const tabletStringGap = Math.floor((tabletViewBoxHeight - tabletViewBoxHeight / 4.5) / 5.44);
+  const baseStringGap = compact ? PHONE_STRING_GAP : tabletStringGap;
+  const stringGap = baseStringGap * (bassMode ? 1.3 : 1);
+  const baseVerticalOffset = compact ? OFFSET_Y : tabletViewBoxHeight / 4.5 / 3.2;
+  const verticalOffset = baseVerticalOffset * (bassMode ? 2.1 : 1);
+  const viewBoxHeight = compact ? PHONE_HEIGHT : tabletViewBoxHeight;
   const bandFret = globalState.options.leftHand ? fretCount - 1 - position.baseFret : position.baseFret;
 
   const notes = globalState.scale.degrees.flatMap((degree) => {
@@ -85,10 +101,10 @@ const PositionZoom = ({ compact = false }) => {
         />
       )}
       {[...Array(fretCount + 1).keys()].map((fret) => (
-        <Line key={`fret-${fret}`} x1={horizontalOffset + fret * SPACING_X} x2={horizontalOffset + fret * SPACING_X} y1={verticalOffset} y2={verticalOffset + (stringCount - 1) * stringGap} stroke={theme.colors.black} strokeWidth={fret === 0 ? 7 : 4} />
+        <Line key={`fret-${fret}`} x1={horizontalOffset + fret * SPACING_X} x2={horizontalOffset + fret * SPACING_X} y1={verticalOffset} y2={verticalOffset + (stringCount - 1) * stringGap} stroke={theme.colors.black} strokeWidth={compact && fret === 0 ? 7 : lineWidth} />
       ))}
       {[...Array(stringCount).keys()].map((string) => (
-        <Line key={`string-${string}`} x1={position.short ? SPACING_X / 2 : 0} x2={position.short ? WIDTH - SPACING_X / 2 : WIDTH} y1={verticalOffset + string * stringGap} y2={verticalOffset + string * stringGap} stroke={theme.colors.black} strokeWidth="4" />
+        <Line key={`string-${string}`} x1={position.short ? SPACING_X / 2 : 0} x2={position.short ? WIDTH - SPACING_X / 2 : WIDTH} y1={verticalOffset + string * stringGap} y2={verticalOffset + string * stringGap} stroke={theme.colors.black} strokeWidth={lineWidth} />
       ))}
       {notes.map((note) => {
         const x = horizontalOffset + note.xIndex * SPACING_X + SPACING_X / 2;
@@ -100,11 +116,11 @@ const PositionZoom = ({ compact = false }) => {
         const text = gray ? theme.colors.neckDarkGray : white ? theme.colors.black : theme.colors.white;
         return (
           <React.Fragment key={note.key}>
-            <Circle cx={x} cy={y} r={noteRadius} fill={fill} stroke={stroke} strokeWidth={gray ? 2 : 4} />
+            <Circle cx={x} cy={y} r={noteRadius} fill={fill} stroke={stroke} strokeWidth={gray ? Math.max(1, noteStrokeWidth - 1) : noteStrokeWidth} />
             {globalState.options.showScaleDegree && (
               <DegreeLabel
                 fill={text}
-                fontSize="27"
+                fontSize={labelFontSize}
                 label={getScaleDegreeLabel(note.degree)}
                 x={x + 1}
                 y={y + (String(getScaleDegreeLabel(note.degree)).length === 1 ? 9 : 11)}
@@ -114,7 +130,7 @@ const PositionZoom = ({ compact = false }) => {
         );
       })}
       {labels.map((label, index) => (
-        <SvgText key={label + index} x={horizontalOffset + (globalState.options.leftHand ? labels.length - 1 - index : index) * SPACING_X + SPACING_X / 2} y={compact ? 280 : 225} textAnchor="middle" fontFamily="basicManual" fontSize="27" fill={theme.colors.black}>
+        <SvgText key={label + index} x={horizontalOffset + (globalState.options.leftHand ? labels.length - 1 - index : index) * SPACING_X + SPACING_X / 2} y={compact ? 280 : verticalOffset + (stringCount - 1) * stringGap + labelFontSize * 1.15} textAnchor="middle" fontFamily="basicManual" fontSize={labelFontSize} fill={theme.colors.black}>
           {label}
         </SvgText>
       ))}
@@ -123,15 +139,6 @@ const PositionZoom = ({ compact = false }) => {
 
   const previous = () => setPositionId((id) => stepPosition(id, -1));
   const next = () => setPositionId((id) => stepPosition(id, 1));
-  const safeSideInset = Math.max(insets.left, insets.right);
-  const safeWidth = dimensions.width - safeSideInset * 2;
-  const compactNeckWidth = safeWidth * 0.53;
-  const compactNeckHeight = compactNeckWidth * (PHONE_HEIGHT / WIDTH);
-  const compactArrowRegionWidth = (safeWidth - compactNeckWidth) / 2;
-  const compactArrowHeight = dimensions.height * 0.32;
-  const tabletNeckWidth = Math.min(dimensions.width * 0.5, safeWidth * 0.56, 650);
-  const tabletNeckHeight = Math.min(dimensions.height * 0.45, 320);
-
   return (
     <View style={[styles.container, compact && styles.phoneContainer]}>
       <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.title, compact && styles.phoneTitle]}>{title}</Text>
@@ -172,7 +179,7 @@ const PositionZoom = ({ compact = false }) => {
 export default PositionZoom;
 
 const styles = StyleSheet.create({
-  container: { alignItems: "center", height: 312, marginBottom: 144, transform: [{ translateY: 20 }], width: "100%" },
+  container: { alignItems: "center", height: 370, marginBottom: 35, transform: [{ translateY: 20 }], width: "100%" },
   phoneContainer: { height: 292, marginBottom: 0, transform: [{ translateY: 8 }] },
   title: { fontFamily: "proletarsk", fontSize: 40, letterSpacing: 6, marginBottom: 12, textAlign: "center" },
   phoneTitle: { fontSize: 31, letterSpacing: 5, lineHeight: 38, marginBottom: 18, width: "62%" },
