@@ -174,7 +174,7 @@ export default PositionZoom;
 const styles = StyleSheet.create({
   container: { alignItems: "center", height: 312, marginBottom: 144, transform: [{ translateY: 20 }], width: "100%" },
   phoneContainer: { height: 292, marginBottom: 0, transform: [{ translateY: 8 }] },
-  title: { fontFamily: "proletarsk", fontSize: 40, letterSpacing: 6, marginBottom: 12 },
+  title: { fontFamily: "proletarsk", fontSize: 40, letterSpacing: 6, marginBottom: 12, textAlign: "center" },
   phoneTitle: { fontSize: 31, letterSpacing: 5, lineHeight: 38, marginBottom: 18, width: "62%" },
   row: { alignItems: "center", flex: 1, flexDirection: "row", justifyContent: "space-between", width: "100%" },
   phoneRow: { justifyContent: "center" },
