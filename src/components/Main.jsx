@@ -31,10 +31,14 @@ export const Main = () => {
             </>
           ) : (
             <View style={styles.phoneContent}>
-              <KeySelector />
-              <View style={styles.phoneNeck}>
-                {showPositionOverview ? <Neck /> : <PositionZoom compact />}
-              </View>
+              {showPositionOverview ? (
+                <>
+                  <KeySelector />
+                  <View style={styles.phoneNeck}><Neck /></View>
+                </>
+              ) : (
+                <PositionZoom compact />
+              )}
             </View>
           )}
         </View>
