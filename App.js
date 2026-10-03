@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFonts } from "expo-font";
-import { StyleSheet, View } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import Header from "./src/components/Header";
@@ -10,6 +10,7 @@ import Main from "./src/components/Main";
 import Tutorial from "./src/components/Tutorial";
 import { Splash } from "./src/components/Splash";
 import { Store, StoreProvider } from "./Store";
+import { storeGlobalState } from "./src/utils/functions";
 
 export default function App() {
   let [fontsLoaded] = useFonts({
@@ -41,8 +42,37 @@ const AppContent = () => {
       <Header />
       <Options />
       <TutorialGate />
+      <TutorialPrompt />
     </View>
   );
+};
+
+const TutorialPrompt = () => {
+  const { globalState, setGlobalState, setShowTutorial, setShowTutorialPrompt, showTutorialPrompt } = React.useContext(Store);
+
+  useEffect(() => {
+    if (!showTutorialPrompt) return;
+
+    const finish = (openTutorial) => {
+      const nextState = { ...globalState, displayedTutorial: true };
+      setGlobalState(nextState);
+      storeGlobalState(nextState);
+      setShowTutorialPrompt(false);
+      if (openTutorial) setShowTutorial(true);
+    };
+
+    Alert.alert(
+      "Welcome to Guitar Note Atlas",
+      "Tap the diagram to zoom out and view the entire fretboard. Would you like to see the tutorial for more info?",
+      [
+        { text: "No Thanks", onPress: () => finish(false), style: "cancel" },
+        { text: "OK", onPress: () => finish(true) },
+      ],
+      { cancelable: false },
+    );
+  }, [showTutorialPrompt]);
+
+  return null;
 };
 
 const TutorialGate = () => {
