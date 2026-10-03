@@ -82,6 +82,7 @@ export const styles = StyleSheet.create({
   },
   phoneContent: {
     alignItems: "center",
+    width: "100%",
   },
   phoneNeck: {
     transform: [{ translateY: 10 }],

@@ -122,6 +122,7 @@ const PositionZoom = ({ compact = false }) => {
   const safeWidth = dimensions.width - safeSideInset * 2;
   const compactNeckWidth = safeWidth * 0.53;
   const compactNeckHeight = compactNeckWidth * (PHONE_HEIGHT / WIDTH);
+  const compactArrowRegionWidth = (safeWidth - compactNeckWidth) / 2;
   const compactArrowHeight = dimensions.height * 0.32;
   const tabletNeckWidth = Math.min(dimensions.width * 0.5, safeWidth * 0.56, 650);
   const tabletNeckHeight = Math.min(dimensions.height * 0.45, 320);
@@ -135,7 +136,11 @@ const PositionZoom = ({ compact = false }) => {
             <PhoneNeckBackdrop bassMode={bassMode} height={compactNeckHeight} short={position.short} stringCount={stringCount} width={safeWidth} />
           </View>
         )}
-        <Pressable accessibilityLabel="Previous position" onPress={previous} style={[styles.arrowButton, compact && styles.phoneArrowButton, compact && styles.phoneLeftButton]}>
+        <Pressable
+          accessibilityLabel="Previous position"
+          onPress={previous}
+          style={[styles.arrowButton, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, width: compactArrowRegionWidth }]}
+        >
           <View style={[styles.arrow, styles.arrowLeft, compact && { borderBottomWidth: compactArrowHeight / 2, borderRightWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
         </Pressable>
         <Pressable
@@ -147,7 +152,11 @@ const PositionZoom = ({ compact = false }) => {
         >
           {neck}
         </Pressable>
-        <Pressable accessibilityLabel="Next position" onPress={next} style={[styles.arrowButton, compact && styles.phoneArrowButton, compact && styles.phoneRightButton]}>
+        <Pressable
+          accessibilityLabel="Next position"
+          onPress={next}
+          style={[styles.arrowButton, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, width: compactArrowRegionWidth }]}
+        >
           <View style={[styles.arrow, styles.arrowRight, compact && { borderBottomWidth: compactArrowHeight / 2, borderLeftWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
         </Pressable>
       </View>
@@ -167,9 +176,7 @@ const styles = StyleSheet.create({
   phoneBackdrop: { position: "absolute", top: "50%" },
   neck: { height: 270, width: 470 },
   arrowButton: { marginHorizontal: 60, padding: 20 },
-  phoneArrowButton: { marginHorizontal: 0, padding: 0, position: "absolute", zIndex: 2 },
-  phoneLeftButton: { left: "1%" },
-  phoneRightButton: { right: "1%" },
+  phoneArrowButton: { alignItems: "center", justifyContent: "center", marginHorizontal: 0, padding: 0, zIndex: 2 },
   arrow: { borderBottomColor: "transparent", borderBottomWidth: 90, borderTopColor: "transparent", borderTopWidth: 90, height: 0, width: 0 },
   arrowLeft: { borderRightColor: theme.colors.blue, borderRightWidth: 82 },
   arrowRight: { borderLeftColor: theme.colors.blue, borderLeftWidth: 82 },
