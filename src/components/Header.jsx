@@ -52,8 +52,8 @@ const styles = StyleSheet.create({
     fontFamily: "blackout",
     color: theme.colors.white,
     textAlign: "center",
-    fontSize: 76,
-    lineHeight: 82,
+    fontSize: 81,
+    lineHeight: 87,
     left: 0,
     right: 0,
     top: -18,
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     position: "absolute",
     top: 13,
-    fontSize: 26,
+    fontSize: 20,
   },
   menuButton: {
     position: "absolute",
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   },
   settingsButton: {
     color: theme.colors.white,
-    fontSize: 8,
+    fontSize: 7,
     paddingHorizontal: 40,
     paddingVertical: 30,
     marginHorizontal: -40,
