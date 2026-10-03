@@ -15,7 +15,6 @@ export default function App() {
   let [fontsLoaded] = useFonts({
     blackout: require("./src/utils/fonts/Blackout-Midnight.ttf"),
     basicManual: require("./src/utils/fonts/SVBasicManual-Bold.ttf"),
-    jrHand: require("./src/utils/fonts/jr!hand.ttf"),
     opus: require("./src/utils/fonts/OpusTextStd.otf"),
     proletarsk: require("./src/utils/fonts/Proletarsk.ttf"),
   });
