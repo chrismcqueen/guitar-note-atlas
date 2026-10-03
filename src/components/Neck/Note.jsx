@@ -118,8 +118,8 @@ const Note = ({
             <Text
               fontFamily="basicManual"
               textAnchor="middle"
-              x="55%"
-              y="78%"
+              x="54.5%"
+              y={scaleDegree.length === 1 ? "76%" : "82%"}
               fontSize={labelFontSize}
               fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
             >
