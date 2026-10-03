@@ -68,7 +68,10 @@ const PositionZoom = ({ compact = false }) => {
   const compactNeckHeight = dimensions.height * 0.594;
   const compactArrowRegionWidth = (safeWidth - compactNeckWidth) / 2;
   const compactArrowHeight = dimensions.height * 0.32;
-  const tabletNeckWidth = dimensions.width * 0.5;
+  // The released iPad app drew into a narrower compatibility canvas. Using
+  // that observed width preserves the original gap between the neck and its
+  // position arrows on modern full-screen iPads.
+  const tabletNeckWidth = dimensions.width * 0.435;
   const tabletNeckHeight = dimensions.height * 0.45;
   const tabletArrowOffsetY = -tabletNeckHeight * 0.08;
   const displayNeckWidth = compact ? compactNeckWidth : tabletNeckWidth;
