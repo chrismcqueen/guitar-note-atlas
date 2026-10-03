@@ -15,6 +15,33 @@ const SPACING_X = 100;
 const OFFSET_X = 21;
 const OFFSET_Y = 24;
 const STRING_GAP = 31;
+const PHONE_HEIGHT = 290;
+const PHONE_STRING_GAP = 44;
+
+const PhoneNeckBackdrop = ({ bassMode, height, short, stringCount, width }) => {
+  const activeWidth = width * 0.53;
+  const fretWidth = activeWidth / 6.42;
+  const activeOffset = OFFSET_X + (short ? SPACING_X / 2 : 0);
+  const firstFret = (width - activeWidth) / 2 + activeOffset * (activeWidth / WIDTH);
+  const yScale = height / PHONE_HEIGHT;
+  const top = OFFSET_Y * (bassMode ? 2.1 : 1) * yScale;
+  const gap = PHONE_STRING_GAP * (bassMode ? 1.3 : 1) * yScale;
+  const bottom = top + (stringCount - 1) * gap;
+  const lineColor = theme.colors.neckLightGray;
+
+  return (
+    <Svg pointerEvents="none" width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      {[...Array(13).keys()].map((index) => {
+        const x = firstFret + (index - 3) * fretWidth;
+        return <Line key={`backdrop-fret-${index}`} x1={x} x2={x} y1={top} y2={bottom} stroke={lineColor} strokeWidth="3" />;
+      })}
+      {[...Array(stringCount).keys()].map((string) => {
+        const y = top + string * gap;
+        return <Line key={`backdrop-string-${string}`} x1="0" x2={width} y1={y} y2={y} stroke={lineColor} strokeWidth="3" />;
+      })}
+    </Svg>
+  );
+};
 
 const PositionZoom = ({ compact = false }) => {
   const { dimensions, globalState, insets, positionId, setPositionId, setShowPositionOverview } = useContext(Store);
@@ -28,6 +55,10 @@ const PositionZoom = ({ compact = false }) => {
   const colorName = `position${position.color[0].toUpperCase()}${position.color.slice(1)}`;
   const labels = position.short ? ["1", "2", "3", "4", "(4)"] : ["(1)", "1", "2", "3", "4", "(4)"];
   const noteRadius = 16;
+  const horizontalOffset = OFFSET_X + (position.short ? SPACING_X / 2 : 0);
+  const stringGap = compact ? PHONE_STRING_GAP * (bassMode ? 1.3 : 1) : STRING_GAP;
+  const verticalOffset = compact && bassMode ? OFFSET_Y * 2.1 : OFFSET_Y;
+  const viewBoxHeight = compact ? PHONE_HEIGHT : HEIGHT;
   const bandFret = globalState.options.leftHand ? fretCount - 1 - position.baseFret : position.baseFret;
 
   const notes = globalState.scale.degrees.flatMap((degree) => {
@@ -42,25 +73,25 @@ const PositionZoom = ({ compact = false }) => {
   });
 
   const neck = (
-    <Svg width="100%" height="100%" viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
+    <Svg width="100%" height="100%" viewBox={`0 0 ${WIDTH} ${viewBoxHeight}`}>
       {!globalState.options.hideColors && (
         <Rect
-          x={OFFSET_X + bandFret * SPACING_X}
-          y={globalState.options.upsideDown ? OFFSET_Y + (stringCount - Math.min(position.height, stringCount)) * STRING_GAP - STRING_GAP / 2 : 0}
+          x={horizontalOffset + bandFret * SPACING_X}
+          y={globalState.options.upsideDown ? verticalOffset + (stringCount - Math.min(position.height, stringCount)) * stringGap - stringGap / 2 : 0}
           width={SPACING_X}
-          height={Math.min(position.height, stringCount) * STRING_GAP + OFFSET_Y}
+          height={Math.min(position.height, stringCount) * stringGap + verticalOffset}
           fill={theme.colors[colorName]}
         />
       )}
       {[...Array(fretCount + 1).keys()].map((fret) => (
-        <Line key={`fret-${fret}`} x1={OFFSET_X + fret * SPACING_X} x2={OFFSET_X + fret * SPACING_X} y1={OFFSET_Y} y2={OFFSET_Y + (stringCount - 1) * STRING_GAP} stroke={theme.colors.black} strokeWidth={fret === 0 ? 7 : 4} />
+        <Line key={`fret-${fret}`} x1={horizontalOffset + fret * SPACING_X} x2={horizontalOffset + fret * SPACING_X} y1={verticalOffset} y2={verticalOffset + (stringCount - 1) * stringGap} stroke={theme.colors.black} strokeWidth={fret === 0 ? 7 : 4} />
       ))}
       {[...Array(stringCount).keys()].map((string) => (
-        <Line key={`string-${string}`} x1={position.short ? OFFSET_X : 0} x2={OFFSET_X + fretCount * SPACING_X} y1={OFFSET_Y + string * STRING_GAP} y2={OFFSET_Y + string * STRING_GAP} stroke={theme.colors.black} strokeWidth="4" />
+        <Line key={`string-${string}`} x1={position.short ? SPACING_X / 2 : 0} x2={position.short ? WIDTH - SPACING_X / 2 : WIDTH} y1={verticalOffset + string * stringGap} y2={verticalOffset + string * stringGap} stroke={theme.colors.black} strokeWidth="4" />
       ))}
       {notes.map((note) => {
-        const x = OFFSET_X + note.xIndex * SPACING_X + SPACING_X / 2;
-        const y = OFFSET_Y + note.string * STRING_GAP;
+        const x = horizontalOffset + note.xIndex * SPACING_X + SPACING_X / 2;
+        const y = verticalOffset + note.string * stringGap;
         const gray = note.color === "gray";
         const white = note.color === "white";
         const fill = gray ? theme.colors.neckLightGray : white ? theme.colors.white : theme.colors.black;
@@ -78,7 +109,7 @@ const PositionZoom = ({ compact = false }) => {
         );
       })}
       {labels.map((label, index) => (
-        <SvgText key={label + index} x={OFFSET_X + (globalState.options.leftHand ? labels.length - 1 - index : index) * SPACING_X + SPACING_X / 2} y="225" textAnchor="middle" fontFamily="basicManual" fontSize="27" fill={theme.colors.black}>
+        <SvgText key={label + index} x={horizontalOffset + (globalState.options.leftHand ? labels.length - 1 - index : index) * SPACING_X + SPACING_X / 2} y={compact ? 280 : 225} textAnchor="middle" fontFamily="basicManual" fontSize="27" fill={theme.colors.black}>
           {label}
         </SvgText>
       ))}
@@ -87,9 +118,10 @@ const PositionZoom = ({ compact = false }) => {
 
   const previous = () => setPositionId((id) => stepPosition(id, -1));
   const next = () => setPositionId((id) => stepPosition(id, 1));
-  const safeWidth = dimensions.width - insets.left - insets.right;
-  const compactNeckWidth = Math.min(dimensions.width * 0.53, safeWidth * 0.64);
-  const compactNeckHeight = dimensions.height * 0.594;
+  const safeSideInset = Math.max(insets.left, insets.right);
+  const safeWidth = dimensions.width - safeSideInset * 2;
+  const compactNeckWidth = safeWidth * 0.53;
+  const compactNeckHeight = compactNeckWidth * (PHONE_HEIGHT / WIDTH);
   const compactArrowHeight = dimensions.height * 0.32;
   const tabletNeckWidth = Math.min(dimensions.width * 0.5, safeWidth * 0.56, 650);
   const tabletNeckHeight = Math.min(dimensions.height * 0.45, 320);
@@ -98,6 +130,11 @@ const PositionZoom = ({ compact = false }) => {
     <View style={[styles.container, compact && styles.phoneContainer]}>
       <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.title, compact && styles.phoneTitle]}>{title}</Text>
       <View style={[styles.row, compact && styles.phoneRow]}>
+        {compact && (
+          <View pointerEvents="none" style={[styles.phoneBackdrop, { height: compactNeckHeight, transform: [{ translateY: -compactNeckHeight / 2 }], width: safeWidth }]}>
+            <PhoneNeckBackdrop bassMode={bassMode} height={compactNeckHeight} short={position.short} stringCount={stringCount} width={safeWidth} />
+          </View>
+        )}
         <Pressable accessibilityLabel="Previous position" onPress={previous} style={[styles.arrowButton, compact && styles.phoneArrowButton, compact && styles.phoneLeftButton]}>
           <View style={[styles.arrow, styles.arrowLeft, compact && { borderBottomWidth: compactArrowHeight / 2, borderRightWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
         </Pressable>
@@ -127,11 +164,12 @@ const styles = StyleSheet.create({
   phoneTitle: { fontSize: 31, letterSpacing: 5, lineHeight: 38, marginBottom: 18, width: "62%" },
   row: { alignItems: "center", flex: 1, flexDirection: "row", justifyContent: "space-between", width: "100%" },
   phoneRow: { justifyContent: "center" },
+  phoneBackdrop: { position: "absolute", top: "50%" },
   neck: { height: 270, width: 470 },
   arrowButton: { marginHorizontal: 60, padding: 20 },
   phoneArrowButton: { marginHorizontal: 0, padding: 0, position: "absolute", zIndex: 2 },
-  phoneLeftButton: { left: "7%" },
-  phoneRightButton: { right: "7%" },
+  phoneLeftButton: { left: "1%" },
+  phoneRightButton: { right: "1%" },
   arrow: { borderBottomColor: "transparent", borderBottomWidth: 90, borderTopColor: "transparent", borderTopWidth: 90, height: 0, width: 0 },
   arrowLeft: { borderRightColor: theme.colors.blue, borderRightWidth: 82 },
   arrowRight: { borderLeftColor: theme.colors.blue, borderLeftWidth: 82 },
