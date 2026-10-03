@@ -118,7 +118,7 @@ const Note = ({
           {globalState.options.showScaleDegree && (
             <DegreeLabel
               label={scaleDegree}
-              x="54.5%"
+              x={noteSize * 0.545}
               y={scaleDegree.length === 1 ? "76%" : "82%"}
               fontSize={labelFontSize}
               fill={fret === 0 ? theme.colors.grey : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
