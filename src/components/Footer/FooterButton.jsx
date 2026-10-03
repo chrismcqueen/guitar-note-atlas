@@ -42,10 +42,10 @@ export const FooterButton = ({ children, onPress }) => {
 const styles = StyleSheet.create({
   label: {
     fontFamily: "blackout",
-    fontSize: 27,
+    fontSize: 23,
     color: theme.colors.lightBlue,
     textAlign: "center",
-    transform: [{ translateY: 5 }],
+    transform: [{ translateY: 4 }],
     width: 100,
   },
 });

@@ -94,7 +94,7 @@ export const ScaleDegreeButton = (props) => {
   );
 };
 
-const SCALE_DEGREE_HEIGHT = 64;
+const SCALE_DEGREE_HEIGHT = 52;
 
 const styles = StyleSheet.create({
   label: {
@@ -105,14 +105,14 @@ const styles = StyleSheet.create({
   },
 
   scaleDegree: {
-    fontSize: 42,
+    fontSize: 36,
     display: "flex",
     color: theme.colors.lightBlue,
     fontFamily: "basicManual",
     width: 52,
     height: SCALE_DEGREE_HEIGHT,
     textAlign: "center",
-    paddingTop: 9,
+    paddingTop: 7,
   },
   scaleDegreeSelected: {
     backgroundColor: theme.colors.blue,
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
   },
   scaleDegreeSmall: {
-    fontSize: 31,
+    fontSize: 27,
     color: theme.colors.lightBlue,
     fontFamily: "basicManual",
     width: 52,
@@ -133,12 +133,12 @@ const styles = StyleSheet.create({
     fontFamily: "opus",
   },
   accidentalOffset: {
-    transform: [{ translateY: 5 }],
+    transform: [{ translateY: 4 }],
   },
   scaleDegreeSmallTop: {
-    transform: [{ translateY: -4 }],
+    transform: [{ translateY: -3 }],
   },
   scaleDegreeSmallBottom: {
-    transform: [{ translateY: -8 }],
+    transform: [{ translateY: -6 }],
   },
 });
