@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef } from "react";
-import { StyleSheet, Text, View, Animated, Modal, Pressable } from "react-native";
+import { StyleSheet, Text, View, Animated, Modal, Platform, Pressable } from "react-native";
 import * as Linking from "expo-linking";
 
 import { Store } from "../../Store";
@@ -7,7 +7,7 @@ import { theme } from "../utils/theme";
 import { storeGlobalState } from "../utils/functions";
 
 const Options = () => {
-  const { dimensions, showOptions, setShowOptions, setShowTutorial, globalState, setGlobalState } = useContext(Store);
+  const { dimensions, insets, showOptions, setShowOptions, setShowTutorial, globalState, setGlobalState } = useContext(Store);
   const optionsAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -25,6 +25,11 @@ const Options = () => {
   }, [showOptions]);
 
   const width = dimensions.width / 3;
+  const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const reportedSideInset = Math.max(insets.left, insets.right);
+  const cutoutPadding = !isTablet && Platform.OS === "ios"
+    ? Math.max(reportedSideInset, 72)
+    : reportedSideInset;
 
   const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Flip Upside Down", "Hide Anchor Frets", "Rate Us", "Give Us Feedback"];
 
@@ -107,7 +112,10 @@ const Options = () => {
             },
           ]}
         >
-          <Pressable onPress={(event) => event.stopPropagation()} style={styles.optionsContent}>
+          <Pressable
+            onPress={(event) => event.stopPropagation()}
+            style={[styles.optionsContent, { paddingRight: cutoutPadding }]}
+          >
             {options.map((option, i) => (
               <Pressable key={i} onPress={() => handlePress(option)}>
                 <View style={styles.itemRow}>
