@@ -112,7 +112,13 @@ const Options = () => {
               <Pressable key={i} onPress={() => handlePress(option)}>
                 <View style={styles.itemRow}>
                   <Text style={styles.item}>{option}</Text>
-                  {isSelected(option) && <Text style={styles.checkmark}>✓</Text>}
+                  <Text
+                    accessibilityElementsHidden={!isSelected(option)}
+                    importantForAccessibility={isSelected(option) ? "auto" : "no-hide-descendants"}
+                    style={[styles.checkmark, !isSelected(option) && styles.checkmarkHidden]}
+                  >
+                    ✓
+                  </Text>
                 </View>
               </Pressable>
             ))}
@@ -153,5 +159,10 @@ const styles = StyleSheet.create({
   checkmark: {
     color: theme.colors.white,
     fontSize: 18,
+    textAlign: "center",
+    width: 18,
+  },
+  checkmarkHidden: {
+    opacity: 0,
   },
 });
