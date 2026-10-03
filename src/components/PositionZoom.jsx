@@ -130,7 +130,7 @@ const PositionZoom = ({ compact = false }) => {
         );
       })}
       {labels.map((label, index) => (
-        <SvgText key={label + index} x={horizontalOffset + (globalState.options.leftHand ? labels.length - 1 - index : index) * SPACING_X + SPACING_X / 2} y={compact ? 280 : verticalOffset + (stringCount - 1) * stringGap + labelFontSize * 1.15} textAnchor="middle" fontFamily="basicManual" fontSize={labelFontSize} fill={theme.colors.black}>
+        <SvgText key={label + index} x={horizontalOffset + (globalState.options.leftHand ? labels.length - 1 - index : index) * SPACING_X + SPACING_X / 2} y={compact ? 280 : verticalOffset + (stringCount - 1) * stringGap + labelFontSize * 1.15} textAnchor="middle" fontFamily="jrHand" fontSize={labelFontSize} fill={theme.colors.black}>
           {label}
         </SvgText>
       ))}
