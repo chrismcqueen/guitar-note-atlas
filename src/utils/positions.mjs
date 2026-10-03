@@ -26,24 +26,25 @@ export const stepPosition = (id, amount) => {
   return POSITION_ORDER[(index + amount + POSITION_ORDER.length) % POSITION_ORDER.length];
 };
 
+export const positionTargets = (keyOffset = 0, maxFret = 16) => {
+  const offset = legacyKeyOffset(keyOffset);
+
+  return POSITIONS.flatMap((position) =>
+    [-12, 0, 12, 24]
+      .map((octave) => ({ fret: position.offset + offset + octave, id: position.id }))
+      .filter((target) => target.fret >= 0 && target.fret <= maxFret),
+  ).sort((a, b) => a.fret - b.fret);
+};
+
 export const positionForFret = (fret, keyOffset = 0) => {
-  const pitch = ((fret - keyOffset) % 12 + 12) % 12;
-  const anchors = [
-    { id: 0, pitch: 0 },
-    { id: 2, pitch: 2 },
-    { id: 4, pitch: 4 },
-    { id: 6, pitch: 6 },
-    { id: 1, pitch: 7 },
-    { id: 3, pitch: 9 },
-    { id: 5, pitch: 11 },
-  ];
-  return anchors.reduce((best, candidate) => {
-    const distance = Math.min((pitch - candidate.pitch + 12) % 12, (candidate.pitch - pitch + 12) % 12);
-    return distance < best.distance ? { id: candidate.id, distance } : best;
-  }, { id: 0, distance: Infinity }).id;
+  const targets = positionTargets(keyOffset);
+  return targets.reduce((best, target) => {
+    const distance = Math.abs(fret - target.fret);
+    return distance < best.distance ? { id: target.id, distance } : best;
+  }, { id: targets[0]?.id ?? 0, distance: Infinity }).id;
 };
 
 export const positionStartFret = (id, keyOffset = 0) => {
-  const start = getPosition(id).offset + keyOffset;
+  const start = getPosition(id).offset + legacyKeyOffset(keyOffset);
   return start > 11 ? start - 12 : start;
 };

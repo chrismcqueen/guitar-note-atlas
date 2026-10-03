@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { getPosition, POSITION_ORDER, positionBandFrets, positionForFret, positionStartFret, stepPosition } from "../src/utils/positions.mjs";
+import { getPosition, POSITION_ORDER, positionBandFrets, positionForFret, positionStartFret, positionTargets, stepPosition } from "../src/utils/positions.mjs";
 
 test("positions follow the released seven-position order and wrap", () => {
   assert.deepEqual(POSITION_ORDER, [0, 2, 4, 6, 1, 3, 5]);
@@ -26,16 +26,39 @@ test("released position titles and colors are preserved", () => {
 });
 
 test("position starts transpose with the selected key", () => {
-  assert.equal(positionStartFret(0, 0), 0);
-  assert.equal(positionStartFret(1, 0), 7);
-  assert.equal(positionStartFret(5, 3), 2);
+  assert.equal(positionStartFret(0, 0), 3);
+  assert.equal(positionStartFret(1, 0), 10);
+  assert.equal(positionStartFret(5, 3), 5);
 });
 
-test("phone fret taps choose the nearest canonical position", () => {
-  assert.equal(positionForFret(0, 0), 0);
-  assert.equal(positionForFret(4, 0), 4);
-  assert.equal(positionForFret(11, 0), 5);
-  assert.equal(positionForFret(5, 3), 2);
+test("phone fret targets follow the released A-based position anchors", () => {
+  assert.deepEqual(positionTargets(0), [
+    { fret: 0, id: 3 },
+    { fret: 2, id: 5 },
+    { fret: 3, id: 0 },
+    { fret: 5, id: 2 },
+    { fret: 7, id: 4 },
+    { fret: 9, id: 6 },
+    { fret: 10, id: 1 },
+    { fret: 12, id: 3 },
+    { fret: 14, id: 5 },
+    { fret: 15, id: 0 },
+  ]);
+
+  assert.equal(positionForFret(3, 0), 0);
+  assert.equal(positionForFret(7, 0), 4);
+  assert.equal(positionForFret(9, 0), 6);
+  assert.equal(positionForFret(14, 0), 5);
+});
+
+test("every visible color band opens its matching index position in every key", () => {
+  for (let keyOffset = 0; keyOffset < 12; keyOffset += 1) {
+    for (const [pitch, positionId] of [[4, 4], [6, 6], [11, 5]]) {
+      for (const fret of positionBandFrets(pitch, keyOffset)) {
+        assert.equal(positionForFret(fret, keyOffset), positionId, `key ${keyOffset}, fret ${fret}`);
+      }
+    }
+  }
 });
 
 test("position color bands preserve the released A-based key offsets", () => {
