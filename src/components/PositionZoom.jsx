@@ -70,6 +70,7 @@ const PositionZoom = ({ compact = false }) => {
   const compactArrowHeight = dimensions.height * 0.32;
   const tabletNeckWidth = dimensions.width * 0.5;
   const tabletNeckHeight = dimensions.height * 0.45;
+  const tabletArrowOffsetY = -tabletNeckHeight * 0.08;
   const displayNeckWidth = compact ? compactNeckWidth : tabletNeckWidth;
   const displayNeckHeight = compact ? compactNeckHeight : tabletNeckHeight;
   const viewBoxHeight = WIDTH * (displayNeckHeight / displayNeckWidth);
@@ -169,7 +170,7 @@ const PositionZoom = ({ compact = false }) => {
         <Pressable
           accessibilityLabel="Previous position"
           onPress={previous}
-          style={[styles.arrowButton, !compact && styles.tabletArrowButton, !compact && { height: tabletNeckHeight * 0.5, left: safeWidth * 0.15, width: tabletNeckHeight * 0.25 }, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, width: compactArrowRegionWidth }]}
+          style={[styles.arrowButton, !compact && styles.tabletArrowButton, !compact && { height: tabletNeckHeight * 0.5, left: safeWidth * 0.15, transform: [{ translateY: tabletArrowOffsetY }], width: tabletNeckHeight * 0.25 }, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, width: compactArrowRegionWidth }]}
         >
           <View style={[styles.arrow, styles.arrowLeft, !compact && { borderBottomWidth: tabletNeckHeight * 0.25, borderRightWidth: tabletNeckHeight * 0.25, borderTopWidth: tabletNeckHeight * 0.25 }, compact && { borderBottomWidth: compactArrowHeight / 2, borderRightWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
         </Pressable>
@@ -185,7 +186,7 @@ const PositionZoom = ({ compact = false }) => {
         <Pressable
           accessibilityLabel="Next position"
           onPress={next}
-          style={[styles.arrowButton, !compact && styles.tabletArrowButton, !compact && { height: tabletNeckHeight * 0.5, right: safeWidth * 0.15, width: tabletNeckHeight * 0.25 }, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, width: compactArrowRegionWidth }]}
+          style={[styles.arrowButton, !compact && styles.tabletArrowButton, !compact && { height: tabletNeckHeight * 0.5, right: safeWidth * 0.15, transform: [{ translateY: tabletArrowOffsetY }], width: tabletNeckHeight * 0.25 }, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, width: compactArrowRegionWidth }]}
         >
           <View style={[styles.arrow, styles.arrowRight, !compact && { borderBottomWidth: tabletNeckHeight * 0.25, borderLeftWidth: tabletNeckHeight * 0.25, borderTopWidth: tabletNeckHeight * 0.25 }, compact && { borderBottomWidth: compactArrowHeight / 2, borderLeftWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
         </Pressable>
