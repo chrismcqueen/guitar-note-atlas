@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { getPosition, POSITION_ORDER, positionBandFrets, positionForFret, positionStartFret, positionTargets, stepPosition } from "../src/utils/positions.mjs";
+import { getPosition, POSITION_ORDER, positionBandFrets, positionBandVerticalGeometry, positionForFret, positionStartFret, positionTargets, stepPosition } from "../src/utils/positions.mjs";
 
 test("positions follow the released seven-position order and wrap", () => {
   assert.deepEqual(POSITION_ORDER, [0, 2, 4, 6, 1, 3, 5]);
@@ -95,4 +95,11 @@ test("position color bands preserve the released A-based key offsets", () => {
       );
     }
   }
+});
+
+test("position color bands preserve released vertical sizing", () => {
+  assert.deepEqual(positionBandVerticalGeometry({ height: 5, stringGap: 36, verticalOffset: 14 }), { height: 208, y: 0 });
+  assert.deepEqual(positionBandVerticalGeometry({ height: 4, stringGap: 36, upsideDown: true, verticalOffset: 14 }), { height: 172, y: 36 });
+  assert.deepEqual(positionBandVerticalGeometry({ height: 3, stringGap: 36, upsideDown: true, verticalOffset: 14 }), { height: 136, y: 72 });
+  assert.deepEqual(positionBandVerticalGeometry({ bassMode: true, height: 5, stringGap: 52, verticalOffset: 20 }), { height: 175, y: 22.36 });
 });

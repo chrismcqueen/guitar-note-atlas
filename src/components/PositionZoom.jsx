@@ -6,7 +6,7 @@ import { Store } from "../../Store";
 import coordinates from "../../data/positionCoordinates.json";
 import DegreeLabel from "./Neck/DegreeLabel";
 import { getScaleDegreeLabel } from "../utils/music.mjs";
-import { getPosition, stepPosition } from "../utils/positions.mjs";
+import { getPosition, positionBandVerticalGeometry, stepPosition } from "../utils/positions.mjs";
 import { theme } from "../utils/theme";
 
 const LEGACY_DEGREE_ID = { 0: 0, 1: 1, 2: 2, 3: 3, 3.1: 12, 4: 4, 5: 5, 6: 6, 6.1: 13, 7: 7, 8: 8, 8.1: 14, 9: 9, 10: 10, 11: 11 };
@@ -77,6 +77,13 @@ const PositionZoom = ({ compact = false }) => {
   const verticalOffset = baseVerticalOffset * (bassMode ? 2.1 : 1);
   const viewBoxHeight = compact ? PHONE_HEIGHT : tabletViewBoxHeight;
   const bandFret = globalState.options.leftHand ? fretCount - 1 - position.baseFret : position.baseFret;
+  const band = positionBandVerticalGeometry({
+    bassMode,
+    height: position.height,
+    stringGap,
+    upsideDown: globalState.options.upsideDown,
+    verticalOffset: baseVerticalOffset,
+  });
 
   const notes = globalState.scale.degrees.flatMap((degree) => {
     const legacyId = LEGACY_DEGREE_ID[degree];
@@ -94,9 +101,9 @@ const PositionZoom = ({ compact = false }) => {
       {!globalState.options.hideColors && (
         <Rect
           x={horizontalOffset + bandFret * SPACING_X}
-          y={globalState.options.upsideDown ? verticalOffset + (stringCount - Math.min(position.height, stringCount)) * stringGap - stringGap / 2 : 0}
+          y={band.y}
           width={SPACING_X}
-          height={Math.min(position.height, stringCount) * stringGap + verticalOffset}
+          height={band.height}
           fill={theme.colors[colorName]}
         />
       )}

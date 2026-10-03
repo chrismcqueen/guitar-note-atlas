@@ -9,14 +9,35 @@ export const positionBandFrets = (pitch, keyOffset, maxFret = 15) =>
     .map((octave) => pitch + legacyKeyOffset(keyOffset) + octave)
     .filter((fret) => fret >= 0 && fret <= maxFret);
 
+// The released renderer defines band height as the number of string spaces
+// covered, plus a small overhang above and below the outer strings. `height`
+// is the legacy heightForPosition value (5/4/3), not a string count.
+export const positionBandVerticalGeometry = ({ bassMode = false, height, stringGap, upsideDown = false, verticalOffset }) => {
+  let bandHeight = height;
+  let y = 0;
+
+  if (upsideDown) {
+    if (height === 3) y = stringGap * 2;
+    else if (height === 4) y = stringGap;
+  }
+
+  if (bassMode) {
+    bandHeight -= 2;
+    y += stringGap * 0.43;
+    return { height: bandHeight * stringGap + verticalOffset * 0.95, y };
+  }
+
+  return { height: bandHeight * stringGap + verticalOffset * 2, y };
+};
+
 export const POSITIONS = [
-  { id: 0, baseFret: 4, offset: 0, title: "6TH STRING // PINKY", bassTitle: "4TH STRING // PINKY", color: "green", height: 6 },
-  { id: 2, baseFret: 2, offset: 2, title: "6TH STRING // MIDDLE", bassTitle: "4TH STRING // MIDDLE", color: "green", height: 6 },
-  { id: 4, baseFret: 0, offset: 4, title: "6TH STRING // INDEX", bassTitle: "4TH STRING // INDEX", color: "green", height: 6, short: true },
-  { id: 6, baseFret: 0, offset: 6, title: "4TH STRING // INDEX", bassTitle: "2ND STRING // INDEX", color: "yellow", height: 4, short: true },
-  { id: 1, baseFret: 4, offset: 7, title: "5TH STRING // PINKY", bassTitle: "3RD STRING // PINKY", color: "purple", height: 5 },
-  { id: 3, baseFret: 2, offset: 9, title: "5TH STRING // MIDDLE", bassTitle: "3RD STRING // MIDDLE", color: "purple", height: 5 },
-  { id: 5, baseFret: 0, offset: 11, title: "5TH STRING // INDEX", bassTitle: "3RD STRING // INDEX", color: "purple", height: 5, short: true },
+  { id: 0, baseFret: 4, offset: 0, title: "6TH STRING // PINKY", bassTitle: "4TH STRING // PINKY", color: "green", height: 5 },
+  { id: 2, baseFret: 2, offset: 2, title: "6TH STRING // MIDDLE", bassTitle: "4TH STRING // MIDDLE", color: "green", height: 5 },
+  { id: 4, baseFret: 0, offset: 4, title: "6TH STRING // INDEX", bassTitle: "4TH STRING // INDEX", color: "green", height: 5, short: true },
+  { id: 6, baseFret: 0, offset: 6, title: "4TH STRING // INDEX", bassTitle: "2ND STRING // INDEX", color: "yellow", height: 3, short: true },
+  { id: 1, baseFret: 4, offset: 7, title: "5TH STRING // PINKY", bassTitle: "3RD STRING // PINKY", color: "purple", height: 4 },
+  { id: 3, baseFret: 2, offset: 9, title: "5TH STRING // MIDDLE", bassTitle: "3RD STRING // MIDDLE", color: "purple", height: 4 },
+  { id: 5, baseFret: 0, offset: 11, title: "5TH STRING // INDEX", bassTitle: "3RD STRING // INDEX", color: "purple", height: 4, short: true },
 ];
 
 export const getPosition = (id) => POSITIONS.find((position) => position.id === id) ?? POSITIONS[0];
