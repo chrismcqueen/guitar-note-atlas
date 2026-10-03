@@ -113,7 +113,7 @@ const Note = ({
             r={circleRadius}
             stroke={fret === 0 ? theme.colors.grey : theme.colors.black}
             fill={fret === 0 ? theme.colors.white : scaleDegree === "1" ? theme.colors.white : theme.colors.black}
-            strokeWidth={circleStrokeWidth ?? (fret === 0 ? 2 : 3.5)}
+            strokeWidth={fret === 0 ? circleRadius / 12 : circleStrokeWidth ?? 3.5}
           />
           {globalState.options.showScaleDegree && (
             <DegreeLabel
@@ -121,7 +121,7 @@ const Note = ({
               x="54.5%"
               y={scaleDegree.length === 1 ? "76%" : "82%"}
               fontSize={labelFontSize}
-              fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
+              fill={fret === 0 ? theme.colors.grey : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
             />
           )}
         </Svg>
