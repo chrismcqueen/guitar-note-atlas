@@ -63,7 +63,7 @@ const TutorialPrompt = () => {
 
     Alert.alert(
       "Welcome to Guitar Note Atlas",
-      "Tap the diagram to zoom out and view the entire fretboard. Would you like to see the tutorial for more info?",
+      "Tap the fretboard to open a position view. Would you like to see the tutorial for more info?",
       [
         { text: "No Thanks", onPress: () => finish(false), style: "cancel" },
         { text: "OK", onPress: () => finish(true) },

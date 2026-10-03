@@ -10,7 +10,7 @@ export const StoreProvider = ({ children }) => {
   const [showTutorial, setShowTutorial] = useState(false);
   const [showTutorialPrompt, setShowTutorialPrompt] = useState(false);
   const [positionId, setPositionId] = useState(0);
-  const [showPositionOverview, setShowPositionOverview] = useState(false);
+  const [showPositionOverview, setShowPositionOverview] = useState(true);
   const [globalState, setGlobalState] = useState({});
 
   useEffect(() => {
