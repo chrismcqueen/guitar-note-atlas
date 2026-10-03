@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, TSpan } from "react-native-svg";
+import { G, Text } from "react-native-svg";
 
 const DegreeLabel = ({ fill, fontSize, label, x, y }) => {
   const text = String(label);
@@ -11,13 +11,18 @@ const DegreeLabel = ({ fill, fontSize, label, x, y }) => {
     return <Text fill={fill} fontFamily="basicManual" fontSize={fontSize} textAnchor="middle" x={x} y={y}>{degree}</Text>;
   }
 
-  const size = Number(fontSize) * 0.84;
+  const size = Number(fontSize);
+  // react-native-svg does not preserve the UIKit attributed-string advances
+  // when adjacent TSpans switch between Opus and Basic Manual. Position the
+  // two runs from their optical bounds so b2 and #5 share the same center.
+  const accidentalX = Number(x) - size * 0.3;
+  const degreeX = Number(x) + size * 0.16;
 
   return (
-    <Text fill={fill} fontSize={size} textAnchor="middle" x={x} y={y}>
-      <TSpan fontFamily="opus">{accidental}</TSpan>
-      <TSpan fontFamily="basicManual">{degree}</TSpan>
-    </Text>
+    <G fill={fill} fontSize={size}>
+      <Text fontFamily="opus" textAnchor="middle" x={accidentalX} y={y}>{accidental}</Text>
+      <Text fontFamily="basicManual" textAnchor="middle" x={degreeX} y={y}>{degree}</Text>
+    </G>
   );
 };
 
