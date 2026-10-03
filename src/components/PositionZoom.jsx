@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import Svg, { Circle, Line, Rect, Text as SvgText } from "react-native-svg";
+import Svg, { Circle, Defs, Line, LinearGradient, Rect, Stop, Text as SvgText } from "react-native-svg";
 
 import { Store } from "../../Store";
 import coordinates from "../../data/positionCoordinates.json";
@@ -27,16 +27,26 @@ const PhoneNeckBackdrop = ({ bassMode, height, short, stringCount, width }) => {
   const gap = PHONE_STRING_GAP * (bassMode ? 1.3 : 1) * yScale;
   const bottom = top + (stringCount - 1) * gap;
   const lineColor = theme.colors.neckLightGray;
+  const activeStart = (width - activeWidth) / 2;
+  const activeEnd = activeStart + activeWidth;
 
   return (
     <Svg pointerEvents="none" width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      <Defs>
+        <LinearGradient id="position-backdrop-fade" gradientUnits="userSpaceOnUse" x1="0" x2={width} y1="0" y2="0">
+          <Stop offset="0" stopColor={lineColor} stopOpacity="0" />
+          <Stop offset={activeStart / width} stopColor={lineColor} stopOpacity="1" />
+          <Stop offset={activeEnd / width} stopColor={lineColor} stopOpacity="1" />
+          <Stop offset="1" stopColor={lineColor} stopOpacity="0" />
+        </LinearGradient>
+      </Defs>
       {[...Array(13).keys()].map((index) => {
         const x = firstFret + (index - 3) * fretWidth;
-        return <Line key={`backdrop-fret-${index}`} x1={x} x2={x} y1={top} y2={bottom} stroke={lineColor} strokeWidth="3" />;
+        return <Line key={`backdrop-fret-${index}`} x1={x} x2={x} y1={top} y2={bottom} stroke="url(#position-backdrop-fade)" strokeWidth="3" />;
       })}
       {[...Array(stringCount).keys()].map((string) => {
         const y = top + string * gap;
-        return <Line key={`backdrop-string-${string}`} x1="0" x2={width} y1={y} y2={y} stroke={lineColor} strokeWidth="3" />;
+        return <Line key={`backdrop-string-${string}`} x1="0" x2={width} y1={y} y2={y} stroke="url(#position-backdrop-fade)" strokeWidth="3" />;
       })}
     </Svg>
   );
