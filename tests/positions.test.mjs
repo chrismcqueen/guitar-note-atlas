@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { getPosition, POSITION_ORDER, positionForFret, positionStartFret, stepPosition } from "../src/utils/positions.mjs";
+import { getPosition, POSITION_ORDER, positionBandFrets, positionForFret, positionStartFret, stepPosition } from "../src/utils/positions.mjs";
 
 test("positions follow the released seven-position order and wrap", () => {
   assert.deepEqual(POSITION_ORDER, [0, 2, 4, 6, 1, 3, 5]);
@@ -36,4 +36,40 @@ test("phone fret taps choose the nearest canonical position", () => {
   assert.equal(positionForFret(4, 0), 4);
   assert.equal(positionForFret(11, 0), 5);
   assert.equal(positionForFret(5, 3), 2);
+});
+
+test("position color bands preserve the released A-based key offsets", () => {
+  assert.deepEqual(positionBandFrets(4, 0), [7]);
+  assert.deepEqual(positionBandFrets(6, 0), [9]);
+  assert.deepEqual(positionBandFrets(11, 0), [2, 14]);
+
+  assert.deepEqual(positionBandFrets(4, 6), [1, 13]);
+  assert.deepEqual(positionBandFrets(6, 6), [3, 15]);
+  assert.deepEqual(positionBandFrets(11, 6), [8]);
+
+  assert.deepEqual(positionBandFrets(4, 11), [6]);
+  assert.deepEqual(positionBandFrets(6, 11), [8]);
+  assert.deepEqual(positionBandFrets(11, 11), [1, 13]);
+
+  const releasedFrets = (pitch, keyOffset) => {
+    const legacyOffset = (keyOffset + 3) % 12;
+    let primary = pitch + legacyOffset;
+    if (primary > 15) primary -= 12;
+
+    const frets = [primary];
+    if (pitch === 4 && legacyOffset > 7) frets.push(primary - 12);
+    if (pitch === 6 && legacyOffset > 5 && legacyOffset < 10) frets.push(primary - 12);
+    if (pitch === 11 && legacyOffset > 0 && legacyOffset < 5) frets.push(primary - 12);
+    return frets.sort((a, b) => a - b);
+  };
+
+  for (let keyOffset = 0; keyOffset < 12; keyOffset += 1) {
+    for (const pitch of [4, 6, 11]) {
+      assert.deepEqual(
+        [...positionBandFrets(pitch, keyOffset)].sort((a, b) => a - b),
+        releasedFrets(pitch, keyOffset),
+        `pitch ${pitch}, key offset ${keyOffset}`,
+      );
+    }
+  }
 });

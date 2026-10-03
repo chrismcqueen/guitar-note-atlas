@@ -2,6 +2,7 @@ import React from "react";
 import { Rect } from "react-native-svg";
 
 import { theme } from "../../utils/theme";
+import { positionBandFrets } from "../../utils/positions.mjs";
 
 const FRET_WIDTH = 49;
 const X_OFFSET = 40;
@@ -13,9 +14,7 @@ const PositionBands = ({ bassMode, keyOffset = 0, leftHand, muted = false, upsid
     { pitch: 11, color: muted ? theme.colors.positionPurpleLight : theme.colors.positionPurple, strings: bassMode ? 3 : 5, start: upsideDown ? 1 : 0 },
   ];
   const bands = definitions.flatMap((definition) =>
-    [-12, 0, 12]
-      .map((octave) => ({ ...definition, fret: definition.pitch + keyOffset + octave }))
-      .filter(({ fret }) => fret >= 0 && fret <= 15),
+    positionBandFrets(definition.pitch, keyOffset).map((fret) => ({ ...definition, fret })),
   );
   const stringCount = bassMode ? 4 : 6;
   const span = muted ? 120 : 180;

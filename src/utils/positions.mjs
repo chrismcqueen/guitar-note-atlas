@@ -1,5 +1,14 @@
 export const POSITION_ORDER = [0, 2, 4, 6, 1, 3, 5];
 
+// The released iOS app numbers keys from A (0), while this app's public data
+// numbers them from C (0). Color-band placement still follows the iOS IDs.
+export const legacyKeyOffset = (keyOffset) => (keyOffset + 3) % 12;
+
+export const positionBandFrets = (pitch, keyOffset, maxFret = 15) =>
+  [-12, 0, 12]
+    .map((octave) => pitch + legacyKeyOffset(keyOffset) + octave)
+    .filter((fret) => fret >= 0 && fret <= maxFret);
+
 export const POSITIONS = [
   { id: 0, baseFret: 4, offset: 0, title: "6TH STRING // PINKY", bassTitle: "4TH STRING // PINKY", color: "green", height: 6 },
   { id: 2, baseFret: 2, offset: 2, title: "6TH STRING // MIDDLE", bassTitle: "4TH STRING // MIDDLE", color: "green", height: 6 },
