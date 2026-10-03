@@ -88,26 +88,30 @@ const PositionZoom = ({ compact = false }) => {
   const previous = () => setPositionId((id) => stepPosition(id, -1));
   const next = () => setPositionId((id) => stepPosition(id, 1));
   const safeWidth = dimensions.width - insets.left - insets.right;
-  const compactNeckWidth = Math.min(safeWidth * 0.58, 560);
+  const compactNeckWidth = Math.min(dimensions.width * 0.53, safeWidth * 0.64);
+  const compactNeckHeight = dimensions.height * 0.594;
+  const compactArrowHeight = dimensions.height * 0.32;
+  const tabletNeckWidth = Math.min(dimensions.width * 0.5, safeWidth * 0.56, 650);
+  const tabletNeckHeight = Math.min(dimensions.height * 0.45, 320);
 
   return (
     <View style={[styles.container, compact && styles.phoneContainer]}>
-      <Text numberOfLines={1} style={[styles.title, compact && styles.phoneTitle]}>{title}</Text>
-      <View style={styles.row}>
-        <Pressable accessibilityLabel="Previous position" onPress={previous} style={[styles.arrowButton, compact && styles.phoneArrowButton]}>
-          <View style={[styles.arrow, styles.arrowLeft, compact && styles.phoneArrow]} />
+      <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.title, compact && styles.phoneTitle]}>{title}</Text>
+      <View style={[styles.row, compact && styles.phoneRow]}>
+        <Pressable accessibilityLabel="Previous position" onPress={previous} style={[styles.arrowButton, compact && styles.phoneArrowButton, compact && styles.phoneLeftButton]}>
+          <View style={[styles.arrow, styles.arrowLeft, compact && { borderBottomWidth: compactArrowHeight / 2, borderRightWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
         </Pressable>
         <Pressable
           accessibilityHint={compact ? "Returns to the full fretboard" : undefined}
           accessibilityLabel={`${title} position`}
           disabled={!compact}
           onPress={() => setShowPositionOverview(true)}
-          style={[styles.neck, compact && { height: Math.min(245, (compactNeckWidth * HEIGHT) / WIDTH), width: compactNeckWidth }]}
+          style={[styles.neck, compact ? { height: compactNeckHeight, width: compactNeckWidth } : { height: tabletNeckHeight, width: tabletNeckWidth }]}
         >
           {neck}
         </Pressable>
-        <Pressable accessibilityLabel="Next position" onPress={next} style={[styles.arrowButton, compact && styles.phoneArrowButton]}>
-          <View style={[styles.arrow, styles.arrowRight, compact && styles.phoneArrow]} />
+        <Pressable accessibilityLabel="Next position" onPress={next} style={[styles.arrowButton, compact && styles.phoneArrowButton, compact && styles.phoneRightButton]}>
+          <View style={[styles.arrow, styles.arrowRight, compact && { borderBottomWidth: compactArrowHeight / 2, borderLeftWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
         </Pressable>
       </View>
     </View>
@@ -120,13 +124,15 @@ const styles = StyleSheet.create({
   container: { alignItems: "center", height: 312, marginBottom: 144, transform: [{ translateY: 20 }], width: "100%" },
   phoneContainer: { height: 292, marginBottom: 0, transform: [{ translateY: 8 }] },
   title: { fontFamily: "proletarsk", fontSize: 40, letterSpacing: 6, marginBottom: 12 },
-  phoneTitle: { fontSize: 31, letterSpacing: 5, marginBottom: 2 },
-  row: { alignItems: "center", flex: 1, flexDirection: "row", justifyContent: "center" },
+  phoneTitle: { fontSize: 31, letterSpacing: 5, lineHeight: 38, marginBottom: 18, width: "62%" },
+  row: { alignItems: "center", flex: 1, flexDirection: "row", justifyContent: "space-between", width: "100%" },
+  phoneRow: { justifyContent: "center" },
   neck: { height: 270, width: 470 },
   arrowButton: { marginHorizontal: 60, padding: 20 },
-  phoneArrowButton: { marginHorizontal: 12, padding: 8 },
+  phoneArrowButton: { marginHorizontal: 0, padding: 0, position: "absolute", zIndex: 2 },
+  phoneLeftButton: { left: "7%" },
+  phoneRightButton: { right: "7%" },
   arrow: { borderBottomColor: "transparent", borderBottomWidth: 90, borderTopColor: "transparent", borderTopWidth: 90, height: 0, width: 0 },
-  phoneArrow: { borderBottomWidth: 58, borderTopWidth: 58 },
   arrowLeft: { borderRightColor: theme.colors.blue, borderRightWidth: 82 },
   arrowRight: { borderLeftColor: theme.colors.blue, borderLeftWidth: 82 },
 });

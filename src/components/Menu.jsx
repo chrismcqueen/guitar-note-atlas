@@ -66,7 +66,7 @@ const Menu = () => {
           }),
         },
       ]}
-      contentContainerStyle={{ paddingLeft: insets.left, paddingRight: insets.right }}
+      contentContainerStyle={{ paddingLeft: insets.left + 25, paddingRight: insets.right + 25 }}
       stickyHeaderIndices={[0, 2, 4, 6, 8, 10, 12]}
     >
       {/* SCALES */}
