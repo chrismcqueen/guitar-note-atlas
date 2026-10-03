@@ -4,6 +4,7 @@ import Svg, { Circle, Line, Rect, Text as SvgText } from "react-native-svg";
 
 import { Store } from "../../Store";
 import coordinates from "../../data/positionCoordinates.json";
+import DegreeLabel from "./Neck/DegreeLabel";
 import { getScaleDegreeLabel } from "../utils/music.mjs";
 import { getPosition, stepPosition } from "../utils/positions.mjs";
 import { theme } from "../utils/theme";
@@ -101,9 +102,13 @@ const PositionZoom = ({ compact = false }) => {
           <React.Fragment key={note.key}>
             <Circle cx={x} cy={y} r={noteRadius} fill={fill} stroke={stroke} strokeWidth={gray ? 2 : 4} />
             {globalState.options.showScaleDegree && (
-              <SvgText x={x + 1} y={y + (String(getScaleDegreeLabel(note.degree)).length === 1 ? 9 : 11)} textAnchor="middle" fontFamily="basicManual" fontSize="27" fill={text}>
-                {getScaleDegreeLabel(note.degree)}
-              </SvgText>
+              <DegreeLabel
+                fill={text}
+                fontSize="27"
+                label={getScaleDegreeLabel(note.degree)}
+                x={x + 1}
+                y={y + (String(getScaleDegreeLabel(note.degree)).length === 1 ? 9 : 11)}
+              />
             )}
           </React.Fragment>
         );
