@@ -7,16 +7,17 @@ import { theme } from "../utils/theme";
 const Header = () => {
   const { dimensions, globalState, insets, showMenu, setShowMenu, showOptions, setShowOptions } = useContext(Store);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const activeHeaderHeight = isTablet ? tabletHeaderHeight : phoneHeaderHeight;
   const fullScreen = { height: "100%", width: "100%" };
 
   return (
-    <View style={[styles.container, { height: headerHeight + insets.top }]}>
+    <View style={[styles.container, { height: activeHeaderHeight + insets.top }]}>
       <View style={fullScreen}>
         <Pressable style={[styles.menuButton, { left: isTablet ? insets.left : 0, top: insets.top }]} onPress={() => setShowMenu(!showMenu)}>
           <Text style={[styles.menu, isTablet && styles.tabletMenu, { left: isTablet ? 25 : 30 }]}>Menu</Text>
         </Pressable>
         {!showMenu && (
-          <Text style={[styles.heading, isTablet && styles.tabletHeading, { top: insets.top - (isTablet ? 52 : 18) }]}>
+          <Text style={[styles.heading, isTablet && styles.tabletHeading, { top: insets.top - (isTablet ? 52 : 13) }]}>
             {globalState?.scale.title?.toUpperCase()}
           </Text>
         )}
@@ -33,12 +34,13 @@ const Header = () => {
 
 export default Header;
 
-export const headerHeight = 44;
+export const phoneHeaderHeight = 38;
+export const tabletHeaderHeight = 44;
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.blue,
-    height: headerHeight,
+    height: tabletHeaderHeight,
     overflow: "hidden",
     position: "absolute",
     top: 0,
@@ -52,8 +54,8 @@ const styles = StyleSheet.create({
     fontFamily: "blackout",
     color: theme.colors.white,
     textAlign: "center",
-    fontSize: 81,
-    lineHeight: 87,
+    fontSize: 58,
+    lineHeight: 64,
     left: 0,
     right: 0,
     top: -18,
