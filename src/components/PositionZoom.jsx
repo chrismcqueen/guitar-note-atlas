@@ -14,18 +14,17 @@ const WIDTH = 642;
 const SPACING_X = 100;
 const OFFSET_X = 21;
 const OFFSET_Y = 24;
-const PHONE_HEIGHT = 290;
-const PHONE_STRING_GAP = 44;
-
 const PhoneNeckBackdrop = ({ bassMode, height, short, stringCount, width }) => {
   const activeWidth = width * 0.53;
   const fretWidth = activeWidth / 6.42;
   const activeOffset = OFFSET_X + (short ? SPACING_X / 2 : 0);
   const firstFret = (width - activeWidth) / 2 + activeOffset * (activeWidth / WIDTH);
-  const yScale = height / PHONE_HEIGHT;
-  const top = OFFSET_Y * (bassMode ? 2.1 : 1) * yScale;
-  const gap = PHONE_STRING_GAP * (bassMode ? 1.3 : 1) * yScale;
-  const bottom = top + (stringCount - 1) * gap;
+  const viewBoxHeight = WIDTH * (height / activeWidth);
+  const initialVerticalSpacing = viewBoxHeight / 4.5;
+  const verticalOffset = initialVerticalSpacing / 3.2;
+  const gap = Math.floor((viewBoxHeight - initialVerticalSpacing) / 5.44) * (bassMode ? 1.3 : 1);
+  const top = verticalOffset * (bassMode ? 2.1 : 1) * (activeWidth / WIDTH);
+  const physicalGap = gap * (activeWidth / WIDTH);
   const lineColor = theme.colors.neckLightGray;
   const activeStart = (width - activeWidth) / 2;
   const activeEnd = activeStart + activeWidth;
@@ -42,10 +41,10 @@ const PhoneNeckBackdrop = ({ bassMode, height, short, stringCount, width }) => {
       </Defs>
       {[...Array(13).keys()].map((index) => {
         const x = firstFret + (index - 3) * fretWidth;
-        return <Line key={`backdrop-fret-${index}`} x1={x} x2={x} y1={top} y2={bottom} stroke="url(#position-backdrop-fade)" strokeWidth="3" />;
+        return <Line key={`backdrop-fret-${index}`} x1={x} x2={x} y1={top} y2={top + (stringCount - 1) * physicalGap} stroke="url(#position-backdrop-fade)" strokeWidth="3" />;
       })}
       {[...Array(stringCount).keys()].map((string) => {
-        const y = top + string * gap;
+        const y = top + string * physicalGap;
         return <Line key={`backdrop-string-${string}`} x1="0" x2={width} y1={y} y2={y} stroke="url(#position-backdrop-fade)" strokeWidth="3" />;
       })}
     </Svg>
@@ -66,26 +65,28 @@ const PositionZoom = ({ compact = false }) => {
   const safeSideInset = Math.max(insets.left, insets.right);
   const safeWidth = dimensions.width - safeSideInset * 2;
   const compactNeckWidth = safeWidth * 0.53;
-  const compactNeckHeight = compactNeckWidth * (PHONE_HEIGHT / WIDTH);
+  const compactNeckHeight = dimensions.height * 0.594;
   const compactArrowRegionWidth = (safeWidth - compactNeckWidth) / 2;
   const compactArrowHeight = dimensions.height * 0.32;
-  const tabletNeckWidth = Math.min(dimensions.width * 0.5, safeWidth * 0.56, 650);
-  // The legacy controller's height excluded the iOS navigation chrome. On a
-  // modern full-screen window that works out to roughly 320 points.
-  const tabletNeckHeight = Math.min(dimensions.height * 0.45, 320);
-  const tabletViewBoxHeight = WIDTH * (tabletNeckHeight / tabletNeckWidth);
-  const tabletRadius = tabletViewBoxHeight / 6.6 / 2.3;
-  const noteRadius = compact ? 16 : tabletRadius * 0.75;
-  const noteStrokeWidth = compact ? 4 : tabletRadius / 4;
-  const lineWidth = compact ? 4 : tabletRadius / 5.1;
-  const labelFontSize = compact ? 27 : tabletRadius * 1.5;
+  const tabletNeckWidth = dimensions.width * 0.5;
+  const tabletNeckHeight = dimensions.height * 0.45;
+  const displayNeckWidth = compact ? compactNeckWidth : tabletNeckWidth;
+  const displayNeckHeight = compact ? compactNeckHeight : tabletNeckHeight;
+  const viewBoxHeight = WIDTH * (displayNeckHeight / displayNeckWidth);
+  const radius = viewBoxHeight / 6.6 / 2.3;
+  // The released iPad build is compatibility-letterboxed. Its UIKit radius
+  // formula therefore lands at about 75% of the same formula in a modern
+  // full-screen window.
+  const noteRadius = radius * 0.75;
+  const noteStrokeWidth = radius / 4;
+  const lineWidth = radius / (compact ? 4.8 : 5.1);
+  const labelFontSize = radius * 1.5;
   const horizontalOffset = OFFSET_X + (position.short ? SPACING_X / 2 : 0);
-  const tabletStringGap = Math.floor((tabletViewBoxHeight - tabletViewBoxHeight / 4.5) / 5.44);
-  const baseStringGap = compact ? PHONE_STRING_GAP : tabletStringGap;
+  const initialVerticalSpacing = viewBoxHeight / 4.5;
+  const baseStringGap = Math.floor((viewBoxHeight - initialVerticalSpacing) / 5.44);
   const stringGap = baseStringGap * (bassMode ? 1.3 : 1);
-  const baseVerticalOffset = compact ? OFFSET_Y : tabletViewBoxHeight / 4.5 / 3.2;
+  const baseVerticalOffset = initialVerticalSpacing / 3.2;
   const verticalOffset = baseVerticalOffset * (bassMode ? 2.1 : 1);
-  const viewBoxHeight = compact ? PHONE_HEIGHT : tabletViewBoxHeight;
   const bandFret = globalState.options.leftHand ? fretCount - 1 - position.baseFret : position.baseFret;
   const band = positionBandVerticalGeometry({
     bassMode,
@@ -147,7 +148,7 @@ const PositionZoom = ({ compact = false }) => {
         );
       })}
       {labels.map((label, index) => (
-        <SvgText key={label + index} x={horizontalOffset + (globalState.options.leftHand ? labels.length - 1 - index : index) * SPACING_X + SPACING_X / 2} y={compact ? 280 : verticalOffset + (stringCount - 1) * stringGap + labelFontSize * 1.15} textAnchor="middle" fontFamily="jrHand" fontSize={labelFontSize} fill={theme.colors.black}>
+        <SvgText key={label + index} x={horizontalOffset + (globalState.options.leftHand ? labels.length - 1 - index : index) * SPACING_X + SPACING_X / 2} y={verticalOffset + 5.45 * baseStringGap + labelFontSize * 0.75} textAnchor="middle" fontFamily="jrHand" fontSize={labelFontSize} fill={theme.colors.black}>
           {label}
         </SvgText>
       ))}
@@ -157,7 +158,7 @@ const PositionZoom = ({ compact = false }) => {
   const previous = () => setPositionId((id) => stepPosition(id, -1));
   const next = () => setPositionId((id) => stepPosition(id, 1));
   return (
-    <View style={[styles.container, compact && styles.phoneContainer]}>
+    <View style={[styles.container, !compact && { height: dimensions.height * 0.53 }, compact && styles.phoneContainer]}>
       <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.title, compact && styles.phoneTitle]}>{title}</Text>
       <View style={[styles.row, compact && styles.phoneRow]}>
         {compact && (
@@ -168,9 +169,9 @@ const PositionZoom = ({ compact = false }) => {
         <Pressable
           accessibilityLabel="Previous position"
           onPress={previous}
-          style={[styles.arrowButton, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, width: compactArrowRegionWidth }]}
+          style={[styles.arrowButton, !compact && styles.tabletArrowButton, !compact && { height: tabletNeckHeight * 0.5, left: safeWidth * 0.15, width: tabletNeckHeight * 0.25 }, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, width: compactArrowRegionWidth }]}
         >
-          <View style={[styles.arrow, styles.arrowLeft, compact && { borderBottomWidth: compactArrowHeight / 2, borderRightWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
+          <View style={[styles.arrow, styles.arrowLeft, !compact && { borderBottomWidth: tabletNeckHeight * 0.25, borderRightWidth: tabletNeckHeight * 0.25, borderTopWidth: tabletNeckHeight * 0.25 }, compact && { borderBottomWidth: compactArrowHeight / 2, borderRightWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
         </Pressable>
         <Pressable
           accessibilityHint={compact ? "Returns to the full fretboard" : undefined}
@@ -184,9 +185,9 @@ const PositionZoom = ({ compact = false }) => {
         <Pressable
           accessibilityLabel="Next position"
           onPress={next}
-          style={[styles.arrowButton, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, width: compactArrowRegionWidth }]}
+          style={[styles.arrowButton, !compact && styles.tabletArrowButton, !compact && { height: tabletNeckHeight * 0.5, right: safeWidth * 0.15, width: tabletNeckHeight * 0.25 }, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, width: compactArrowRegionWidth }]}
         >
-          <View style={[styles.arrow, styles.arrowRight, compact && { borderBottomWidth: compactArrowHeight / 2, borderLeftWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
+          <View style={[styles.arrow, styles.arrowRight, !compact && { borderBottomWidth: tabletNeckHeight * 0.25, borderLeftWidth: tabletNeckHeight * 0.25, borderTopWidth: tabletNeckHeight * 0.25 }, compact && { borderBottomWidth: compactArrowHeight / 2, borderLeftWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
         </Pressable>
       </View>
     </View>
@@ -200,11 +201,12 @@ const styles = StyleSheet.create({
   phoneContainer: { height: 292, marginBottom: 0, transform: [{ translateY: 8 }] },
   title: { fontFamily: "proletarsk", fontSize: 40, letterSpacing: 6, marginBottom: 12, textAlign: "center" },
   phoneTitle: { fontSize: 31, letterSpacing: 5, lineHeight: 38, marginBottom: 18, width: "62%" },
-  row: { alignItems: "center", flex: 1, flexDirection: "row", justifyContent: "space-between", width: "100%" },
+  row: { alignItems: "center", flex: 1, flexDirection: "row", justifyContent: "center", width: "100%" },
   phoneRow: { justifyContent: "center" },
   phoneBackdrop: { position: "absolute", top: "50%" },
   neck: { height: 270, width: 470 },
-  arrowButton: { marginHorizontal: 60, padding: 20 },
+  arrowButton: { alignItems: "center", justifyContent: "center", padding: 0 },
+  tabletArrowButton: { position: "absolute", zIndex: 2 },
   phoneArrowButton: { alignItems: "center", justifyContent: "center", marginHorizontal: 0, padding: 0, zIndex: 2 },
   arrow: { borderBottomColor: "transparent", borderBottomWidth: 90, borderTopColor: "transparent", borderTopWidth: 90, height: 0, width: 0 },
   arrowLeft: { borderRightColor: theme.colors.blue, borderRightWidth: 82 },
