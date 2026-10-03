@@ -17,6 +17,7 @@ export default function App() {
     blackout: require("./src/utils/fonts/Blackout-Midnight.ttf"),
     basicManual: require("./src/utils/fonts/SVBasicManual-Bold.ttf"),
     opus: require("./src/utils/fonts/OpusTextStd.otf"),
+    opusChords: require("./src/utils/fonts/OpusChordsSansStd.otf"),
     proletarsk: require("./src/utils/fonts/Proletarsk.ttf"),
   });
   const [loading, setLoading] = useState(true);
