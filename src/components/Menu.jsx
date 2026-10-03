@@ -5,10 +5,13 @@ import { data } from "../../data";
 import { Store } from "../../Store";
 import { storeGlobalState } from "../utils/functions";
 import { theme } from "../utils/theme";
+import { phoneHeaderHeight, tabletHeaderHeight } from "./Header";
 
 const Menu = () => {
   const { dimensions, insets, showMenu, globalState, setGlobalState } = useContext(Store);
   const menuAnim = useRef(new Animated.Value(1)).current;
+  const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const menuTop = (isTablet ? tabletHeaderHeight : phoneHeaderHeight) + insets.top;
 
   useEffect(() => {
     showMenu
@@ -55,11 +58,11 @@ const Menu = () => {
       style={[
         styles.menu,
         {
-          height: dimensions.height - 38,
-          width: dimensions.width,
+          height: dimensions.height - menuTop,
+          width: "100%",
           top: menuAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [38, -dimensions.height],
+            outputRange: [menuTop, -dimensions.height],
           }),
         },
       ]}
