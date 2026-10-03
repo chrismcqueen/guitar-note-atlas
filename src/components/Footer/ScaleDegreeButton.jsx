@@ -7,11 +7,14 @@ import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
 
 export const ScaleDegreeButton = (props) => {
-  const { globalState, setGlobalState } = useContext(Store);
+  const { dimensions, globalState, setGlobalState } = useContext(Store);
   const { selected, altSelected, d, e } = props;
   const { getScaleDegree, getMatchingScale } = useFooter();
   const [accidental, degree] = getScaleDegree(d).length === 2 ? getScaleDegree(d).split("") : [undefined, getScaleDegree(d)];
   const [altAccidental, altDegree] = e === undefined ? [] : getScaleDegree(e).split("");
+  const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const degreeWidth = isTablet ? TABLET_DEGREE_WIDTH : PHONE_DEGREE_WIDTH;
+  const degreeSize = { width: degreeWidth };
 
   const onPressScaleDegree = () => {
     const currentDegrees = globalState.scale.degrees;
@@ -37,8 +40,8 @@ export const ScaleDegreeButton = (props) => {
     if (altSelected) {
       return (
         <Pressable onPress={onPressScaleDegree}>
-          <View style={[styles.scaleDegreeSelected]}>
-            <Text style={[styles.scaleDegree, styles.scaleDegreeSelectedText]}>
+          <View style={[styles.scaleDegreeSelected, degreeSize]}>
+            <Text style={[styles.scaleDegree, degreeSize, styles.scaleDegreeSelectedText]}>
               {altAccidental && <Accidental>{altAccidental}</Accidental>}
               {altDegree}
             </Text>
@@ -50,8 +53,8 @@ export const ScaleDegreeButton = (props) => {
     if (selected) {
       return (
         <Pressable onPress={onPressScaleDegree}>
-          <View style={[styles.scaleDegreeSelected]}>
-            <Text style={[styles.scaleDegree, styles.scaleDegreeSelectedText, !accidental && styles.accidentalOffset]}>
+          <View style={[styles.scaleDegreeSelected, degreeSize]}>
+            <Text style={[styles.scaleDegree, degreeSize, styles.scaleDegreeSelectedText, !accidental && styles.accidentalOffset]}>
               {accidental && <Accidental>{accidental}</Accidental>}
               {degree}
             </Text>
@@ -63,14 +66,14 @@ export const ScaleDegreeButton = (props) => {
     return (
       <Pressable onPress={onPressScaleDegree}>
         <View>
-          <Text style={[styles.scaleDegreeSmall, styles.scaleDegreeSmallTop, selected && styles.scaleDegreeSelected]}>
+          <Text style={[styles.scaleDegreeSmall, degreeSize, styles.scaleDegreeSmallTop, selected && styles.scaleDegreeSelected]}>
             <Text style={styles.accidental}>
               <Accidental />
               {accidental}
             </Text>
             {degree}
           </Text>
-          <Text style={[styles.scaleDegreeSmall, styles.scaleDegreeSmallBottom, selected && styles.scaleDegreeSelected]}>
+          <Text style={[styles.scaleDegreeSmall, degreeSize, styles.scaleDegreeSmallBottom, selected && styles.scaleDegreeSelected]}>
             <Text style={styles.accidental}>
               <Accidental />
               {altAccidental}
@@ -84,8 +87,8 @@ export const ScaleDegreeButton = (props) => {
 
   return (
     <Pressable onPress={onPressScaleDegree}>
-      <View style={[selected && styles.scaleDegreeSelected]}>
-        <Text style={[styles.scaleDegree, selected && styles.scaleDegreeSelectedText, !accidental && styles.accidentalOffset]}>
+      <View style={[degreeSize, selected && styles.scaleDegreeSelected]}>
+        <Text style={[styles.scaleDegree, degreeSize, selected && styles.scaleDegreeSelectedText, !accidental && styles.accidentalOffset]}>
           {accidental && <Accidental>{accidental}</Accidental>}
           {degree}
         </Text>
@@ -95,6 +98,8 @@ export const ScaleDegreeButton = (props) => {
 };
 
 const SCALE_DEGREE_HEIGHT = 52;
+const PHONE_DEGREE_WIDTH = 46;
+const TABLET_DEGREE_WIDTH = 52;
 
 const styles = StyleSheet.create({
   label: {
