@@ -30,7 +30,9 @@ const KeySelector = ({ compact = false }) => {
             <View style={[styles.compactArrow, styles.arrowDown]} />
           </Pressable>
         </View>
-        <Text style={styles.compactTitle}>KEY: {globalState?.key.title}</Text>
+        <Text adjustsFontSizeToFit minimumFontScale={0.7} numberOfLines={1} style={styles.compactTitle}>
+          KEY: {globalState?.key.title}
+        </Text>
       </View>
     );
   }
@@ -40,7 +42,9 @@ const KeySelector = ({ compact = false }) => {
       <Pressable style={styles.arrowContainer} onPress={() => handlePressArrow("left")}>
         <View style={[styles.arrow, styles.arrowLeft]}></View>
       </Pressable>
-      <Text style={styles.title}>KEY CENTER - {globalState?.key.title}</Text>
+      <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={styles.title}>
+        KEY CENTER - {globalState?.key.title}
+      </Text>
       <Pressable style={styles.arrowContainer} onPress={() => handlePressArrow("right")}>
         <View style={[styles.arrow, styles.arrowRight]}></View>
       </Pressable>
@@ -96,6 +100,7 @@ const styles = StyleSheet.create({
     width: 190,
   },
   compactTitle: {
+    flex: 1,
     fontSize: 24,
     fontWeight: "700",
     marginLeft: 12,
