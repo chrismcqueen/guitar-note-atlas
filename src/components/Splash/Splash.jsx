@@ -10,7 +10,7 @@ import { storeGlobalState, removeStorage } from "../../utils/functions";
 import { theme } from "../../utils/theme";
 
 const Splash = ({ setLoading }) => {
-  const { setGlobalState, dimensions } = useContext(Store);
+  const { setGlobalState, setShowTutorial, dimensions } = useContext(Store);
 
   const initialValue = {
     key: {
@@ -31,6 +31,7 @@ const Splash = ({ setLoading }) => {
       upsideDown: false,
       hideAnchorFrets: false,
     },
+    displayedTutorial: false,
   };
 
   //check local storage for previous global state
@@ -39,11 +40,24 @@ const Splash = ({ setLoading }) => {
       const value = await AsyncStorage.getItem("globalState");
       const parsedValue = value !== null ? JSON.parse(value) : null;
       if (parsedValue !== null) {
-        setGlobalState(parsedValue);
+        const migratedValue = {
+          ...initialValue,
+          ...parsedValue,
+          key: { ...initialValue.key, ...parsedValue.key },
+          scale: { ...initialValue.scale, ...parsedValue.scale },
+          options: { ...initialValue.options, ...parsedValue.options },
+        };
+        const shouldShowTutorial = !migratedValue.displayedTutorial;
+        const nextValue = { ...migratedValue, displayedTutorial: true };
+        setGlobalState(nextValue);
+        storeGlobalState(nextValue);
+        setShowTutorial(shouldShowTutorial);
       } else {
         //if no ls, set to C major scale
-        setGlobalState(initialValue);
-        storeGlobalState(initialValue);
+        const nextValue = { ...initialValue, displayedTutorial: true };
+        setGlobalState(nextValue);
+        storeGlobalState(nextValue);
+        setShowTutorial(true);
       }
       setTimeout(() => setLoading(false), 500);
     } catch (e) {
@@ -56,17 +70,16 @@ const Splash = ({ setLoading }) => {
     getLocalStorage();
   }, []);
 
-  let paddingTop = dimensions.height / 9;
   const paddingLeft = dimensions.width / 100;
 
   return (
     <>
-      <View style={[styles.container, { paddingTop: paddingTop, width: dimensions.width, height: dimensions.height }]}>
-        <View style={{ paddingLeft: paddingLeft, height: dimensions.height / 2 }}>
+      <View style={[styles.container, { width: dimensions.width, height: dimensions.height }]}>
+        <View style={[styles.title, { paddingLeft: paddingLeft }]}>
           <TitleSVG />
         </View>
-        <View style={[styles.neck, { height: dimensions.height / 2 }]}>
-          <View style={{ justifyContent: "flex-end" }}>
+        <View style={styles.neck}>
+          <View style={styles.neckContent}>
             <NeckSVG dimensions={dimensions} />
           </View>
         </View>
@@ -84,6 +97,14 @@ const styles = StyleSheet.create({
   },
 
   neck: {
+    flex: 0.4,
     justifyContent: "flex-end",
+  },
+  neckContent: {
+    justifyContent: "flex-end",
+  },
+  title: {
+    flex: 0.6,
+    justifyContent: "center",
   },
 });

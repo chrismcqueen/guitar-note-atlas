@@ -3,72 +3,38 @@ import Svg, { G, Circle, Text } from "react-native-svg";
 
 import { Store } from "../../../Store";
 import { theme } from "../../utils/theme";
-import { processFontFamily } from "expo-font";
+import { getScaleDegreeLabel, normalizePitchClass } from "../../utils/music.mjs";
 
-const Note = ({ fret, string }) => {
+const Note = ({
+  circleRadius = 13,
+  circleStrokeWidth,
+  centerInFrets = false,
+  fret,
+  labelFontSize = 25,
+  leftHand,
+  noteSizeOverride,
+  string,
+  stringCount,
+  stringOffset,
+  stringSpan = 180,
+}) => {
   const { globalState } = useContext(Store);
   const degrees = globalState.scale.degrees;
 
-  const getString = (s) => globalState.strings[s - 1];
-
   const getOffset = (f, stringOffset) => {
-    let offset = Math.floor(f) + stringOffset;
-    offset -= globalState.key.key_offset;
-    offset = offset < 0 ? offset + 12 : offset > 11 ? offset - 12 : offset;
-    return offset;
+    return normalizePitchClass(f + stringOffset - globalState.key.key_offset);
   };
 
-  const isNote = (f, stringOffset) => (degrees.includes(getOffset(f, stringOffset)) ? true : false);
+  const isNote = (f, stringOffset) => {
+    const offset = getOffset(f, stringOffset);
+    return degrees.some((degree) => Math.floor(degree) === offset);
+  };
 
   const getScaleDegree = (fret, stringOffset) => {
     const offset = getOffset(fret, stringOffset);
-    switch (offset) {
-      case 0:
-        return "1";
-        break;
-      case 1:
-        return "b2";
-        break;
-      case 2:
-        return "2";
-        break;
-      case 3:
-        return "b3";
-        break;
-      case 3.1:
-        return "#2";
-        break;
-      case 4:
-        return "3";
-        break;
-      case 5:
-        return "4";
-        break;
-      case 6:
-        return "b5";
-        break;
-      case 6.1:
-        return "#4";
-        break;
-      case 7:
-        return "5";
-        break;
-      case 8:
-        return "b6";
-        break;
-      case 8.1:
-        return "#5";
-        break;
-      case 9:
-        return "6";
-        break;
-      case 10:
-        return "b7";
-        break;
-      case 11:
-        return "7";
-        break;
-    }
+    const selectedDegree = degrees.find((degree) => Math.floor(degree) === offset) ?? offset;
+
+    return getScaleDegreeLabel(selectedDegree);
   };
 
   const getFretTranslate = (f) => {
@@ -127,57 +93,39 @@ const Note = ({ fret, string }) => {
     }
   };
 
-  const getStringTranslate = (s) => {
-    switch (s) {
-      case 1:
-        return 0;
-        break;
-      case 2:
-        return 35;
-        break;
-      case 3:
-        return 70;
-        break;
-      case 4:
-        return 105;
-        break;
-      case 5:
-        return 140;
-        break;
-      case 6:
-        return 175;
-        break;
-    }
-  };
+  const getStringTranslate = (s) => (stringSpan / (stringCount - 1)) * (s - 1);
 
-  const x = getFretTranslate(fret);
+  const noteSize = noteSizeOverride ?? (fret === 0 ? 34 : 30);
+  const fretCenter = fret === 1 ? 64.5 : 114 + 49 * (fret - 2);
+  const fretTranslate = centerInFrets && fret > 0 ? fretCenter - noteSize / 2 : getFretTranslate(fret);
+  const x = leftHand ? 864 - noteSize - fretTranslate : fretTranslate;
   const y = getStringTranslate(string);
-  const scaleDegree = getScaleDegree(fret, getString(string));
-  const noteSize = 28;
+  const scaleDegree = getScaleDegree(fret, stringOffset);
 
-  if (isNote(fret, getString(string)))
+  if (isNote(fret, stringOffset))
     return (
       <G transform={`translate(${x}, ${y})`}>
-        <Svg width={fret === 0 ? noteSize + 4 : noteSize} height={fret === 0 ? noteSize + 4 : noteSize}>
+        <Svg width={noteSize} height={noteSize} overflow="visible">
           <Circle
-            cx={fret === 0 ? noteSize / 2 + 2 : noteSize / 2}
-            cy={fret === 0 ? noteSize / 2 + 2 : noteSize / 2}
-            r="12"
+            cx={noteSize / 2}
+            cy={noteSize / 2}
+            r={circleRadius}
             stroke={fret === 0 ? theme.colors.grey : theme.colors.black}
             fill={fret === 0 ? theme.colors.white : scaleDegree === "1" ? theme.colors.white : theme.colors.black}
-            strokeWidth={fret === 0 ? 2 : 4}
+            strokeWidth={circleStrokeWidth ?? (fret === 0 ? 2 : 3.5)}
           />
-          <Text
-            fontFamily={processFontFamily("basicManual")}
-            textAnchor="middle"
-            x="51.5%"
-            y="68%"
-            fontSize={16}
-            stroke={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
-            fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
-          >
-            {scaleDegree}
-          </Text>
+          {globalState.options.showScaleDegree && (
+            <Text
+              fontFamily="basicManual"
+              textAnchor="middle"
+              x="55%"
+              y="78%"
+              fontSize={labelFontSize}
+              fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
+            >
+              {scaleDegree}
+            </Text>
+          )}
         </Svg>
       </G>
     );

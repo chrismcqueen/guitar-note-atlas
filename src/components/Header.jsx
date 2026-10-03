@@ -1,54 +1,47 @@
-import React, { useContext, useEffect, useRef } from "react";
-import { Animated, Text, View, StyleSheet, Pressable } from "react-native";
+import React, { useContext } from "react";
+import { Text, View, StyleSheet, Pressable } from "react-native";
 
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
 
 const Header = () => {
-  const { globalState, showMenu, setShowMenu, showOptions, setShowOptions } = useContext(Store);
-  const overlay = () => showOptions && setShowOptions(false);
+  const { dimensions, globalState, insets, showMenu, setShowMenu, showOptions, setShowOptions } = useContext(Store);
+  const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const activeHeaderHeight = isTablet ? tabletHeaderHeight : phoneHeaderHeight;
   const fullScreen = { height: "100%", width: "100%" };
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    showOptions
-      ? Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 150,
-          useNativeDriver: true,
-        }).start()
-      : Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 150,
-          useNativeDriver: true,
-        }).start();
-  }, [fadeAnim, showOptions]);
-
   return (
-    <View style={styles.container}>
-      <Pressable style={fullScreen} onPress={overlay}>
-        <Pressable style={styles.menuButton} onPress={() => setShowMenu(!showMenu)}>
-          <Text style={styles.menu}>Menu</Text>
+    <View style={[styles.container, { height: activeHeaderHeight + insets.top }]}>
+      <View style={fullScreen}>
+        <Pressable style={[styles.menuButton, { left: isTablet ? insets.left : 0, top: insets.top }]} onPress={() => setShowMenu(!showMenu)}>
+          <Text style={[styles.menu, isTablet && styles.tabletMenu, { left: isTablet ? 25 : 30 }]}>Menu</Text>
         </Pressable>
-        <Text style={styles.heading}>{globalState?.scale.title}</Text>
-        <Pressable style={styles.settingsButtonContainer} onPress={() => !showMenu && setShowOptions(!showOptions)}>
+        {!showMenu && (
+          <Text style={[styles.heading, isTablet && styles.tabletHeading, { top: insets.top - (isTablet ? 52 : 13) }]}>
+            {globalState?.scale.title?.toUpperCase()}
+          </Text>
+        )}
+        <Pressable
+          style={[styles.settingsButtonContainer, { right: isTablet ? 25 + insets.right : 30, top: insets.top + 2 }]}
+          onPress={() => !showMenu && setShowOptions(!showOptions)}
+        >
           <Text style={[styles.settingsButton, showMenu && styles.disableOptions]}>● ● ●</Text>
         </Pressable>
-        {showOptions && <Animated.View style={[styles.overlay, { opacity: fadeAnim }]} />}
-      </Pressable>
+      </View>
     </View>
   );
 };
 
 export default Header;
 
-export const headerHeight = 38;
+export const phoneHeaderHeight = 38;
+export const tabletHeaderHeight = 44;
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.blue,
-    height: headerHeight,
+    height: tabletHeaderHeight,
+    overflow: "hidden",
     position: "absolute",
     top: 0,
     width: "100%",
@@ -61,34 +54,35 @@ const styles = StyleSheet.create({
     fontFamily: "blackout",
     color: theme.colors.white,
     textAlign: "center",
-    fontSize: 60,
+    fontSize: 58,
+    lineHeight: 64,
     left: 0,
     right: 0,
-    top: -4,
+    top: -18,
+  },
+  tabletHeading: {
+    fontSize: 118,
+    lineHeight: 125,
   },
   menu: {
     fontFamily: "blackout",
     color: theme.colors.white,
     position: "absolute",
-    top: 15,
-    left: 35,
-    fontSize: 18,
+    top: 13,
+    fontSize: 20,
   },
   menuButton: {
+    position: "absolute",
     zIndex: 100,
     width: 100,
     height: 50,
   },
-  overlay: {
-    backgroundColor: theme.colors.overlay,
-    zIndex: 2000,
-    position: "absolute",
-    width: "100%",
-    height: headerHeight + 20,
+  tabletMenu: {
+    fontSize: 24,
   },
   settingsButton: {
     color: theme.colors.white,
-    fontSize: 6,
+    fontSize: 7,
     paddingHorizontal: 40,
     paddingVertical: 30,
     marginHorizontal: -40,
@@ -97,7 +91,6 @@ const styles = StyleSheet.create({
   settingsButtonContainer: {
     position: "absolute",
     top: 2,
-    right: 35,
     padding: 15,
   },
 });

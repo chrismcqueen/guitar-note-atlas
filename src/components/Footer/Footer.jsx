@@ -2,15 +2,17 @@ import React, { useContext } from "react";
 import { View, StyleSheet } from "react-native";
 
 import { Store } from "../../../Store";
-import { FooterButton, ScaleDegreeButton, useFooter } from ".";
+import { FooterButton } from "./FooterButton";
+import { ScaleDegreeButton } from "./ScaleDegreeButton";
+import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
 
 export const Footer = () => {
-  const { globalState } = useContext(Store);
+  const { globalState, insets } = useContext(Store);
   const { degrees, handleClear, handleAll } = useFooter();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingLeft: insets.left, paddingRight: insets.right }]}>
       <FooterButton onPress={handleClear}>Clear</FooterButton>
       <View style={styles.scaleDegreeContainer}>
         {degrees.map((d, i) => {
@@ -28,15 +30,14 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: theme.colors.white,
     borderBottomColor: theme.colors.blue,
-    borderBottomWidth: 20,
+    borderBottomWidth: 8,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    transform: [{ translateY: 4 }],
+    minHeight: 56,
   },
   scaleDegreeContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
+    justifyContent: "center",
   },
 });

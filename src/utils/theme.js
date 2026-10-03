@@ -1,12 +1,14 @@
 export const theme = {
   colors: {
     black: "#000",
-    blue: "#4069AE",
-    grey: "#656565",
-    gray: "#656565",
-    lightBlue: "#9AAECD",
+    blue: "#3E69AF",
+    grey: "#505154",
+    gray: "#505154",
+    lightBlue: "#9BAECD",
     overlay: "#000000AA",
     pureWhite: "#FFF",
-    white: "#FAFAF1",
+    splashCream: "#F6F5D7",
+    tutorialPaper: "#FBFAF1",
+    white: "#FBFAF1",
   },
 };

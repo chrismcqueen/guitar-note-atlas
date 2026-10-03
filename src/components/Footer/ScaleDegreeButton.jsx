@@ -1,58 +1,36 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { Text, View, StyleSheet, Pressable } from "react-native";
 import { Store } from "../../../Store";
 
-import { Accidental, useFooter } from ".";
+import { Accidental } from "./Accidental";
+import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
 
 export const ScaleDegreeButton = (props) => {
   const { globalState, setGlobalState } = useContext(Store);
   const { selected, altSelected, d, e } = props;
-  const [degree, setDegree] = useState();
-  const [altDegree, setAltDegree] = useState();
-  const [accidental, setAccidental] = useState();
-  const [altAccidental, setAltAccidental] = useState();
-
-  const { getScaleDegree } = useFooter();
-
-  useEffect(() => {
-    const deg = getScaleDegree(d);
-    switch (deg.length) {
-      case 1:
-        setDegree(deg);
-        break;
-      case 2:
-        const items = getScaleDegree(d).split("");
-        setAccidental(items[0]);
-        setDegree(items[1]);
-        break;
-    }
-
-    if (!e) return;
-    const altDeg = getScaleDegree(e);
-    switch (altDeg.length) {
-      case 1:
-        setAltDegree(deg);
-        break;
-      case 2:
-        const items = getScaleDegree(e).split("");
-        setAltAccidental(items[0]);
-        setAltDegree(items[1]);
-        break;
-      default:
-        break;
-    }
-  }, []);
+  const { getScaleDegree, getMatchingScale } = useFooter();
+  const [accidental, degree] = getScaleDegree(d).length === 2 ? getScaleDegree(d).split("") : [undefined, getScaleDegree(d)];
+  const [altAccidental, altDegree] = e === undefined ? [] : getScaleDegree(e).split("");
 
   const onPressScaleDegree = () => {
-    if (globalState.scale.degrees.includes(d)) {
-      setGlobalState({ ...globalState, scale: { degrees: globalState.scale.degrees.filter((i) => i !== d) } });
+    const currentDegrees = globalState.scale.degrees;
+    let nextDegrees;
+
+    if (e !== undefined && currentDegrees.includes(e)) {
+      nextDegrees = [...currentDegrees.filter((degree) => degree !== e), d];
+    } else if (currentDegrees.includes(d)) {
+      nextDegrees = currentDegrees.filter((degree) => degree !== d);
     } else {
-      const degrees = globalState.scale.degrees;
-      degrees.push(d);
-      degrees.sort((a, b) => a - b);
-      setGlobalState({ ...globalState, scale: { degrees } });
+      nextDegrees = [...currentDegrees, e ?? d];
     }
+
+    nextDegrees.sort((a, b) => a - b);
+    const matchingScale = getMatchingScale(nextDegrees);
+    const scale = matchingScale
+      ? { ...matchingScale, degrees: nextDegrees }
+      : { title: "", long_title: "", menu_title: "", degrees: nextDegrees };
+    setGlobalState({ ...globalState, scale });
   };
 
   if (altDegree) {
@@ -116,7 +94,7 @@ export const ScaleDegreeButton = (props) => {
   );
 };
 
-const SCALE_DEGREE_HEIGHT = 56;
+const SCALE_DEGREE_HEIGHT = 52;
 
 const styles = StyleSheet.create({
   label: {
@@ -127,14 +105,14 @@ const styles = StyleSheet.create({
   },
 
   scaleDegree: {
-    fontSize: 37,
+    fontSize: 36,
     display: "flex",
     color: theme.colors.lightBlue,
     fontFamily: "basicManual",
-    width: 50,
+    width: 52,
     height: SCALE_DEGREE_HEIGHT,
     textAlign: "center",
-    paddingTop: 10,
+    paddingTop: 7,
   },
   scaleDegreeSelected: {
     backgroundColor: theme.colors.blue,
@@ -144,10 +122,10 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
   },
   scaleDegreeSmall: {
-    fontSize: 28,
+    fontSize: 27,
     color: theme.colors.lightBlue,
     fontFamily: "basicManual",
-    width: 50,
+    width: 52,
     textAlign: "center",
     height: SCALE_DEGREE_HEIGHT / 2,
   },
@@ -155,12 +133,12 @@ const styles = StyleSheet.create({
     fontFamily: "opus",
   },
   accidentalOffset: {
-    transform: [{ translateY: 6 }],
+    transform: [{ translateY: 4 }],
   },
   scaleDegreeSmallTop: {
-    transform: [{ translateY: -4 }],
+    transform: [{ translateY: -3 }],
   },
   scaleDegreeSmallBottom: {
-    transform: [{ translateY: -8 }],
+    transform: [{ translateY: -6 }],
   },
 });
