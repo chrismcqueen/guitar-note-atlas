@@ -10,7 +10,7 @@ import { Store } from "../../Store";
 import { theme } from "../utils/theme";
 
 export const Main = () => {
-  const { dimensions, insets } = useContext(Store);
+  const { dimensions, insets, showPositionOverview } = useContext(Store);
   const fullDimensions = { height: dimensions.height, width: dimensions.width };
   const fullScreen = { height: "100%", width: "100%" };
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
@@ -33,7 +33,7 @@ export const Main = () => {
             <View style={styles.phoneContent}>
               <KeySelector />
               <View style={styles.phoneNeck}>
-                <Neck />
+                {showPositionOverview ? <Neck /> : <PositionZoom compact />}
               </View>
             </View>
           )}
