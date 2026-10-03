@@ -6,12 +6,17 @@ import { theme } from "../../utils/theme";
 const FRET_WIDTH = 49;
 const X_OFFSET = 40;
 
-const PositionBands = ({ bassMode, leftHand, muted = false, upsideDown }) => {
-  const bands = [
-    { fret: 4, color: muted ? theme.colors.positionGreenLight : theme.colors.positionGreen, strings: bassMode ? 4 : 6, start: 0 },
-    { fret: 6, color: muted ? theme.colors.positionYellowLight : theme.colors.positionYellow, strings: bassMode ? 2 : 4, start: upsideDown ? (bassMode ? 2 : 2) : 0 },
-    { fret: 11, color: muted ? theme.colors.positionPurpleLight : theme.colors.positionPurple, strings: bassMode ? 3 : 5, start: upsideDown ? 1 : 0 },
+const PositionBands = ({ bassMode, keyOffset = 0, leftHand, muted = false, upsideDown }) => {
+  const definitions = [
+    { pitch: 4, color: muted ? theme.colors.positionGreenLight : theme.colors.positionGreen, strings: bassMode ? 4 : 6, start: 0 },
+    { pitch: 6, color: muted ? theme.colors.positionYellowLight : theme.colors.positionYellow, strings: bassMode ? 2 : 4, start: upsideDown ? 2 : 0 },
+    { pitch: 11, color: muted ? theme.colors.positionPurpleLight : theme.colors.positionPurple, strings: bassMode ? 3 : 5, start: upsideDown ? 1 : 0 },
   ];
+  const bands = definitions.flatMap((definition) =>
+    [-12, 0, 12]
+      .map((octave) => ({ ...definition, fret: definition.pitch + keyOffset + octave }))
+      .filter(({ fret }) => fret >= 0 && fret <= 15),
+  );
   const stringCount = bassMode ? 4 : 6;
   const span = muted ? 120 : 180;
   const stringGap = span / (stringCount - 1);

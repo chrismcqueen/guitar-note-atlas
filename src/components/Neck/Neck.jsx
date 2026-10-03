@@ -39,7 +39,7 @@ const Neck = () => {
     >
       <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 864 233">
         {!globalState.options.hideColors && (
-          <PositionBands bassMode={globalState.options.bassMode} leftHand={globalState.options.leftHand} upsideDown={globalState.options.upsideDown} />
+          <PositionBands bassMode={globalState.options.bassMode} keyOffset={globalState.key.key_offset} leftHand={globalState.options.leftHand} upsideDown={globalState.options.upsideDown} />
         )}
         <Strings count={tuning.length} />
         <Frets leftHand={globalState.options.leftHand} />
