@@ -11,7 +11,7 @@ import { theme } from "../utils/theme";
 import { getPosition, positionStartFret, stepPosition } from "../utils/positions.mjs";
 
 const PositionZoom = ({ compact = false }) => {
-  const { globalState, positionId, setPositionId, setShowPositionOverview } = useContext(Store);
+  const { dimensions, globalState, insets, positionId, setPositionId, setShowPositionOverview } = useContext(Store);
   if (!globalState.options || !globalState.strings) return null;
 
   const position = getPosition(positionId);
@@ -52,8 +52,18 @@ const PositionZoom = ({ compact = false }) => {
   );
 
   if (compact) {
+    const safeWidth = dimensions.width - insets.left - insets.right - 8;
+    const phoneNeckDimensions = {
+      height: Math.min(250, (safeWidth * 233) / cropWidth),
+      width: safeWidth,
+    };
     return (
-      <Pressable accessibilityHint="Returns to the full fretboard" accessibilityLabel={`${title} position`} onPress={() => setShowPositionOverview(true)} style={styles.phoneNeck}>
+      <Pressable
+        accessibilityHint="Returns to the full fretboard"
+        accessibilityLabel={`${title} position`}
+        onPress={() => setShowPositionOverview(true)}
+        style={[styles.phoneNeck, phoneNeckDimensions]}
+      >
         {neck}
       </Pressable>
     );
@@ -82,7 +92,7 @@ const styles = StyleSheet.create({
   title: { fontFamily: "proletarsk", fontSize: 40, letterSpacing: 6, marginBottom: 12 },
   row: { alignItems: "center", flex: 1, flexDirection: "row", justifyContent: "center" },
   neck: { height: 270, width: 470 },
-  phoneNeck: { height: 250, width: "100%" },
+  phoneNeck: { maxHeight: 250 },
   arrowButton: { marginHorizontal: 60, padding: 20 },
   arrow: { borderBottomColor: "transparent", borderBottomWidth: 90, borderTopColor: "transparent", borderTopWidth: 90, height: 0, width: 0 },
   arrowLeft: { borderRightColor: theme.colors.blue, borderRightWidth: 82 },
