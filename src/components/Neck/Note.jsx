@@ -121,8 +121,6 @@ const Note = ({
               x="55%"
               y="78%"
               fontSize={labelFontSize}
-              stroke={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
-              strokeWidth={0.25}
               fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
             >
               {scaleDegree}

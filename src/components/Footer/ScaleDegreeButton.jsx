@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     fontSize: 42,
     display: "flex",
     color: theme.colors.lightBlue,
-    fontFamily: "basicManual",
+    fontFamily: "jrHand",
     width: 52,
     height: SCALE_DEGREE_HEIGHT,
     textAlign: "center",
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   scaleDegreeSmall: {
     fontSize: 31,
     color: theme.colors.lightBlue,
-    fontFamily: "basicManual",
+    fontFamily: "jrHand",
     width: 52,
     textAlign: "center",
     height: SCALE_DEGREE_HEIGHT / 2,

@@ -81,9 +81,6 @@ const styles = StyleSheet.create({
     fontFamily: "proletarsk",
     fontSize: 31,
     letterSpacing: 7,
-    textShadowColor: theme.colors.black,
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 0.65,
     textAlign: "center",
     paddingHorizontal: 12,
     width: 430,
@@ -101,8 +98,8 @@ const styles = StyleSheet.create({
   },
   compactTitle: {
     flex: 1,
+    fontFamily: "blackout",
     fontSize: 24,
-    fontWeight: "700",
     marginLeft: 12,
   },
   compactArrowButton: {
