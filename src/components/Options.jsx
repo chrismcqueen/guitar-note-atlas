@@ -5,7 +5,7 @@ import * as Linking from "expo-linking";
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { storeGlobalState } from "../utils/functions";
-import { pressedOpacity, withPressedOpacity } from "../utils/pressable";
+import { pressedOpacity } from "../utils/pressable";
 
 const Options = ({ mounted, transition }) => {
   const { dimensions, insets, setShowOptions, setShowTutorial, globalState, setGlobalState } = useContext(Store);
@@ -77,10 +77,14 @@ const Options = ({ mounted, transition }) => {
   if (!mounted) return null;
 
   return (
-      <View style={styles.modalContainer}>
-        <Animated.View pointerEvents="none" style={[styles.backdrop, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [0, 0.5] }) }]} />
-        <Pressable accessibilityLabel="Close options" onPress={() => setShowOptions(false)} style={withPressedOpacity(styles.dismissArea)} />
-        <View pointerEvents="box-none" style={styles.drawerSlot}>
+      <View style={[styles.modalContainer, { height: dimensions.height, width: dimensions.width }]}>
+        <Animated.View pointerEvents="none" style={[styles.backdrop, { opacity: transition }]} />
+        <Pressable
+          accessibilityLabel="Close options"
+          onPress={() => setShowOptions(false)}
+          style={[styles.dismissArea, { height: dimensions.height, width: dimensions.width - width }]}
+        />
+        <View style={[styles.drawerSlot, { width }]}>
           <Animated.View
             style={[
               styles.options,
@@ -128,16 +132,20 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: theme.colors.black,
+    backgroundColor: theme.colors.overlay,
     zIndex: 0,
   },
   dismissArea: {
-    ...StyleSheet.absoluteFillObject,
+    left: 0,
+    position: "absolute",
+    top: 0,
     zIndex: 1,
   },
   drawerSlot: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "flex-end",
+    bottom: 0,
+    position: "absolute",
+    right: 0,
+    top: 0,
     zIndex: 2,
   },
   options: {

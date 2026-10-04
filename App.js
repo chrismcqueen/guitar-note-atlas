@@ -49,9 +49,10 @@ export default function App() {
 }
 
 const AppContent = () => {
-  const { showOptions } = React.useContext(Store);
+  const { dimensions, showOptions } = React.useContext(Store);
   const optionsTransition = useRef(new Animated.Value(0)).current;
   const [optionsMounted, setOptionsMounted] = useState(false);
+  const optionsWidth = Math.min(300, dimensions.width);
 
   useEffect(() => {
     optionsTransition.stopAnimation();
@@ -88,12 +89,27 @@ const AppContent = () => {
 
   const appScale = optionsTransition.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 0.85],
+    outputRange: [1, (dimensions.width - optionsWidth) / dimensions.width],
+  });
+  const appTranslateX = optionsTransition.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -optionsWidth / 2],
   });
 
   return (
     <View style={styles.app}>
-      <Animated.View style={[styles.navigationScreen, { transform: [{ scale: appScale }] }]}>
+      <Animated.View
+        renderToHardwareTextureAndroid
+        shouldRasterizeIOS
+        style={[
+          styles.navigationScreen,
+          {
+            height: dimensions.height,
+            width: dimensions.width,
+            transform: [{ translateX: appTranslateX }, { scale: appScale }],
+          },
+        ]}
+      >
         <Main />
         <Menu />
         <Header />
@@ -144,6 +160,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   navigationScreen: {
-    flex: 1,
+    position: "absolute",
   },
 });

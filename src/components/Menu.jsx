@@ -80,10 +80,15 @@ const Menu = () => {
 
   return (
     <Animated.ScrollView
+      pointerEvents={showMenu ? "auto" : "none"}
       style={[
         styles.menu,
         {
           bottom: footerHeight,
+          opacity: menuAnim.interpolate({
+            inputRange: [0, 0.9, 1],
+            outputRange: [1, 1, 0],
+          }),
           width: "100%",
           top: menuTop,
           transform: [{ translateY: menuAnim.interpolate({
