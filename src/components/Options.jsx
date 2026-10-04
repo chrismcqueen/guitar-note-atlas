@@ -7,9 +7,11 @@ import { theme } from "../utils/theme";
 import { storeGlobalState } from "../utils/functions";
 import { pressedOpacity } from "../utils/pressable";
 
-const Options = ({ mounted, transition }) => {
+const Options = ({ mounted, transition, viewport }) => {
   const { dimensions, insets, setShowOptions, setShowTutorial, globalState, setGlobalState } = useContext(Store);
-  const width = Math.min(300, dimensions.width);
+  const viewportWidth = viewport?.width || dimensions.width;
+  const viewportHeight = viewport?.height || dimensions.height;
+  const width = Math.min(300, viewportWidth);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const reportedSideInset = Math.max(insets.left, insets.right);
   const cutoutPadding = !isTablet && Platform.OS === "ios"
@@ -77,19 +79,19 @@ const Options = ({ mounted, transition }) => {
   if (!mounted) return null;
 
   return (
-      <View style={[styles.modalContainer, { height: dimensions.height, width: dimensions.width }]}>
+      <View style={styles.modalContainer}>
         <Animated.View pointerEvents="none" style={[styles.backdrop, { opacity: transition }]} />
         <Pressable
           accessibilityLabel="Close options"
           onPress={() => setShowOptions(false)}
-          style={[styles.dismissArea, { height: dimensions.height, width: dimensions.width - width }]}
+          style={[styles.dismissArea, { height: viewportHeight, width: viewportWidth - width }]}
         />
         <View style={[styles.drawerSlot, { width }]}>
           <Animated.View
             style={[
               styles.options,
               {
-                height: dimensions.height,
+                height: viewportHeight,
                 width: width,
                 transform: [{ translateX: transition.interpolate({
                   inputRange: [0, 1],

@@ -52,7 +52,10 @@ const AppContent = () => {
   const { dimensions, showOptions } = React.useContext(Store);
   const optionsTransition = useRef(new Animated.Value(0)).current;
   const [optionsMounted, setOptionsMounted] = useState(false);
-  const optionsWidth = Math.min(300, dimensions.width);
+  const [viewport, setViewport] = useState(dimensions);
+  const viewportWidth = viewport.width || dimensions.width;
+  const viewportHeight = viewport.height || dimensions.height;
+  const optionsWidth = Math.min(300, viewportWidth);
 
   useEffect(() => {
     optionsTransition.stopAnimation();
@@ -89,7 +92,7 @@ const AppContent = () => {
 
   const appScale = optionsTransition.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, (dimensions.width - optionsWidth) / dimensions.width],
+    outputRange: [1, (viewportWidth - optionsWidth) / viewportWidth],
   });
   const appTranslateX = optionsTransition.interpolate({
     inputRange: [0, 1],
@@ -97,7 +100,13 @@ const AppContent = () => {
   });
 
   return (
-    <View style={[styles.app, !optionsMounted && styles.appIdle]}>
+    <View
+      onLayout={({ nativeEvent }) => {
+        const { height, width } = nativeEvent.layout;
+        if (width !== viewport.width || height !== viewport.height) setViewport({ height, width });
+      }}
+      style={[styles.app, !optionsMounted && styles.appIdle]}
+    >
       <Animated.View
         renderToHardwareTextureAndroid={optionsMounted}
         shouldRasterizeIOS={optionsMounted}
@@ -105,8 +114,8 @@ const AppContent = () => {
           styles.navigationScreen,
           !optionsMounted && styles.navigationScreenIdle,
           {
-            height: optionsMounted ? dimensions.height : undefined,
-            width: optionsMounted ? dimensions.width : undefined,
+            height: optionsMounted ? viewportHeight : undefined,
+            width: optionsMounted ? viewportWidth : undefined,
             transform: [{ translateX: appTranslateX }, { scale: appScale }],
           },
         ]}
@@ -115,7 +124,7 @@ const AppContent = () => {
         <Menu />
         <Header />
       </Animated.View>
-      <Options mounted={optionsMounted} transition={optionsTransition} />
+      <Options mounted={optionsMounted} transition={optionsTransition} viewport={viewport} />
       <TutorialGate />
       <TutorialPrompt />
     </View>
