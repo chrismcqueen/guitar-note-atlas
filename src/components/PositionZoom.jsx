@@ -84,7 +84,7 @@ const PositionZoom = ({ compact = false }) => {
   const noteRadius = radius * 0.75;
   const noteStrokeWidth = radius / 4;
   const lineWidth = radius / (compact ? 4.8 : 5.1);
-  const labelFontSize = radius * 1.5;
+  const labelFontSize = noteRadius * 1.5;
   const horizontalOffset = OFFSET_X + (position.short ? SPACING_X / 2 : 0);
   const initialVerticalSpacing = viewBoxHeight / 4.5;
   const baseStringGap = Math.floor((viewBoxHeight - initialVerticalSpacing) / 5.44);
