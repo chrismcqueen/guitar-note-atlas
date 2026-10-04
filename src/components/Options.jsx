@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   item: {
-    color: theme.colors.pureWhite,
+    color: theme.colors.white,
     fontFamily: "proletarsk",
     flex: 1,
   },

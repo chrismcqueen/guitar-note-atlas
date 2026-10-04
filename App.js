@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useFonts } from "expo-font";
+import { useKeepAwake } from "expo-keep-awake";
 import { Alert, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -11,8 +12,11 @@ import Tutorial from "./src/components/Tutorial";
 import { Splash } from "./src/components/Splash";
 import { Store, StoreProvider } from "./Store";
 import { storeGlobalState } from "./src/utils/functions";
+import { getWelcomeMessage } from "./src/utils/releaseParity.mjs";
 
 export default function App() {
+  useKeepAwake();
+
   let [fontsLoaded] = useFonts({
     blackout: require("./src/utils/fonts/Blackout-Midnight.ttf"),
     basicManual: require("./src/utils/fonts/SVBasicManual-Bold.ttf"),
@@ -50,7 +54,7 @@ const AppContent = () => {
 };
 
 const TutorialPrompt = () => {
-  const { globalState, setGlobalState, setShowTutorial, setShowTutorialPrompt, showTutorialPrompt } = React.useContext(Store);
+  const { dimensions, globalState, setGlobalState, setShowTutorial, setShowTutorialPrompt, showTutorialPrompt } = React.useContext(Store);
 
   useEffect(() => {
     if (!showTutorialPrompt) return;
@@ -65,7 +69,7 @@ const TutorialPrompt = () => {
 
     Alert.alert(
       "Welcome to Guitar Note Atlas",
-      "Tap the fretboard to open a position view. Would you like to see the tutorial for more info?",
+      getWelcomeMessage(dimensions),
       [
         { text: "No Thanks", onPress: () => finish(false), style: "cancel" },
         { text: "OK", onPress: () => finish(true) },

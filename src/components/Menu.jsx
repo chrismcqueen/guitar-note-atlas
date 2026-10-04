@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   menuHeaderWrapper: {
-    backgroundColor: theme.colors.lightBlue,
+    backgroundColor: theme.colors.menuHeader,
     paddingTop: 4,
     paddingBottom: 6,
   },
@@ -250,8 +250,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   menuItemSelected: {
-    backgroundColor: theme.colors.white,
-    color: theme.colors.blue,
+    backgroundColor: theme.colors.menuSelection,
+    color: theme.colors.menuSelectionText,
   },
   menuColumnContainer: {
     flexDirection: "row",
