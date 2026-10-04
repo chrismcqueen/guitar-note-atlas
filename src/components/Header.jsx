@@ -5,6 +5,14 @@ import { OverlayStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
 
+const phoneMenuTextWidth = 52;
+const tabletMenuTextWidth = 62;
+export const getMenuVisualCenterX = (insets, isTablet) => {
+  const menuInset = isTablet ? insets.left : Math.max(insets.left, 59);
+  const textWidth = isTablet ? tabletMenuTextWidth : phoneMenuTextWidth;
+  return menuInset + 24 + textWidth / 2;
+};
+
 const Header = () => {
   const { dimensions, globalState, insets } = useContext(Store);
   const { showMenu, setShowMenu, showOptions, setShowOptions } = useContext(OverlayStore);
@@ -24,6 +32,7 @@ const Header = () => {
   const tabletTitleSize = tabletCanvasWidth / 14.25;
   const tabletTitleTop = -((tabletTitleSize - activeHeaderHeight) / 2);
   const tabletMenuSize = 24;
+  const menuTextWidth = isTablet ? tabletMenuTextWidth : phoneMenuTextWidth;
   const title = isTablet ? globalState?.scale.long_title : globalState?.scale.title;
 
   return (
@@ -47,6 +56,7 @@ const Header = () => {
           <Text
             style={[
               styles.menu,
+              { width: menuTextWidth },
               isTablet && {
                 fontSize: tabletMenuSize,
               },
@@ -129,6 +139,7 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: 20,
     includeFontPadding: false,
+    textAlign: "center",
   },
   headerControl: {
     justifyContent: "center",

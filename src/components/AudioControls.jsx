@@ -6,7 +6,7 @@ import { MAX_TEMPO, MIN_TEMPO } from "../utils/audioSequence.mjs";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
 import { useRepeatPress } from "../utils/useRepeatPress";
-import { phoneHeaderHeight, tabletHeaderHeight } from "./Header";
+import { getMenuVisualCenterX, phoneHeaderHeight, tabletHeaderHeight } from "./Header";
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 
 const CONTROL_HIT_SLOP = 3;
@@ -16,7 +16,7 @@ export const AudioTrigger = () => {
   const { openPopover } = useContext(AudioPlaybackStore);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const top = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + (isTablet ? 0 : insets.top)) + 12;
-  const left = isTablet ? Math.max(insets.left + 24, 34) : Math.max(insets.left + 24, 72);
+  const left = getMenuVisualCenterX(insets, isTablet) - 22;
 
   return (
     <Pressable
