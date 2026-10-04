@@ -7,7 +7,7 @@ import { positionBandFrets, positionBandVerticalGeometry } from "../../utils/pos
 const FRET_WIDTH = 49;
 const X_OFFSET = 40;
 
-const PositionBands = ({ activeFretRange, bassMode, keyOffset = 0, leftHand, muted = false, upsideDown }) => {
+const PositionBands = ({ activeFretRange, bassMode, keyOffset = 0, leftHand, muted = false, stringSpan, upsideDown }) => {
   const definitions = [
     { pitch: 4, color: theme.colors.positionGreen, mutedColor: theme.colors.positionGreenLight, height: 5 },
     { pitch: 6, color: theme.colors.positionYellow, mutedColor: theme.colors.positionYellowLight, height: 3 },
@@ -17,7 +17,7 @@ const PositionBands = ({ activeFretRange, bassMode, keyOffset = 0, leftHand, mut
     positionBandFrets(definition.pitch, keyOffset).map((fret) => ({ ...definition, fret })),
   );
   const stringCount = bassMode ? 4 : 6;
-  const span = muted ? 120 : 180;
+  const span = stringSpan ?? (muted ? 120 : 180);
   const stringGap = span / (stringCount - 1);
 
   return bands.map((band) => {
