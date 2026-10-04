@@ -8,7 +8,7 @@ import Frets from "./Frets";
 import Strings from "./Strings";
 import PositionBands from "./PositionBands";
 import { PositionActionsStore, Store } from "../../../Store";
-import { positionForFret } from "../../utils/positions.mjs";
+import { fretForNeckX, positionForFret } from "../../utils/positions.mjs";
 import { withPressedOpacity } from "../../utils/pressable";
 
 const Neck = React.memo(() => {
@@ -32,9 +32,7 @@ const Neck = React.memo(() => {
       accessibilityHint="Opens the selected fretboard position"
       accessibilityLabel="Full fretboard overview"
       onPress={(event) => {
-        const x = event.nativeEvent.locationX / scale;
-        const visualFret = Math.max(0, Math.min(16, Math.floor((x - 40) / 49)));
-        const fret = globalState.options.leftHand ? 16 - visualFret : visualFret;
+        const fret = fretForNeckX(event.nativeEvent.locationX, neckDimensions.width, globalState.options.leftHand);
         setPositionId(positionForFret(fret, globalState.key.key_offset));
         setShowPositionOverview(false);
       }}

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { getPosition, POSITION_ORDER, positionBandFrets, positionBandVerticalGeometry, positionForFret, positionStartFret, positionTargets, stepPosition } from "../src/utils/positions.mjs";
+import { fretForNeckX, getPosition, POSITION_ORDER, positionBandFrets, positionBandVerticalGeometry, positionForFret, positionStartFret, positionTargets, stepPosition } from "../src/utils/positions.mjs";
 
 test("positions follow the released seven-position order and wrap", () => {
   assert.deepEqual(POSITION_ORDER, [0, 2, 4, 6, 1, 3, 5]);
@@ -49,6 +49,14 @@ test("phone fret targets follow the released A-based position anchors", () => {
   assert.equal(positionForFret(7, 0), 4);
   assert.equal(positionForFret(9, 0), 6);
   assert.equal(positionForFret(14, 0), 5);
+});
+
+test("overview neck touch coordinates map to frets in either handedness", () => {
+  assert.equal(fretForNeckX(40, 864), 0);
+  assert.equal(fretForNeckX(40 + 7 * 49 + 1, 864), 7);
+  assert.equal(fretForNeckX(40 + 7 * 49 + 1, 864, true), 9);
+  assert.equal(fretForNeckX(-100, 864), 0);
+  assert.equal(fretForNeckX(1000, 864), 16);
 });
 
 test("every visible color band opens its matching index position in every key", () => {

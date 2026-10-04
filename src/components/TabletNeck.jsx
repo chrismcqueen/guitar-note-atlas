@@ -2,13 +2,13 @@ import React, { useContext } from "react";
 import { View } from "react-native";
 import Svg, { ClipPath, Defs, G, Rect } from "react-native-svg";
 
-import { PositionStore, Store } from "../../Store";
+import { PositionActionsStore, PositionStore, Store } from "../../Store";
 import AnchorFrets from "./Neck/AnchorFrets";
 import Frets from "./Neck/Frets";
 import Note from "./Neck/Note";
 import Strings from "./Neck/Strings";
 import PositionBands from "./Neck/PositionBands";
-import { getPosition, positionStartFret } from "../utils/positions.mjs";
+import { fretForNeckX, getPosition, positionForFret, positionStartFret, stepPosition } from "../utils/positions.mjs";
 import { theme } from "../utils/theme";
 
 const VIEWBOX_HEIGHT = 175;
@@ -21,6 +21,7 @@ const LINE_WIDTH = 2.25;
 const TabletNeck = () => {
   const { dimensions, globalState, insets } = useContext(Store);
   const { positionId } = useContext(PositionStore);
+  const { setPositionId } = useContext(PositionActionsStore);
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
@@ -34,8 +35,28 @@ const TabletNeck = () => {
   const naturalSelectedX = NECK_LEFT + selectedFret * FRET_WIDTH;
   const selectedX = globalState.options.leftHand ? 864 - naturalSelectedX - selectedWidth : naturalSelectedX;
 
+  const selectPositionAtX = (x) => {
+    const fret = fretForNeckX(x, width, globalState.options.leftHand);
+    const nextPositionId = positionForFret(fret, globalState.key.key_offset);
+    if (nextPositionId !== positionId) setPositionId(nextPositionId);
+  };
+
   return (
-    <View style={{ height, width }}>
+    <View
+      accessibilityActions={[{ name: "decrement" }, { name: "increment" }]}
+      accessibilityHint="Tap or drag across the fretboard to select a position"
+      accessibilityLabel="Full fretboard position selector"
+      accessibilityRole="adjustable"
+      onAccessibilityAction={(event) => {
+        if (event.nativeEvent.actionName === "increment") setPositionId(stepPosition(positionId, 1));
+        if (event.nativeEvent.actionName === "decrement") setPositionId(stepPosition(positionId, -1));
+      }}
+      onMoveShouldSetResponder={() => true}
+      onResponderGrant={(event) => selectPositionAtX(event.nativeEvent.locationX)}
+      onResponderMove={(event) => selectPositionAtX(event.nativeEvent.locationX)}
+      onStartShouldSetResponder={() => true}
+      style={{ height, width }}
+    >
       <Svg width="100%" height="100%" viewBox={`0 0 864 ${VIEWBOX_HEIGHT}`}>
         <Defs>
           <ClipPath id="active-position-clip">

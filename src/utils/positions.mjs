@@ -65,6 +65,12 @@ export const positionForFret = (fret, keyOffset = 0) => {
   }, { id: targets[0]?.id ?? 0, distance: Infinity }).id;
 };
 
+export const fretForNeckX = (x, width, leftHand = false) => {
+  const viewBoxX = (x / width) * 864;
+  const visualFret = Math.max(0, Math.min(16, Math.floor((viewBoxX - 40) / 49)));
+  return leftHand ? 16 - visualFret : visualFret;
+};
+
 export const positionStartFret = (id, keyOffset = 0) => {
   const start = getPosition(id).offset + legacyKeyOffset(keyOffset);
   return start > 11 ? start - 12 : start;
