@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   degreeIndicesBetween,
   footerDegreeIndexAtX,
+  footerDegreeIndexFromGestureX,
   isDegreeChoiceSelected,
   paintDegreeChoices,
 } from "../src/utils/footerSelection.mjs";
@@ -20,6 +21,12 @@ test("footer drag coordinates map across every degree button", () => {
 test("footer swipes include every crossed button in either direction", () => {
   assert.deepEqual(degreeIndicesBetween(1, 3), [1, 2, 3]);
   assert.deepEqual(degreeIndicesBetween(3, 1), [1, 2, 3]);
+});
+
+test("right-to-left gesture coordinates remain relative to their starting button", () => {
+  assert.equal(footerDegreeIndexFromGestureX(25, 1200, 12, 10), 10);
+  assert.equal(footerDegreeIndexFromGestureX(-75, 1200, 12, 10), 9);
+  assert.equal(footerDegreeIndexFromGestureX(-275, 1200, 12, 10), 7);
 });
 
 test("footer selection painting adds each crossed degree without toggling it twice", () => {

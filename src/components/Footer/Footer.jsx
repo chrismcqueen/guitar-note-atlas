@@ -6,7 +6,7 @@ import { FooterButton } from "./FooterButton";
 import { ScaleDegreeButton } from "./ScaleDegreeButton";
 import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
-import { degreeIndicesBetween, footerDegreeIndexAtX, isDegreeChoiceSelected, paintDegreeChoices } from "../../utils/footerSelection.mjs";
+import { degreeIndicesBetween, footerDegreeIndexFromGestureX, isDegreeChoiceSelected, paintDegreeChoices } from "../../utils/footerSelection.mjs";
 
 export const Footer = () => {
   const { dimensions, globalState, insets, setGlobalState } = useContext(Store);
@@ -17,7 +17,12 @@ export const Footer = () => {
   const dragSelects = useRef(true);
   const visitedIndices = useRef(new Set());
 
-  const indexAtX = (x) => footerDegreeIndexAtX(x, degreeRowWidth.current, degrees.length);
+  const indexAtGestureX = (x) => footerDegreeIndexFromGestureX(
+    x,
+    degreeRowWidth.current,
+    degrees.length,
+    dragStartIndex.current,
+  );
 
   const paintThroughIndex = (index) => {
     const visited = [...visitedIndices.current];
@@ -64,9 +69,9 @@ export const Footer = () => {
         onResponderGrant={(event) => {
           visitedIndices.current = new Set();
           dragSelects.current = !isDegreeChoiceSelected(globalState.scale.degrees, degrees[dragStartIndex.current]);
-          paintThroughIndex(indexAtX(event.nativeEvent.locationX));
+          paintThroughIndex(indexAtGestureX(event.nativeEvent.locationX));
         }}
-        onResponderMove={(event) => paintThroughIndex(indexAtX(event.nativeEvent.locationX))}
+        onResponderMove={(event) => paintThroughIndex(indexAtGestureX(event.nativeEvent.locationX))}
         onResponderRelease={finishDrag}
         onResponderTerminate={finishDrag}
         style={styles.scaleDegreeContainer}

@@ -31,6 +31,11 @@ export const footerDegreeIndexAtX = (x, width, degreeCount) => {
   return Math.max(0, Math.min(degreeCount - 1, Math.floor((x / width) * degreeCount)));
 };
 
+export const footerDegreeIndexFromGestureX = (localX, width, degreeCount, startIndex) => {
+  const degreeWidth = width / degreeCount;
+  return footerDegreeIndexAtX(startIndex * degreeWidth + localX, width, degreeCount);
+};
+
 export const degreeIndicesBetween = (fromIndex, toIndex) => {
   const start = Math.min(fromIndex, toIndex);
   const end = Math.max(fromIndex, toIndex);
