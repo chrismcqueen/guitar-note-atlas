@@ -48,8 +48,8 @@ export const AudioPopover = () => {
   } = useContext(AudioPlaybackStore);
   const [tempoText, setTempoText] = useState(String(tempo));
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const slowerTempoPress = useRepeatPress(() => setTempo(tempo - 1));
-  const fasterTempoPress = useRepeatPress(() => setTempo(tempo + 1));
+  const slowerTempoPress = useRepeatPress(() => setTempo(tempo - 1), { accelerate: true });
+  const fasterTempoPress = useRepeatPress(() => setTempo(tempo + 1), { accelerate: true });
 
   useEffect(() => setTempoText(String(tempo)), [tempo]);
   if (!popoverOpen) return null;
