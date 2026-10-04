@@ -30,6 +30,7 @@ const TabletNeck = () => {
   const selectedFret = positionStartFret(positionId, globalState.key.key_offset);
   const selectedFretCount = position.short ? 5 : 6;
   const selectedWidth = selectedFretCount * FRET_WIDTH;
+  const activeFretRange = { start: selectedFret, end: selectedFret + selectedFretCount };
   const naturalSelectedX = NECK_LEFT + selectedFret * FRET_WIDTH;
   const selectedX = globalState.options.leftHand ? 864 - naturalSelectedX - selectedWidth : naturalSelectedX;
 
@@ -39,7 +40,14 @@ const TabletNeck = () => {
         <Rect x={NECK_LEFT} y="14" width={NECK_RIGHT - NECK_LEFT} height={STRING_SPAN} fill={theme.colors.neckLightGray} />
         <Rect x={selectedX} y="14" width={selectedWidth} height={STRING_SPAN} fill={theme.colors.white} />
         {!globalState.options.hideColors && (
-          <PositionBands bassMode={globalState.options.bassMode} keyOffset={globalState.key.key_offset} leftHand={globalState.options.leftHand} muted upsideDown={globalState.options.upsideDown} />
+          <PositionBands
+            activeFretRange={activeFretRange}
+            bassMode={globalState.options.bassMode}
+            keyOffset={globalState.key.key_offset}
+            leftHand={globalState.options.leftHand}
+            muted
+            upsideDown={globalState.options.upsideDown}
+          />
         )}
         <G>
           <Strings color={theme.colors.neckBlackAlpha} count={tuning.length} span={STRING_SPAN} startX={41} strokeWidth={LINE_WIDTH} />
@@ -65,7 +73,7 @@ const TabletNeck = () => {
                 fret={fret}
                 labelFontSize={16}
                 leftHand={globalState.options.leftHand}
-                muted
+                muted={!(fret > activeFretRange.start && fret <= activeFretRange.end)}
                 noteSizeOverride={20}
                 openStringOffset={15}
                 string={string + 1}
