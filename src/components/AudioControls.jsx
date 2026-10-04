@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Store } from "../../Store";
 import { MAX_TEMPO, MIN_TEMPO } from "../utils/audioSequence.mjs";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
+import { useRepeatPress } from "../utils/useRepeatPress";
 import { phoneHeaderHeight, tabletHeaderHeight } from "./Header";
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 
@@ -47,6 +48,8 @@ export const AudioPopover = () => {
   } = useContext(AudioPlaybackStore);
   const [tempoText, setTempoText] = useState(String(tempo));
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const slowerTempoPress = useRepeatPress(() => setTempo(tempo - 1));
+  const fasterTempoPress = useRepeatPress(() => setTempo(tempo + 1));
 
   useEffect(() => setTempoText(String(tempo)), [tempo]);
   if (!popoverOpen) return null;
@@ -69,7 +72,7 @@ export const AudioPopover = () => {
       />
       <View style={[styles.card, { left: cardLeft, top: cardTop, width: cardWidth }]}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Scale Player</Text>
+          <Text style={styles.title}>Note Player</Text>
           <Pressable android_disableSound onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
             <Text style={styles.closeText}>×</Text>
           </Pressable>
@@ -87,7 +90,7 @@ export const AudioPopover = () => {
 
         <View style={styles.tempoRow}>
           <Text style={styles.label}>Tempo</Text>
-          <Pressable android_disableSound onPress={() => setTempo(tempo - 1)} style={withPressedOpacity(styles.stepButton)}>
+          <Pressable android_disableSound accessibilityLabel="Decrease tempo" {...slowerTempoPress} style={withPressedOpacity(styles.stepButton)}>
             <Text style={styles.stepText}>−</Text>
           </Pressable>
           <TextInput
@@ -102,14 +105,14 @@ export const AudioPopover = () => {
             value={tempoText}
           />
           <Text style={styles.bpm}>BPM</Text>
-          <Pressable android_disableSound onPress={() => setTempo(tempo + 1)} style={withPressedOpacity(styles.stepButton)}>
+          <Pressable android_disableSound accessibilityLabel="Increase tempo" {...fasterTempoPress} style={withPressedOpacity(styles.stepButton)}>
             <Text style={styles.stepText}>+</Text>
           </Pressable>
         </View>
 
         <View style={styles.toggleRow}>
-          <Toggle label="Loop" onPress={() => setLoopEnabled(!loopEnabled)} selected={loopEnabled} />
-          <Toggle label="Drums" onPress={() => setDrumsEnabled(!drumsEnabled)} selected={drumsEnabled} />
+          <Toggle accessibilityLabel="Loop" icon={require("../../assets/audio/icons/loop.png")} onPress={() => setLoopEnabled(!loopEnabled)} selected={loopEnabled} />
+          <Toggle accessibilityLabel="Drums" icon={require("../../assets/audio/icons/drums.png")} onPress={() => setDrumsEnabled(!drumsEnabled)} selected={drumsEnabled} />
         </View>
         {sequenceEmpty && <Text style={styles.message}>Select at least one note to play.</Text>}
         {!!error && <Text style={styles.error}>{error}</Text>}
@@ -118,9 +121,9 @@ export const AudioPopover = () => {
   );
 };
 
-const Toggle = ({ label, onPress, selected }) => (
-  <Pressable android_disableSound onPress={onPress} style={withPressedOpacity([styles.toggle, selected && styles.toggleSelected])}>
-    <Text style={[styles.toggleText, selected && styles.toggleTextSelected]}>{label}</Text>
+const Toggle = ({ accessibilityLabel, icon, onPress, selected }) => (
+  <Pressable android_disableSound accessibilityLabel={accessibilityLabel} accessibilityRole="button" accessibilityState={{ selected }} onPress={onPress} style={withPressedOpacity([styles.toggle, selected && styles.toggleSelected])}>
+    <Image source={icon} style={[styles.toggleIcon, selected && styles.toggleIconSelected]} />
   </Pressable>
 );
 
@@ -155,10 +158,10 @@ const styles = StyleSheet.create({
   title: { color: theme.colors.black, fontFamily: "blackout", fontSize: 20 },
   titleRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
   toggle: { alignItems: "center", borderColor: theme.colors.lightBlue, borderRadius: 5, borderWidth: 1.5, flex: 1, justifyContent: "center", minHeight: 38 },
+  toggleIcon: { height: 27, resizeMode: "contain", tintColor: theme.colors.blue, width: 41 },
+  toggleIconSelected: { tintColor: theme.colors.white },
   toggleRow: { flexDirection: "row", gap: 8, marginTop: 12 },
   toggleSelected: { backgroundColor: theme.colors.blue, borderColor: theme.colors.blue },
-  toggleText: { color: theme.colors.blue, fontFamily: "proletarsk", fontSize: 15 },
-  toggleTextSelected: { color: theme.colors.white },
   trigger: {
     alignItems: "center",
     backgroundColor: theme.colors.blue,

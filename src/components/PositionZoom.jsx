@@ -9,6 +9,7 @@ import { getScaleDegreeLabel, normalizePitchClass } from "../utils/music.mjs";
 import { getPosition, positionBandVerticalGeometry, positionStartFret, stepPosition } from "../utils/positions.mjs";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
+import { useRepeatPress } from "../utils/useRepeatPress";
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 
 const LEGACY_DEGREE_ID = { 0: 0, 1: 1, 2: 2, 3: 3, 3.1: 12, 4: 4, 5: 5, 6: 6, 6.1: 13, 7: 7, 8: 8, 8.1: 14, 9: 9, 10: 10, 11: 11 };
@@ -181,6 +182,8 @@ const PositionZoom = ({ compact = false }) => {
   };
   const previous = () => stepSelection(-1);
   const next = () => stepSelection(1);
+  const previousPress = useRepeatPress(previous);
+  const nextPress = useRepeatPress(next);
   return (
     <View style={[styles.container, !compact && { height: dimensions.height * 0.53 }, compact && styles.phoneContainer]}>
       <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.title, compact && styles.phoneTitle]}>{title}</Text>
@@ -193,7 +196,7 @@ const PositionZoom = ({ compact = false }) => {
         <Pressable
           android_disableSound
           accessibilityLabel="Previous position"
-          onPress={previous}
+          {...previousPress}
           style={withPressedOpacity([styles.arrowButton, !compact && styles.tabletArrowButton, !compact && { height: tabletNeckHeight * 0.5, left: safeWidth * 0.133, transform: [{ translateY: tabletArrowOffsetY }], width: tabletNeckHeight * 0.25 }, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, transform: [{ translateY: compactArrowOffsetY }], width: compactArrowRegionWidth }])}
         >
           <View style={[styles.arrow, styles.arrowLeft, !compact && { borderBottomWidth: tabletNeckHeight * 0.232, borderRightWidth: tabletNeckHeight * 0.232, borderTopWidth: tabletNeckHeight * 0.232 }, compact && { borderBottomWidth: compactArrowHeight / 2, borderRightWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
@@ -211,7 +214,7 @@ const PositionZoom = ({ compact = false }) => {
         <Pressable
           android_disableSound
           accessibilityLabel="Next position"
-          onPress={next}
+          {...nextPress}
           style={withPressedOpacity([styles.arrowButton, !compact && styles.tabletArrowButton, !compact && { height: tabletNeckHeight * 0.5, right: safeWidth * 0.133, transform: [{ translateY: tabletArrowOffsetY }], width: tabletNeckHeight * 0.25 }, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, transform: [{ translateY: compactArrowOffsetY }], width: compactArrowRegionWidth }])}
         >
           <View style={[styles.arrow, styles.arrowRight, !compact && { borderBottomWidth: tabletNeckHeight * 0.232, borderLeftWidth: tabletNeckHeight * 0.232, borderTopWidth: tabletNeckHeight * 0.232 }, compact && { borderBottomWidth: compactArrowHeight / 2, borderLeftWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />

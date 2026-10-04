@@ -7,6 +7,7 @@ import { theme } from "../utils/theme";
 import { data } from "../../data";
 import { withPressedOpacity } from "../utils/pressable";
 import { nextKeyOffset } from "../utils/keyNavigation.mjs";
+import { useRepeatPress } from "../utils/useRepeatPress";
 
 const TabletKeyTitle = ({ title }) => (
   <Text adjustsFontSizeToFit minimumFontScale={0.7} numberOfLines={1} style={styles.compactTitle}>
@@ -32,15 +33,17 @@ const KeySelector = ({ compact = false }) => {
     setGlobalState(nextState);
     storeGlobalState(nextState);
   };
+  const previousKeyPress = useRepeatPress(() => handlePressArrow("left"));
+  const nextKeyPress = useRepeatPress(() => handlePressArrow("right"));
 
   if (compact) {
     return (
       <View style={styles.compactContainer}>
         <View>
-          <Pressable android_disableSound accessibilityLabel="Next key" onPress={() => handlePressArrow("right")} style={withPressedOpacity(styles.compactArrowButton)}>
+          <Pressable android_disableSound accessibilityLabel="Next key" {...nextKeyPress} style={withPressedOpacity(styles.compactArrowButton)}>
             <View style={[styles.compactArrow, styles.arrowUp]} />
           </Pressable>
-          <Pressable android_disableSound accessibilityLabel="Previous key" onPress={() => handlePressArrow("left")} style={withPressedOpacity(styles.compactArrowButton)}>
+          <Pressable android_disableSound accessibilityLabel="Previous key" {...previousKeyPress} style={withPressedOpacity(styles.compactArrowButton)}>
             <View style={[styles.compactArrow, styles.arrowDown]} />
           </Pressable>
         </View>
@@ -51,13 +54,13 @@ const KeySelector = ({ compact = false }) => {
 
   return (
     <View style={styles.titleContainer}>
-      <Pressable android_disableSound style={withPressedOpacity(styles.arrowContainer)} onPress={() => handlePressArrow("left")}>
+      <Pressable android_disableSound accessibilityLabel="Previous key" {...previousKeyPress} style={withPressedOpacity(styles.arrowContainer)}>
         <View style={[styles.arrow, styles.arrowLeft]}></View>
       </Pressable>
       <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={styles.title}>
         KEY CENTER - {globalState?.key.title}
       </Text>
-      <Pressable android_disableSound style={withPressedOpacity(styles.arrowContainer)} onPress={() => handlePressArrow("right")}>
+      <Pressable android_disableSound accessibilityLabel="Next key" {...nextKeyPress} style={withPressedOpacity(styles.arrowContainer)}>
         <View style={[styles.arrow, styles.arrowRight]}></View>
       </Pressable>
     </View>
