@@ -135,7 +135,7 @@ const AppContent = () => {
           {
             height: optionsMounted ? viewportHeight : undefined,
             width: optionsMounted ? viewportWidth : undefined,
-            transform: [{ translateX: appTranslateX }, { scale: appScale }],
+            transform: optionsMounted ? [{ translateX: appTranslateX }, { scale: appScale }] : undefined,
           },
         ]}
       >
