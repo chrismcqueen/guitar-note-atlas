@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   },
   compactTitle: {
     flex: 1,
-    color: theme.colors.neckBlackAlpha,
+    color: theme.colors.black,
     fontFamily: "basicManual",
     fontSize: 28,
     marginLeft: 12,
@@ -131,11 +131,11 @@ const styles = StyleSheet.create({
     width: 0,
   },
   arrowUp: {
-    borderBottomColor: theme.colors.grey,
+    borderBottomColor: theme.colors.black,
     borderBottomWidth: 24,
   },
   arrowDown: {
-    borderTopColor: theme.colors.grey,
+    borderTopColor: theme.colors.black,
     borderTopWidth: 24,
   },
 });
