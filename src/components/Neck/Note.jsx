@@ -1,7 +1,8 @@
 import React, { useContext } from "react";
-import Svg, { G, Circle, Text } from "react-native-svg";
+import Svg, { G, Circle } from "react-native-svg";
 
 import { Store } from "../../../Store";
+import DegreeLabel from "./DegreeLabel";
 import { theme } from "../../utils/theme";
 import { getScaleDegreeLabel, normalizePitchClass } from "../../utils/music.mjs";
 
@@ -112,19 +113,16 @@ const Note = ({
             r={circleRadius}
             stroke={fret === 0 ? theme.colors.grey : theme.colors.black}
             fill={fret === 0 ? theme.colors.white : scaleDegree === "1" ? theme.colors.white : theme.colors.black}
-            strokeWidth={circleStrokeWidth ?? (fret === 0 ? 2 : 3.5)}
+            strokeWidth={fret === 0 ? circleRadius / 12 : circleStrokeWidth ?? 3.5}
           />
           {globalState.options.showScaleDegree && (
-            <Text
-              fontFamily="basicManual"
-              textAnchor="middle"
-              x="55%"
-              y="78%"
+            <DegreeLabel
+              label={scaleDegree}
+              x={noteSize * 0.545}
+              y={scaleDegree.length === 1 ? "76%" : "82%"}
               fontSize={labelFontSize}
-              fill={fret === 0 ? theme.colors.black : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
-            >
-              {scaleDegree}
-            </Text>
+              fill={fret === 0 ? theme.colors.grey : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
+            />
           )}
         </Svg>
       </G>

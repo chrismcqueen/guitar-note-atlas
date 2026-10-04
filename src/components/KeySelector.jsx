@@ -6,6 +6,16 @@ import { storeGlobalState } from "../utils/functions";
 import { theme } from "../utils/theme";
 import { data } from "../../data";
 
+const TabletKeyTitle = ({ title }) => (
+  <Text adjustsFontSizeToFit minimumFontScale={0.7} numberOfLines={1} style={styles.compactTitle}>
+    KEY: {String(title).split("").map((character, index) =>
+      character === "#" || character === "b"
+        ? <Text key={`${character}-${index}`} style={styles.compactAccidental}>{character}</Text>
+        : character
+    )}
+  </Text>
+);
+
 const KeySelector = ({ compact = false }) => {
   const { globalState, setGlobalState } = useContext(Store);
 
@@ -30,9 +40,7 @@ const KeySelector = ({ compact = false }) => {
             <View style={[styles.compactArrow, styles.arrowDown]} />
           </Pressable>
         </View>
-        <Text adjustsFontSizeToFit minimumFontScale={0.7} numberOfLines={1} style={styles.compactTitle}>
-          KEY: {globalState?.key.title}
-        </Text>
+        <TabletKeyTitle title={globalState?.key.title} />
       </View>
     );
   }
@@ -98,9 +106,13 @@ const styles = StyleSheet.create({
   },
   compactTitle: {
     flex: 1,
-    fontFamily: "blackout",
-    fontSize: 24,
+    color: theme.colors.neckBlackAlpha,
+    fontFamily: "basicManual",
+    fontSize: 28,
     marginLeft: 12,
+  },
+  compactAccidental: {
+    fontFamily: "opusChords",
   },
   compactArrowButton: {
     paddingHorizontal: 8,

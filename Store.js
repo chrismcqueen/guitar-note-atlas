@@ -8,7 +8,9 @@ export const StoreProvider = ({ children }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
-  const [positionFret, setPositionFret] = useState(1);
+  const [showTutorialPrompt, setShowTutorialPrompt] = useState(false);
+  const [positionId, setPositionId] = useState(0);
+  const [showPositionOverview, setShowPositionOverview] = useState(true);
   const [globalState, setGlobalState] = useState({});
 
   useEffect(() => {
@@ -28,8 +30,12 @@ export const StoreProvider = ({ children }) => {
     setShowOptions,
     showTutorial,
     setShowTutorial,
-    positionFret,
-    setPositionFret,
+    showTutorialPrompt,
+    setShowTutorialPrompt,
+    positionId,
+    setPositionId,
+    showPositionOverview,
+    setShowPositionOverview,
     globalState,
     setGlobalState,
   };

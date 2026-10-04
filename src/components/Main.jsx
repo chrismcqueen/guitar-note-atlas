@@ -10,15 +10,19 @@ import { Store } from "../../Store";
 import { theme } from "../utils/theme";
 
 export const Main = () => {
-  const { dimensions, insets } = useContext(Store);
+  const { dimensions, insets, showPositionOverview } = useContext(Store);
   const fullDimensions = { height: dimensions.height, width: dimensions.width };
   const fullScreen = { height: "100%", width: "100%" };
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const safeSideInset = Math.max(insets.left, insets.right);
+  const contentInsets = isTablet
+    ? { paddingLeft: insets.left, paddingRight: insets.right }
+    : { paddingLeft: safeSideInset, paddingRight: safeSideInset };
 
   return (
     <View style={[styles.container, fullDimensions]}>
       <View style={fullScreen}>
-        <View style={[styles.content, isTablet && styles.tabletContent, { paddingLeft: insets.left, paddingRight: insets.right }]}>
+        <View style={[styles.content, isTablet && styles.tabletContent, contentInsets]}>
           {isTablet ? (
             <>
               <PositionZoom />
@@ -31,10 +35,14 @@ export const Main = () => {
             </>
           ) : (
             <View style={styles.phoneContent}>
-              <KeySelector />
-              <View style={styles.phoneNeck}>
-                <Neck />
-              </View>
+              {showPositionOverview ? (
+                <>
+                  <KeySelector />
+                  <View style={styles.phoneNeck}><Neck /></View>
+                </>
+              ) : (
+                <PositionZoom compact />
+              )}
             </View>
           )}
         </View>
@@ -74,6 +82,7 @@ export const styles = StyleSheet.create({
   },
   phoneContent: {
     alignItems: "center",
+    width: "100%",
   },
   phoneNeck: {
     transform: [{ translateY: 10 }],
