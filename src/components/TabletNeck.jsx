@@ -17,6 +17,7 @@ const FRET_WIDTH = 49;
 const NECK_LEFT = 40;
 const NECK_RIGHT = 842;
 const LINE_WIDTH = 2.25;
+const ACTIVE_CLIP_OVERDRAW = LINE_WIDTH;
 
 const TabletNeck = () => {
   const { dimensions, globalState, insets } = useContext(Store);
@@ -60,7 +61,12 @@ const TabletNeck = () => {
       <Svg width="100%" height="100%" viewBox={`0 0 864 ${VIEWBOX_HEIGHT}`}>
         <Defs>
           <ClipPath id="active-position-clip">
-            <Rect x={selectedX} y="0" width={selectedWidth} height={VIEWBOX_HEIGHT} />
+            <Rect
+              x={selectedX - ACTIVE_CLIP_OVERDRAW}
+              y="0"
+              width={selectedWidth + ACTIVE_CLIP_OVERDRAW * 2}
+              height={VIEWBOX_HEIGHT}
+            />
           </ClipPath>
         </Defs>
         <Rect x={NECK_LEFT} y="14" width={NECK_RIGHT - NECK_LEFT} height={STRING_SPAN} fill={theme.colors.neckLightGray} />
