@@ -63,12 +63,13 @@ export const AudioPopover = () => {
   };
 
   return (
-    <View accessibilityViewIsModal style={styles.popoverLayer}>
+    <View accessibilityViewIsModal pointerEvents="auto" style={styles.popoverLayer}>
       <Pressable
         android_disableSound
         accessibilityLabel="Close audio controls"
+        accessibilityRole="button"
         onPress={() => setPopoverOpen(false)}
-        style={StyleSheet.absoluteFillObject}
+        style={styles.dismissLayer}
       />
       <View style={[styles.card, { left: cardLeft, top: cardTop, width: cardWidth }]}>
         <View style={styles.titleRow}>
@@ -146,12 +147,13 @@ const styles = StyleSheet.create({
   closeButton: { alignItems: "center", height: 32, justifyContent: "center", width: 32 },
   closeText: { color: theme.colors.blue, fontSize: 29, lineHeight: 30 },
   disabled: { opacity: 0.45 },
+  dismissLayer: { ...StyleSheet.absoluteFillObject },
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
   label: { color: theme.colors.black, flex: 1, fontFamily: "proletarsk", fontSize: 17 },
   message: { color: theme.colors.grey, fontSize: 12, marginTop: 8, textAlign: "center" },
   playButton: { alignItems: "center", backgroundColor: theme.colors.blue, borderRadius: 5, justifyContent: "center", minHeight: 42 },
   playText: { color: theme.colors.white, fontFamily: "proletarsk", fontSize: 17 },
-  popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "#00000026", zIndex: 4500 },
+  popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent", zIndex: 4500 },
   stepButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 34, justifyContent: "center", width: 34 },
   stepText: { color: theme.colors.blue, fontSize: 24, lineHeight: Platform.OS === "android" ? 28 : 25 },
   tempoInput: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 19, marginLeft: 8, minWidth: 40, padding: 0, textAlign: "center" },

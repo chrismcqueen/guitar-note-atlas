@@ -105,6 +105,11 @@ const AppContent = () => {
     inputRange: [0, 1],
     outputRange: [0, -optionsWidth / 2],
   });
+  const animatedViewportStyle = optionsMounted && {
+    height: viewportHeight,
+    width: viewportWidth,
+    transform: [{ translateX: appTranslateX }, { scale: appScale }],
+  };
 
   return (
     <View
@@ -125,16 +130,22 @@ const AppContent = () => {
           styles.navigationScreen,
           !optionsMounted && styles.navigationScreenIdle,
           screenBounds,
-          optionsMounted && {
-            height: viewportHeight,
-            width: viewportWidth,
-            transform: [{ translateX: appTranslateX }, { scale: appScale }],
-          },
+          animatedViewportStyle,
         ]}
       >
         <Main />
         <Menu />
         <Header />
+      </Animated.View>
+      <Animated.View
+        pointerEvents="box-none"
+        style={[
+          styles.audioTriggerLayer,
+          !optionsMounted && styles.navigationScreenIdle,
+          screenBounds,
+          animatedViewportStyle,
+        ]}
+      >
         <AudioTrigger />
       </Animated.View>
       <Options mounted={optionsMounted} transition={optionsTransition} viewport={viewport} />
@@ -191,6 +202,10 @@ const styles = StyleSheet.create({
   },
   appIdle: {
     backgroundColor: "#F9F8EF",
+  },
+  audioTriggerLayer: {
+    position: "absolute",
+    zIndex: 350,
   },
   navigationScreen: {
     position: "absolute",
