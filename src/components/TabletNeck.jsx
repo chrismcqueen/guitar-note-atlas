@@ -74,9 +74,16 @@ const TabletNeck = () => {
             />
           </G>
           {!globalState.options.hideAnchorFrets && (
-            <G transform="translate(0 -75)">
-              <AnchorFrets color={theme.colors.neckBlackAlpha} leftHand={globalState.options.leftHand} radius={2} />
-            </G>
+            <>
+              <G transform="translate(0 -75)">
+                <AnchorFrets color={theme.colors.neckBlackAlpha} leftHand={globalState.options.leftHand} radius={2} />
+              </G>
+              <G clipPath="url(#active-position-clip)">
+                <G transform="translate(0 -75)">
+                  <AnchorFrets color={theme.colors.black} leftHand={globalState.options.leftHand} radius={2} />
+                </G>
+              </G>
+            </>
           )}
           {tuning.map((stringOffset, string) =>
             frets.map((fret) => (
