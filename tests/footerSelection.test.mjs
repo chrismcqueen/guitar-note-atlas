@@ -45,3 +45,9 @@ test("reversing a footer swipe restores choices that leave the live range", () =
   assert.deepEqual(paintDegreeRange(initial, choices, 1, 2, true), [0, 1, 3]);
   assert.deepEqual(paintDegreeRange(initial, choices, 1, 0, true), [0, 1]);
 });
+
+test("reversing an erase swipe reselects degree one after it leaves the live range", () => {
+  const initial = [0, 1, 3, 4];
+  assert.deepEqual(paintDegreeRange(initial, choices, 3, 0, false), []);
+  assert.deepEqual(paintDegreeRange(initial, choices, 3, 1, false), [0]);
+});

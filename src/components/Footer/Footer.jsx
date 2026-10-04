@@ -17,6 +17,7 @@ export const Footer = () => {
   const dragStartIndex = useRef(0);
   const dragCurrentIndex = useRef(null);
   const dragSelects = useRef(true);
+  const dragMoved = useRef(false);
 
   const indexAtGestureX = (x) => footerDegreeIndexFromGestureX(
     x,
@@ -66,11 +67,16 @@ export const Footer = () => {
         onMoveShouldSetResponderCapture={() => true}
         onResponderGrant={(event) => {
           dragCurrentIndex.current = null;
+          dragMoved.current = false;
           dragInitialDegrees.current = [...globalState.scale.degrees];
           dragSelects.current = !isDegreeChoiceSelected(globalState.scale.degrees, degrees[dragStartIndex.current]);
           paintThroughIndex(indexAtGestureX(event.nativeEvent.locationX));
         }}
-        onResponderMove={(event) => paintThroughIndex(indexAtGestureX(event.nativeEvent.locationX))}
+        onResponderMove={(event) => {
+          const index = indexAtGestureX(event.nativeEvent.locationX);
+          if (index !== dragStartIndex.current) dragMoved.current = true;
+          paintThroughIndex(index);
+        }}
         onResponderRelease={finishDrag}
         onResponderTerminate={finishDrag}
         style={styles.scaleDegreeContainer}
@@ -78,7 +84,17 @@ export const Footer = () => {
         {degrees.map((d, i) => {
           const selected = globalState.scale.degrees.includes(d.d);
           const altSelected = globalState.scale.degrees.includes(d.e);
-          return <ScaleDegreeButton key={i} d={d.d} e={d.e} selected={selected} altSelected={altSelected} onTouchStart={() => { dragStartIndex.current = i; }} />;
+          return (
+            <ScaleDegreeButton
+              key={i}
+              d={d.d}
+              e={d.e}
+              selected={selected}
+              altSelected={altSelected}
+              onTouchStart={() => { dragStartIndex.current = i; }}
+              shouldHandlePress={() => !dragMoved.current}
+            />
+          );
         })}
       </View>
       <FooterButton onPress={handleAll}>All</FooterButton>
