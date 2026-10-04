@@ -39,7 +39,7 @@ const TabletNeck = () => {
       <Svg width="100%" height="100%" viewBox={`0 0 864 ${VIEWBOX_HEIGHT}`}>
         <Defs>
           <ClipPath id="active-position-clip">
-            <Rect x={selectedX} y="14" width={selectedWidth} height={STRING_SPAN} />
+            <Rect x={selectedX} y="0" width={selectedWidth} height={VIEWBOX_HEIGHT} />
           </ClipPath>
         </Defs>
         <Rect x={NECK_LEFT} y="14" width={NECK_RIGHT - NECK_LEFT} height={STRING_SPAN} fill={theme.colors.neckLightGray} />
