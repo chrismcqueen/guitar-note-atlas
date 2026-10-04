@@ -13,7 +13,7 @@ const CONTROL_HIT_SLOP = 3;
 
 export const AudioTrigger = () => {
   const { dimensions, insets } = useContext(Store);
-  const { isLoading, isPlaying, openPopover } = useContext(AudioPlaybackStore);
+  const { openPopover } = useContext(AudioPlaybackStore);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const top = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + (isTablet ? 0 : insets.top)) + 12;
   const left = isTablet ? Math.max(insets.left + 24, 34) : Math.max(insets.left + 24, 72);
@@ -21,15 +21,23 @@ export const AudioTrigger = () => {
   return (
     <Pressable
       android_disableSound
-      accessibilityLabel="Open audio controls"
+      accessibilityLabel="Open audio player"
       accessibilityRole="button"
       onPress={openPopover}
-      style={withPressedOpacity([styles.trigger, { left, top }, isPlaying && styles.triggerPlaying])}
+      style={withPressedOpacity([styles.trigger, { left, top }])}
     >
-      <Text style={styles.triggerIcon}>{isLoading ? "…" : isPlaying ? "■" : "▶"}</Text>
+      <MixerIcon />
     </Pressable>
   );
 };
+
+const MixerIcon = () => (
+  <View accessible={false} style={styles.mixerIcon}>
+    <View style={styles.mixerTrack}><View style={[styles.mixerKnob, { left: 3 }]} /></View>
+    <View style={styles.mixerTrack}><View style={[styles.mixerKnob, { right: 3 }]} /></View>
+    <View style={styles.mixerTrack}><View style={[styles.mixerKnob, { left: 8 }]} /></View>
+  </View>
+);
 
 export const AudioPopover = () => {
   const { dimensions, insets } = useContext(Store);
@@ -155,6 +163,9 @@ const styles = StyleSheet.create({
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
   label: { color: theme.colors.black, flex: 1, fontFamily: "proletarsk", fontSize: 17 },
   message: { color: theme.colors.grey, fontSize: 12, marginTop: 8, textAlign: "center" },
+  mixerIcon: { gap: 5, width: 24 },
+  mixerKnob: { backgroundColor: theme.colors.white, borderRadius: 3, height: 6, position: "absolute", top: -2, width: 6 },
+  mixerTrack: { backgroundColor: theme.colors.white, height: 2, position: "relative", width: 24 },
   playButton: { alignItems: "center", backgroundColor: theme.colors.blue, borderRadius: 5, justifyContent: "center", minHeight: 44 },
   playText: { color: theme.colors.white, fontFamily: "proletarsk", fontSize: 17 },
   popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent", zIndex: 4500 },
@@ -184,6 +195,4 @@ const styles = StyleSheet.create({
     width: 44,
     zIndex: 300,
   },
-  triggerIcon: { color: theme.colors.white, fontSize: 18, marginLeft: 2 },
-  triggerPlaying: { backgroundColor: theme.colors.grey },
 });
