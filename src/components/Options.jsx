@@ -26,7 +26,7 @@ const Options = ({ mounted, transition, viewport }) => {
       ? Math.max(insets.bottom + 16, 44)
       : Math.max(insets.bottom, 16);
 
-  const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Flip Upside Down", "Hide Anchor Frets", "Enable Circle of 4ths/5ths Mode", "Rate Us", "Give Us Feedback"];
+  const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Flip Upside Down", "Hide Anchor Frets", "Enable 4ths/5ths Mode", "Rate Us", "Give Us Feedback"];
 
   const updateOption = (name) => {
     const nextState = {
@@ -62,7 +62,7 @@ const Options = ({ mounted, transition, viewport }) => {
         return globalState.options.upsideDown;
       case "Hide Anchor Frets":
         return globalState.options.hideAnchorFrets;
-      case "Enable Circle of 4ths/5ths Mode":
+      case "Enable 4ths/5ths Mode":
         return globalState.options.keyNavigation === KEY_NAVIGATION_MODES.CIRCLE;
       default:
         return false;
@@ -90,7 +90,7 @@ const Options = ({ mounted, transition, viewport }) => {
       case "Hide Anchor Frets":
         updateOption("hideAnchorFrets");
         break;
-      case "Enable Circle of 4ths/5ths Mode":
+      case "Enable 4ths/5ths Mode":
         toggleCircleNavigation();
         break;
       case "Rate Us":
