@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { fretForNeckX, getPosition, POSITION_ORDER, positionBandFrets, positionBandVerticalGeometry, positionDisplayFret, positionForFret, positionStartFret, positionTargetForFret, positionTargets, resolvedPositionFret, stepPosition, stepPositionTarget } from "../src/utils/positions.mjs";
+import { fretForNeckX, getPosition, POSITION_ORDER, positionBandFrets, positionBandVerticalGeometry, positionDisplayFret, positionForFret, positionSelectionTargets, positionStartFret, positionTargetForFret, positionTargets, resolvedPositionFret, stepPosition, stepPositionTarget } from "../src/utils/positions.mjs";
 
 test("positions follow the released seven-position order and wrap", () => {
   assert.deepEqual(POSITION_ORDER, [0, 2, 4, 6, 1, 3, 5]);
@@ -31,7 +31,7 @@ test("position starts transpose with the selected key", () => {
   assert.equal(positionStartFret(5, 3), 5);
 });
 
-test("phone fret targets follow the released A-based position anchors", () => {
+test("position anchors repeat visually while touch selection stops after one cycle", () => {
   assert.deepEqual(positionTargets(0), [
     { fret: 0, id: 3 },
     { fret: 2, id: 5 },
@@ -48,7 +48,7 @@ test("phone fret targets follow the released A-based position anchors", () => {
   assert.equal(positionForFret(3, 0), 0);
   assert.equal(positionForFret(7, 0), 4);
   assert.equal(positionForFret(9, 0), 6);
-  assert.equal(positionForFret(14, 0), 5);
+  assert.equal(positionForFret(14, 0), 1);
 });
 
 test("overview neck touch coordinates map to frets in either handedness", () => {
@@ -59,36 +59,38 @@ test("overview neck touch coordinates map to frets in either handedness", () => 
   assert.equal(fretForNeckX(1000, 864), 16);
 });
 
-test("full-neck selection preserves the touched octave occurrence", () => {
+test("full-neck selection stops after one complete position cycle", () => {
   assert.deepEqual(positionTargetForFret(0, 0), { fret: 0, id: 3, distance: 0 });
-  assert.deepEqual(positionTargetForFret(12, 0), { fret: 12, id: 3, distance: 0 });
-  assert.equal(resolvedPositionFret(3, 12, 0), 12);
+  assert.deepEqual(positionTargetForFret(12, 0), { fret: 10, id: 1, distance: 2 });
+  assert.deepEqual(positionTargetForFret(16, 0), { fret: 10, id: 1, distance: 6 });
+  assert.equal(resolvedPositionFret(3, 12, 0), 0);
   assert.equal(resolvedPositionFret(3, 99, 0), 0);
 });
 
 test("position navigation moves linearly and stops at visible neck ends", () => {
   assert.deepEqual(stepPositionTarget(3, 0, -1, 0), { fret: 0, id: 3 });
   assert.deepEqual(stepPositionTarget(3, 0, 1, 0), { fret: 2, id: 5 });
-  assert.deepEqual(stepPositionTarget(0, 15, 1, 0), { fret: 15, id: 0 });
+  assert.deepEqual(stepPositionTarget(1, 10, 1, 0), { fret: 10, id: 1 });
 
   for (let keyOffset = 0; keyOffset < 12; keyOffset += 1) {
-    const visibleIds = new Set(positionTargets(keyOffset).map(({ id }) => id));
+    const targets = positionSelectionTargets(keyOffset);
+    const visibleIds = new Set(targets.map(({ id }) => id));
+    assert.equal(targets.length, POSITION_ORDER.length, `key ${keyOffset} target count`);
     assert.equal(POSITION_ORDER.every((id) => visibleIds.has(id)), true, `key ${keyOffset}`);
   }
 });
 
 test("selected position windows stay fully inside the visible neck", () => {
-  assert.equal(positionDisplayFret(0, 15, 0), 10);
-  assert.equal(positionDisplayFret(5, 14, 0), 11);
+  assert.equal(positionDisplayFret(1, 11, 1), 10);
+  assert.equal(positionDisplayFret(4, 11, 4), 11);
   assert.equal(positionDisplayFret(3, 0, 0), 0);
 });
 
-test("every visible color band opens its matching index position in every key", () => {
+test("every primary color band opens its matching index position in every key", () => {
   for (let keyOffset = 0; keyOffset < 12; keyOffset += 1) {
     for (const [pitch, positionId] of [[4, 4], [6, 6], [11, 5]]) {
-      for (const fret of positionBandFrets(pitch, keyOffset)) {
-        assert.equal(positionForFret(fret, keyOffset), positionId, `key ${keyOffset}, fret ${fret}`);
-      }
+      const primaryFret = positionBandFrets(pitch, keyOffset).find((fret) => positionSelectionTargets(keyOffset).some((target) => target.fret === fret));
+      if (primaryFret !== undefined) assert.equal(positionForFret(primaryFret, keyOffset), positionId, `key ${keyOffset}, fret ${primaryFret}`);
     }
   }
 });

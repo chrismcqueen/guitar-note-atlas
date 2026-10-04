@@ -57,12 +57,15 @@ export const positionTargets = (keyOffset = 0, maxFret = 16) => {
   ).sort((a, b) => a.fret - b.fret);
 };
 
+export const positionSelectionTargets = (keyOffset = 0, maxFret = 16) =>
+  positionTargets(keyOffset, maxFret).slice(0, POSITION_ORDER.length);
+
 export const positionForFret = (fret, keyOffset = 0) => {
   return positionTargetForFret(fret, keyOffset).id;
 };
 
 export const positionTargetForFret = (fret, keyOffset = 0) => {
-  const targets = positionTargets(keyOffset);
+  const targets = positionSelectionTargets(keyOffset);
   return targets.reduce((best, target) => {
     const distance = Math.abs(fret - target.fret);
     return distance < best.distance ? { ...target, distance } : best;
@@ -81,7 +84,7 @@ export const positionStartFret = (id, keyOffset = 0) => {
 };
 
 export const resolvedPositionFret = (id, fret, keyOffset = 0) => {
-  const exactTarget = positionTargets(keyOffset).find((target) => target.id === id && target.fret === fret);
+  const exactTarget = positionSelectionTargets(keyOffset).find((target) => target.id === id && target.fret === fret);
   return exactTarget?.fret ?? positionStartFret(id, keyOffset);
 };
 
@@ -91,7 +94,7 @@ export const positionDisplayFret = (id, fret, keyOffset = 0, maxFret = 16) => {
 };
 
 export const stepPositionTarget = (id, fret, amount, keyOffset = 0) => {
-  const targets = positionTargets(keyOffset);
+  const targets = positionSelectionTargets(keyOffset);
   const resolvedFret = resolvedPositionFret(id, fret, keyOffset);
   const currentIndex = Math.max(0, targets.findIndex((target) => target.id === id && target.fret === resolvedFret));
   const nextIndex = Math.max(0, Math.min(targets.length - 1, currentIndex + amount));
