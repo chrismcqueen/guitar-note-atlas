@@ -9,6 +9,8 @@ import { useRepeatPress } from "../utils/useRepeatPress";
 import { phoneHeaderHeight, tabletHeaderHeight } from "./Header";
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 
+const CONTROL_HIT_SLOP = 3;
+
 export const AudioTrigger = () => {
   const { dimensions, insets } = useContext(Store);
   const { isLoading, isPlaying, openPopover } = useContext(AudioPlaybackStore);
@@ -73,7 +75,7 @@ export const AudioPopover = () => {
       />
       <View style={[styles.card, { left: cardLeft, top: cardTop, width: cardWidth }]}>
         <View style={styles.titleRow}>
-          <Pressable android_disableSound onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
+          <Pressable android_disableSound accessibilityLabel="Close audio controls" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
             <Text style={styles.closeText}>×</Text>
           </Pressable>
           <Text style={styles.title}>Audio Player</Text>
@@ -84,6 +86,7 @@ export const AudioPopover = () => {
           android_disableSound
           accessibilityRole="button"
           disabled={isLoading || sequenceEmpty}
+          hitSlop={CONTROL_HIT_SLOP}
           onPress={play}
           style={withPressedOpacity([styles.playButton, (isLoading || sequenceEmpty) && styles.disabled])}
         >
@@ -92,12 +95,13 @@ export const AudioPopover = () => {
 
         <View style={styles.tempoRow}>
           <Text style={styles.label}>Tempo</Text>
-          <Pressable android_disableSound accessibilityLabel="Decrease tempo" {...slowerTempoPress} style={withPressedOpacity(styles.stepButton)}>
+          <Pressable android_disableSound accessibilityLabel="Decrease tempo" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} {...slowerTempoPress} style={withPressedOpacity(styles.stepButton)}>
             <Text style={styles.stepText}>−</Text>
           </Pressable>
           <TextInput
             accessibilityLabel="Tempo in beats per minute"
             keyboardType="number-pad"
+            hitSlop={CONTROL_HIT_SLOP}
             maxLength={3}
             onBlur={commitTempo}
             onChangeText={setTempoText}
@@ -107,7 +111,7 @@ export const AudioPopover = () => {
             value={tempoText}
           />
           <Text style={styles.bpm}>BPM</Text>
-          <Pressable android_disableSound accessibilityLabel="Increase tempo" {...fasterTempoPress} style={withPressedOpacity(styles.stepButton)}>
+          <Pressable android_disableSound accessibilityLabel="Increase tempo" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} {...fasterTempoPress} style={withPressedOpacity(styles.stepButton)}>
             <Text style={styles.stepText}>+</Text>
           </Pressable>
         </View>
@@ -124,7 +128,7 @@ export const AudioPopover = () => {
 };
 
 const Toggle = ({ accessibilityLabel, icon, onPress, selected }) => (
-  <Pressable android_disableSound accessibilityLabel={accessibilityLabel} accessibilityRole="button" accessibilityState={{ selected }} onPress={onPress} style={withPressedOpacity([styles.toggle, selected && styles.toggleSelected])}>
+  <Pressable android_disableSound accessibilityLabel={accessibilityLabel} accessibilityRole="button" accessibilityState={{ selected }} hitSlop={CONTROL_HIT_SLOP} onPress={onPress} style={withPressedOpacity([styles.toggle, selected && styles.toggleSelected])}>
     <Image source={icon} style={[styles.toggleIcon, selected && styles.toggleIconSelected]} />
   </Pressable>
 );
@@ -144,19 +148,19 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.28,
     shadowRadius: 8,
   },
-  closeButton: { alignItems: "center", height: 32, justifyContent: "center", width: 32 },
+  closeButton: { alignItems: "center", height: 38, justifyContent: "center", width: 38 },
   closeText: { color: theme.colors.blue, fontSize: 29, lineHeight: 30 },
   disabled: { opacity: 0.45 },
   dismissLayer: { ...StyleSheet.absoluteFillObject },
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
   label: { color: theme.colors.black, flex: 1, fontFamily: "proletarsk", fontSize: 17 },
   message: { color: theme.colors.grey, fontSize: 12, marginTop: 8, textAlign: "center" },
-  playButton: { alignItems: "center", backgroundColor: theme.colors.blue, borderRadius: 5, justifyContent: "center", minHeight: 42 },
+  playButton: { alignItems: "center", backgroundColor: theme.colors.blue, borderRadius: 5, justifyContent: "center", minHeight: 44 },
   playText: { color: theme.colors.white, fontFamily: "proletarsk", fontSize: 17 },
   popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent", zIndex: 4500 },
-  stepButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 34, justifyContent: "center", width: 34 },
+  stepButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", width: 38 },
   stepText: { color: theme.colors.blue, fontSize: 24, lineHeight: Platform.OS === "android" ? 28 : 25 },
-  tempoInput: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 19, marginLeft: 8, minWidth: 40, padding: 0, textAlign: "center" },
+  tempoInput: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 19, marginLeft: 8, minHeight: 38, minWidth: 40, padding: 0, textAlign: "center" },
   tempoRow: { alignItems: "center", flexDirection: "row", marginTop: 12 },
   title: { color: theme.colors.black, flex: 1, fontFamily: "blackout", fontSize: 20, textAlign: "center" },
   titleRow: { alignItems: "center", flexDirection: "row", marginBottom: 10 },
