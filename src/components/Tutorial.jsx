@@ -3,6 +3,7 @@ import { Image, Platform, Pressable, StyleSheet, Text, View } from "react-native
 
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
+import { withPressedOpacity } from "../utils/pressable";
 
 const tabletRightPages = [
   require("../../assets/tutorial/right/01.png"), require("../../assets/tutorial/right/02.png"), require("../../assets/tutorial/right/03.png"),
@@ -84,7 +85,7 @@ const Tutorial = () => {
       <Pressable
         accessibilityLabel="Next tutorial page"
         onPress={advance}
-        style={[styles.pageButton, { marginHorizontal: sideInset }]}
+        style={withPressedOpacity([styles.pageButton, { marginHorizontal: sideInset }])}
       >
         <Image
           source={pages[page]}
@@ -93,7 +94,7 @@ const Tutorial = () => {
         />
       </Pressable>
       <Pressable
-        style={[styles.exit, { right: exitRight, top: insets.top + 12 }]}
+        style={withPressedOpacity([styles.exit, { right: exitRight, top: insets.top + 12 }])}
         onPress={(event) => {
           event.stopPropagation();
           setShowTutorial(false);

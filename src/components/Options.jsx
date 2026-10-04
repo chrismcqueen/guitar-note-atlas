@@ -1,30 +1,15 @@
-import React, { useContext, useEffect, useRef } from "react";
-import { StyleSheet, Text, View, Animated, Modal, Platform, Pressable } from "react-native";
+import React, { useContext } from "react";
+import { StyleSheet, Text, View, Animated, Platform, Pressable } from "react-native";
 import * as Linking from "expo-linking";
 
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { storeGlobalState } from "../utils/functions";
+import { pressedOpacity, withPressedOpacity } from "../utils/pressable";
 
-const Options = () => {
-  const { dimensions, insets, showOptions, setShowOptions, setShowTutorial, globalState, setGlobalState } = useContext(Store);
-  const optionsAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    showOptions
-      ? Animated.timing(optionsAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: false,
-        }).start()
-      : Animated.timing(optionsAnim, {
-          toValue: 1,
-          duration: 150,
-          useNativeDriver: false,
-        }).start();
-  }, [showOptions]);
-
-  const width = dimensions.width / 3;
+const Options = ({ mounted, transition }) => {
+  const { dimensions, insets, setShowOptions, setShowTutorial, globalState, setGlobalState } = useContext(Store);
+  const width = Math.min(300, dimensions.width);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const reportedSideInset = Math.max(insets.left, insets.right);
   const cutoutPadding = !isTablet && Platform.OS === "ios"
@@ -89,26 +74,21 @@ const Options = () => {
     }
   };
 
+  if (!mounted) return null;
+
   return (
-    <Modal
-      animationType="none"
-      onRequestClose={() => setShowOptions(false)}
-      presentationStyle="overFullScreen"
-      statusBarTranslucent
-      supportedOrientations={["landscape", "landscape-left", "landscape-right"]}
-      transparent
-      visible={showOptions}
-    >
-      <Pressable accessibilityLabel="Close options" onPress={() => setShowOptions(false)} style={styles.modalContainer}>
+      <View style={styles.modalContainer}>
+        <Animated.View pointerEvents="none" style={[styles.backdrop, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [0, 0.5] }) }]} />
+        <Pressable accessibilityLabel="Close options" onPress={() => setShowOptions(false)} style={withPressedOpacity(styles.dismissArea)} />
         <Animated.View
           style={[
             styles.options,
             {
               width: width,
-              right: optionsAnim.interpolate({
+              transform: [{ translateX: transition.interpolate({
                 inputRange: [0, 1],
-                outputRange: [0, -width],
-              }),
+                outputRange: [width, 0],
+              }) }],
             },
           ]}
         >
@@ -117,7 +97,7 @@ const Options = () => {
             style={[styles.optionsContent, { paddingRight: cutoutPadding }]}
           >
             {options.map((option, i) => (
-              <Pressable key={i} onPress={() => handlePress(option)}>
+              <Pressable key={i} onPress={() => handlePress(option)} style={pressedOpacity}>
                 <View style={styles.itemRow}>
                   <Text style={styles.item}>{option}</Text>
                   <Text
@@ -132,8 +112,7 @@ const Options = () => {
             ))}
           </Pressable>
         </Animated.View>
-      </Pressable>
-    </Modal>
+      </View>
   );
 };
 
@@ -141,12 +120,20 @@ export default Options;
 
 const styles = StyleSheet.create({
   modalContainer: {
-    backgroundColor: theme.colors.overlay,
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 2000,
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: theme.colors.black,
+  },
+  dismissArea: {
+    ...StyleSheet.absoluteFillObject,
   },
   options: {
     bottom: 0,
     position: "absolute",
+    right: 0,
     top: 0,
     backgroundColor: theme.colors.blue,
   },

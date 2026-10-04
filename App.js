@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useFonts } from "expo-font";
 import { useKeepAwake } from "expo-keep-awake";
-import { Alert, StyleSheet, View } from "react-native";
+import { NavigationBar } from "expo-navigation-bar";
+import * as ScreenOrientation from "expo-screen-orientation";
+import { Alert, Animated, Easing, StatusBar, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import Header from "./src/components/Header";
@@ -17,6 +19,10 @@ import { getWelcomeMessage } from "./src/utils/releaseParity.mjs";
 export default function App() {
   useKeepAwake();
 
+  useEffect(() => {
+    void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
+  }, []);
+
   let [fontsLoaded] = useFonts({
     blackout: require("./src/utils/fonts/Blackout-Midnight.ttf"),
     basicManual: require("./src/utils/fonts/SVBasicManual-Bold.ttf"),
@@ -29,6 +35,8 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      <StatusBar hidden />
+      <NavigationBar hidden style="dark" />
       <StoreProvider>
         {!fontsLoaded || loading ? (
           <Splash setLoading={setLoading} />
@@ -41,12 +49,52 @@ export default function App() {
 }
 
 const AppContent = () => {
+  const { showOptions } = React.useContext(Store);
+  const optionsTransition = useRef(new Animated.Value(0)).current;
+  const [optionsMounted, setOptionsMounted] = useState(false);
+
+  useEffect(() => {
+    optionsTransition.stopAnimation();
+
+    if (showOptions) {
+      setOptionsMounted(true);
+      optionsTransition.setValue(0);
+      Animated.timing(optionsTransition, {
+        duration: 150,
+        easing: Easing.inOut(Easing.ease),
+        toValue: 1,
+        useNativeDriver: true,
+      }).start();
+      return;
+    }
+
+    if (optionsMounted) {
+      Animated.timing(optionsTransition, {
+        duration: 150,
+        easing: Easing.inOut(Easing.ease),
+        toValue: 0,
+        useNativeDriver: true,
+      }).start(({ finished }) => {
+        if (finished) setOptionsMounted(false);
+      });
+    } else {
+      optionsTransition.setValue(0);
+    }
+  }, [showOptions]);
+
+  const appScale = optionsTransition.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.85],
+  });
+
   return (
     <View style={styles.app}>
-      <Main />
-      <Menu />
-      <Header />
-      <Options />
+      <Animated.View style={[styles.navigationScreen, { transform: [{ scale: appScale }] }]}>
+        <Main />
+        <Menu />
+        <Header />
+      </Animated.View>
+      <Options mounted={optionsMounted} transition={optionsTransition} />
       <TutorialGate />
       <TutorialPrompt />
     </View>
@@ -88,6 +136,10 @@ const TutorialGate = () => {
 
 const styles = StyleSheet.create({
   app: {
+    backgroundColor: "#000",
+    flex: 1,
+  },
+  navigationScreen: {
     flex: 1,
   },
 });

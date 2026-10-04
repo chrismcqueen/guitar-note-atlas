@@ -13,10 +13,13 @@ const Note = ({
   fret,
   labelFontSize = 25,
   leftHand,
+  muted = false,
   noteSizeOverride,
+  openStringOffset = 0,
   string,
   stringCount,
   stringOffset,
+  stringOffsetY = 0,
   stringSpan = 180,
 }) => {
   const { globalState } = useContext(Store);
@@ -98,9 +101,9 @@ const Note = ({
 
   const noteSize = noteSizeOverride ?? (fret === 0 ? 34 : 30);
   const fretCenter = fret === 1 ? 64.5 : 114 + 49 * (fret - 2);
-  const fretTranslate = centerInFrets && fret > 0 ? fretCenter - noteSize / 2 : getFretTranslate(fret);
+  const fretTranslate = centerInFrets && fret > 0 ? fretCenter - noteSize / 2 : getFretTranslate(fret) + (fret === 0 ? openStringOffset : 0);
   const x = leftHand ? 864 - noteSize - fretTranslate : fretTranslate;
-  const y = getStringTranslate(string);
+  const y = getStringTranslate(string) + stringOffsetY;
   const scaleDegree = getScaleDegree(fret, stringOffset);
 
   if (isNote(fret, stringOffset))
@@ -111,8 +114,8 @@ const Note = ({
             cx={noteSize / 2}
             cy={noteSize / 2}
             r={circleRadius}
-            stroke={fret === 0 ? theme.colors.grey : theme.colors.black}
-            fill={fret === 0 ? theme.colors.white : scaleDegree === "1" ? theme.colors.white : theme.colors.black}
+            stroke={muted ? theme.colors.neckBlackAlpha : fret === 0 ? theme.colors.grey : theme.colors.black}
+            fill={muted ? (scaleDegree === "1" || fret === 0 ? theme.colors.white : theme.colors.neckBlackAlpha) : fret === 0 ? theme.colors.white : scaleDegree === "1" ? theme.colors.white : theme.colors.black}
             strokeWidth={fret === 0 ? circleRadius / 12 : circleStrokeWidth ?? 3.5}
           />
           {globalState.options.showScaleDegree && (
@@ -121,7 +124,7 @@ const Note = ({
               x={noteSize * 0.545}
               y={scaleDegree.length === 1 ? "76%" : "82%"}
               fontSize={labelFontSize}
-              fill={fret === 0 ? theme.colors.grey : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
+              fill={muted ? (scaleDegree === "1" || fret === 0 ? theme.colors.neckBlackAlpha : theme.colors.white) : fret === 0 ? theme.colors.grey : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
             />
           )}
         </Svg>

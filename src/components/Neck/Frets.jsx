@@ -1,29 +1,25 @@
 import React from "react";
-import { G, Line } from "react-native-svg";
+import { Line } from "react-native-svg";
 
 import { theme } from "../../utils/theme";
 
-const Frets = ({ leftHand }) => {
+const Frets = ({ color = theme.colors.black, fretStrokeWidth = 4, nutStrokeWidth = 6, y1 = 14, y2 = 194 }) => {
+  const fretXs = [39.5, 89.5, 138.5, 187.5, 236.5, 285.5, 334.5, 383.5, 432.5, 481.5, 530.5, 579.5, 628.5, 677.5, 726.5, 775.5, 824.5];
   return (
-    <G transform={leftHand ? "translate(864 0) scale(-1 1)" : undefined}>
-      <Line id="fret-0" x2="0.018" y2="183.519" transform="translate(39.5 12)" stroke={theme.colors.black} strokeWidth="6" />
-      <Line id="fret-01" x2="0.018" y2="183.519" transform="translate(89.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-02" x2="0.018" y2="183.519" transform="translate(138.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-03" x2="0.018" y2="183.519" transform="translate(187.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-04" x2="0.018" y2="183.519" transform="translate(236.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-05" x2="0.018" y2="183.519" transform="translate(285.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-06" x2="0.018" y2="183.519" transform="translate(334.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-07" x2="0.018" y2="183.519" transform="translate(383.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-08" x2="0.018" y2="183.519" transform="translate(432.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-09" x2="0.018" y2="183.519" transform="translate(481.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-10" x2="0.018" y2="183.519" transform="translate(530.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-11" x2="0.018" y2="183.519" transform="translate(579.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-12" x2="0.018" y2="183.519" transform="translate(628.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-13" x2="0.018" y2="183.519" transform="translate(677.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-14" x2="0.018" y2="183.519" transform="translate(726.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-15" x2="0.018" y2="183.519" transform="translate(775.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-      <Line id="fret-16" x2="0.018" y2="183.519" transform="translate(824.5 12)" stroke={theme.colors.black} strokeWidth="4" />
-    </G>
+    <>
+      {fretXs.map((x, index) => (
+        <Line
+          key={x}
+          id={`fret-${index}`}
+          x1={x}
+          x2={x}
+          y1={index === 0 ? y1 - fretStrokeWidth / 2 : y1}
+          y2={index === 0 ? y2 + fretStrokeWidth / 2 : y2}
+          stroke={color}
+          strokeWidth={index === 0 ? nutStrokeWidth : fretStrokeWidth}
+        />
+      ))}
+    </>
   );
 };
 

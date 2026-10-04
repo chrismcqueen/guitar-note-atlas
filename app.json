@@ -16,6 +16,14 @@
       "requireFullScreen": true,
       "bundleIdentifier": "dev.com.guitar-note-atlas",
       "buildNumber": "1.0.0",
+      "infoPlist": {
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationLandscapeRight"
+        ],
+        "UISupportedInterfaceOrientations~ipad": [
+          "UIInterfaceOrientationLandscapeRight"
+        ]
+      },
       "config": {
         "usesNonExemptEncryption": false
       }
@@ -30,6 +38,12 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "LANDSCAPE_RIGHT"
+        }
+      ],
       "expo-font",
       [
         "expo-splash-screen",

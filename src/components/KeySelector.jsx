@@ -5,6 +5,7 @@ import { storeGlobalState } from "../utils/functions";
 
 import { theme } from "../utils/theme";
 import { data } from "../../data";
+import { withPressedOpacity } from "../utils/pressable";
 
 const TabletKeyTitle = ({ title }) => (
   <Text adjustsFontSizeToFit minimumFontScale={0.7} numberOfLines={1} style={styles.compactTitle}>
@@ -33,10 +34,10 @@ const KeySelector = ({ compact = false }) => {
     return (
       <View style={styles.compactContainer}>
         <View>
-          <Pressable accessibilityLabel="Next key" onPress={() => handlePressArrow("right")} style={styles.compactArrowButton}>
+          <Pressable accessibilityLabel="Next key" onPress={() => handlePressArrow("right")} style={withPressedOpacity(styles.compactArrowButton)}>
             <View style={[styles.compactArrow, styles.arrowUp]} />
           </Pressable>
-          <Pressable accessibilityLabel="Previous key" onPress={() => handlePressArrow("left")} style={styles.compactArrowButton}>
+          <Pressable accessibilityLabel="Previous key" onPress={() => handlePressArrow("left")} style={withPressedOpacity(styles.compactArrowButton)}>
             <View style={[styles.compactArrow, styles.arrowDown]} />
           </Pressable>
         </View>
@@ -47,13 +48,13 @@ const KeySelector = ({ compact = false }) => {
 
   return (
     <View style={styles.titleContainer}>
-      <Pressable style={styles.arrowContainer} onPress={() => handlePressArrow("left")}>
+      <Pressable style={withPressedOpacity(styles.arrowContainer)} onPress={() => handlePressArrow("left")}>
         <View style={[styles.arrow, styles.arrowLeft]}></View>
       </Pressable>
       <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={styles.title}>
         KEY CENTER - {globalState?.key.title}
       </Text>
-      <Pressable style={styles.arrowContainer} onPress={() => handlePressArrow("right")}>
+      <Pressable style={withPressedOpacity(styles.arrowContainer)} onPress={() => handlePressArrow("right")}>
         <View style={[styles.arrow, styles.arrowRight]}></View>
       </Pressable>
     </View>

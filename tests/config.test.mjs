@@ -10,4 +10,14 @@ test("keeps iPad in landscape-only full-screen mode", () => {
   assert.equal(appConfig.orientation, "landscape");
   assert.equal(appConfig.ios.supportsTablet, true);
   assert.equal(appConfig.ios.requireFullScreen, true);
+  assert.deepEqual(appConfig.ios.infoPlist.UISupportedInterfaceOrientations, [
+    "UIInterfaceOrientationLandscapeRight",
+  ]);
+  assert.deepEqual(appConfig.ios.infoPlist["UISupportedInterfaceOrientations~ipad"], [
+    "UIInterfaceOrientationLandscapeRight",
+  ]);
+  assert.deepEqual(appConfig.plugins[0], [
+    "expo-screen-orientation",
+    { initialOrientation: "LANDSCAPE_RIGHT" },
+  ]);
 });

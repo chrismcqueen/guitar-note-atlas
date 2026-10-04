@@ -16,6 +16,7 @@ const STRING_SPAN = 120;
 const FRET_WIDTH = 49;
 const NECK_LEFT = 40;
 const NECK_RIGHT = 842;
+const LINE_WIDTH = 2.25;
 
 const TabletNeck = () => {
   const { dimensions, globalState, insets, positionId } = useContext(Store);
@@ -39,30 +40,37 @@ const TabletNeck = () => {
         {!globalState.options.hideColors && (
           <PositionBands bassMode={globalState.options.bassMode} keyOffset={globalState.key.key_offset} leftHand={globalState.options.leftHand} muted upsideDown={globalState.options.upsideDown} />
         )}
-        <G opacity={0.58}>
-          <Strings count={tuning.length} span={STRING_SPAN} />
-          <G transform="translate(0 4) scale(1 0.67)">
-            <Frets leftHand={globalState.options.leftHand} />
-          </G>
+        <G>
+          <Strings color={theme.colors.neckBlackAlpha} count={tuning.length} span={STRING_SPAN} startX={41} strokeWidth={LINE_WIDTH} />
+          <Frets
+            color={theme.colors.neckBlackAlpha}
+            fretStrokeWidth={LINE_WIDTH}
+            nutStrokeWidth={3.5}
+            y1={14}
+            y2={14 + STRING_SPAN}
+          />
           {!globalState.options.hideAnchorFrets && (
-            <G transform="translate(0 -65)">
-              <AnchorFrets leftHand={globalState.options.leftHand} />
+            <G transform="translate(0 -75)">
+              <AnchorFrets color={theme.colors.neckBlackAlpha} leftHand={globalState.options.leftHand} radius={2} />
             </G>
           )}
           {tuning.map((stringOffset, string) =>
             frets.map((fret) => (
               <Note
                 centerInFrets
-                circleRadius={9.5}
-                circleStrokeWidth={2.5}
+                circleRadius={8}
+                circleStrokeWidth={2}
                 key={`${string}-${fret}`}
                 fret={fret}
-                labelFontSize={18}
+                labelFontSize={16}
                 leftHand={globalState.options.leftHand}
-                noteSizeOverride={22}
+                muted
+                noteSizeOverride={20}
+                openStringOffset={15}
                 string={string + 1}
                 stringCount={tuning.length}
                 stringOffset={stringOffset}
+                stringOffsetY={4}
                 stringSpan={STRING_SPAN}
               />
             )),

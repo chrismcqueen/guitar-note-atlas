@@ -70,6 +70,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
+    transform: [{ translateY: -20 }],
     width: "100%",
   },
   tabletContent: {
