@@ -41,3 +41,11 @@ export const degreeIndicesBetween = (fromIndex, toIndex) => {
   const end = Math.max(fromIndex, toIndex);
   return Array.from({ length: end - start + 1 }, (_, offset) => start + offset);
 };
+
+export const paintDegreeRange = (initialDegrees, choices, startIndex, currentIndex, shouldSelect) =>
+  paintDegreeChoices(
+    initialDegrees,
+    choices,
+    degreeIndicesBetween(startIndex, currentIndex),
+    shouldSelect,
+  );

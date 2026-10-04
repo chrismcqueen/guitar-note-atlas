@@ -7,6 +7,7 @@ import {
   footerDegreeIndexFromGestureX,
   isDegreeChoiceSelected,
   paintDegreeChoices,
+  paintDegreeRange,
 } from "../src/utils/footerSelection.mjs";
 
 const choices = [{ d: 0 }, { d: 1 }, { d: 3.1, e: 3 }, { d: 4 }];
@@ -36,4 +37,11 @@ test("footer selection painting adds each crossed degree without toggling it twi
 
 test("starting a drag on a selected degree can erase crossed degrees", () => {
   assert.deepEqual(paintDegreeChoices([0, 1, 3, 4], choices, [1, 2, 3], false), [0]);
+});
+
+test("reversing a footer swipe restores choices that leave the live range", () => {
+  const initial = [0];
+  assert.deepEqual(paintDegreeRange(initial, choices, 1, 3, true), [0, 1, 3, 4]);
+  assert.deepEqual(paintDegreeRange(initial, choices, 1, 2, true), [0, 1, 3]);
+  assert.deepEqual(paintDegreeRange(initial, choices, 1, 0, true), [0, 1]);
 });

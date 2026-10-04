@@ -6,16 +6,17 @@ import { FooterButton } from "./FooterButton";
 import { ScaleDegreeButton } from "./ScaleDegreeButton";
 import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
-import { degreeIndicesBetween, footerDegreeIndexFromGestureX, isDegreeChoiceSelected, paintDegreeChoices } from "../../utils/footerSelection.mjs";
+import { footerDegreeIndexFromGestureX, isDegreeChoiceSelected, paintDegreeRange } from "../../utils/footerSelection.mjs";
 
 export const Footer = () => {
   const { dimensions, globalState, insets, setGlobalState } = useContext(Store);
   const { degrees, getMatchingScale, handleClear, handleAll } = useFooter();
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const degreeRowWidth = useRef(0);
+  const dragInitialDegrees = useRef([]);
   const dragStartIndex = useRef(0);
+  const dragCurrentIndex = useRef(null);
   const dragSelects = useRef(true);
-  const visitedIndices = useRef(new Set());
 
   const indexAtGestureX = (x) => footerDegreeIndexFromGestureX(
     x,
@@ -25,21 +26,17 @@ export const Footer = () => {
   );
 
   const paintThroughIndex = (index) => {
-    const visited = [...visitedIndices.current];
-    const lastIndex = visited.length ? visited[visited.length - 1] : dragStartIndex.current;
-    const indices = [];
-
-    for (const candidate of degreeIndicesBetween(lastIndex, index)) {
-      if (!visitedIndices.current.has(candidate)) {
-        visitedIndices.current.add(candidate);
-        indices.push(candidate);
-      }
-    }
-
-    if (!indices.length) return;
+    if (index === dragCurrentIndex.current) return;
+    dragCurrentIndex.current = index;
 
     setGlobalState((currentState) => {
-      const nextDegrees = paintDegreeChoices(currentState.scale.degrees, degrees, indices, dragSelects.current);
+      const nextDegrees = paintDegreeRange(
+        dragInitialDegrees.current,
+        degrees,
+        dragStartIndex.current,
+        index,
+        dragSelects.current,
+      );
       const matchingScale = getMatchingScale(nextDegrees);
       const scale = matchingScale
         ? { ...matchingScale, degrees: nextDegrees }
@@ -49,7 +46,8 @@ export const Footer = () => {
   };
 
   const finishDrag = () => {
-    visitedIndices.current = new Set();
+    dragCurrentIndex.current = null;
+    dragInitialDegrees.current = [];
   };
 
   return (
@@ -67,7 +65,8 @@ export const Footer = () => {
         }}
         onMoveShouldSetResponderCapture={() => true}
         onResponderGrant={(event) => {
-          visitedIndices.current = new Set();
+          dragCurrentIndex.current = null;
+          dragInitialDegrees.current = [...globalState.scale.degrees];
           dragSelects.current = !isDegreeChoiceSelected(globalState.scale.degrees, degrees[dragStartIndex.current]);
           paintThroughIndex(indexAtGestureX(event.nativeEvent.locationX));
         }}
