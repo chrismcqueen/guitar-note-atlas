@@ -1,35 +1,28 @@
-import React, { useContext, useEffect, useRef } from "react";
-import { StyleSheet, Text, View, Animated, Modal, Platform, Pressable } from "react-native";
+import React, { useContext } from "react";
+import { StyleSheet, Text, View, Animated, Platform, Pressable, ScrollView, useWindowDimensions } from "react-native";
 import * as Linking from "expo-linking";
 
-import { Store } from "../../Store";
+import { OverlayStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { storeGlobalState } from "../utils/functions";
+import { pressedOpacity } from "../utils/pressable";
+import { getOptionsDrawerWidth } from "../utils/screenBounds.mjs";
 
-const Options = () => {
-  const { dimensions, insets, showOptions, setShowOptions, setShowTutorial, globalState, setGlobalState } = useContext(Store);
-  const optionsAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    showOptions
-      ? Animated.timing(optionsAnim, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: false,
-        }).start()
-      : Animated.timing(optionsAnim, {
-          toValue: 1,
-          duration: 150,
-          useNativeDriver: false,
-        }).start();
-  }, [showOptions]);
-
-  const width = dimensions.width / 3;
+const Options = ({ mounted, transition, viewport }) => {
+  const { dimensions, insets, setShowTutorial, globalState, setGlobalState } = useContext(Store);
+  const { setShowOptions, showOptions } = useContext(OverlayStore);
+  const usableWindow = useWindowDimensions();
+  const viewportWidth = viewport?.width || dimensions.width;
+  const viewportHeight = viewport?.height || dimensions.height;
+  const scrollViewportHeight = Math.min(viewportHeight, usableWindow.height);
+  const width = getOptionsDrawerWidth(viewportWidth);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const reportedSideInset = Math.max(insets.left, insets.right);
-  const cutoutPadding = !isTablet && Platform.OS === "ios"
-    ? Math.max(reportedSideInset, 72)
-    : reportedSideInset;
+  const isShortViewport = scrollViewportHeight < 500;
+  const bottomScrollPadding = Platform.OS === "android" && !isTablet
+    ? Math.max(insets.bottom + 16, 44)
+    : isShortViewport
+      ? Math.max(insets.bottom + 16, 44)
+      : Math.max(insets.bottom, 16);
 
   const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Flip Upside Down", "Hide Anchor Frets", "Rate Us", "Give Us Feedback"];
 
@@ -89,51 +82,76 @@ const Options = () => {
     }
   };
 
+  if (!mounted) return null;
+
   return (
-    <Modal
-      animationType="none"
-      onRequestClose={() => setShowOptions(false)}
-      presentationStyle="overFullScreen"
-      statusBarTranslucent
-      supportedOrientations={["landscape", "landscape-left", "landscape-right"]}
-      transparent
-      visible={showOptions}
-    >
-      <Pressable accessibilityLabel="Close options" onPress={() => setShowOptions(false)} style={styles.modalContainer}>
-        <Animated.View
+      <View style={styles.modalContainer}>
+      {showOptions ? (
+        <View
+          pointerEvents="none"
           style={[
-            styles.options,
+            styles.backdrop,
             {
-              width: width,
-              right: optionsAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, -width],
-              }),
+              height: viewportHeight,
+              width: viewportWidth,
             },
           ]}
-        >
-          <Pressable
-            onPress={(event) => event.stopPropagation()}
-            style={[styles.optionsContent, { paddingRight: cutoutPadding }]}
+        />
+      ) : null}
+        <Pressable
+          android_disableSound
+          accessibilityLabel="Close options"
+          onPress={() => setShowOptions(false)}
+          style={[styles.dismissArea, { height: viewportHeight, width: viewportWidth - width }]}
+        />
+        <View style={[styles.drawerSlot, { width }]}>
+          <Animated.View
+            style={[
+              styles.options,
+              {
+                height: scrollViewportHeight,
+                width: width,
+                transform: [{ translateX: transition.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [width, 0],
+                }) }],
+              },
+            ]}
           >
-            {options.map((option, i) => (
-              <Pressable key={i} onPress={() => handlePress(option)}>
-                <View style={styles.itemRow}>
-                  <Text style={styles.item}>{option}</Text>
-                  <Text
-                    accessibilityElementsHidden={!isSelected(option)}
-                    importantForAccessibility={isSelected(option) ? "auto" : "no-hide-descendants"}
-                    style={[styles.checkmark, !isSelected(option) && styles.checkmarkHidden]}
-                  >
-                    ✓
-                  </Text>
-                </View>
-              </Pressable>
-            ))}
-          </Pressable>
-        </Animated.View>
-      </Pressable>
-    </Modal>
+            <ScrollView
+              bounces={false}
+              contentContainerStyle={styles.optionsContent}
+              nestedScrollEnabled={Platform.OS === "android"}
+              overScrollMode="always"
+              showsVerticalScrollIndicator={false}
+              style={styles.optionsScroll}
+            >
+              {options.map((option, i) => {
+                const selected = isSelected(option);
+                return (
+                <Pressable android_disableSound accessibilityRole="button" key={i} onPress={() => handlePress(option)} style={pressedOpacity}>
+                  <View style={[styles.itemRow, isTablet && styles.tabletItemRow]}>
+                    <Text style={styles.item}>{option}</Text>
+                    {option === "Rate Us" ? (
+                      <Text accessibilityLabel="five stars" style={styles.stars}>★★★★★</Text>
+                    ) : (
+                      <Text
+                        accessibilityElementsHidden={!selected}
+                        importantForAccessibility={selected ? "auto" : "no-hide-descendants"}
+                        style={[styles.checkmark, !selected && styles.checkmarkHidden]}
+                      >
+                        ✓
+                      </Text>
+                    )}
+                  </View>
+                </Pressable>
+                );
+              })}
+              <View pointerEvents="none" style={{ height: bottomScrollPadding }} />
+            </ScrollView>
+          </Animated.View>
+        </View>
+      </View>
   );
 };
 
@@ -141,36 +159,70 @@ export default Options;
 
 const styles = StyleSheet.create({
   modalContainer: {
-    backgroundColor: theme.colors.overlay,
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 2000,
   },
-  options: {
-    bottom: 0,
+  backdrop: {
+    backgroundColor: theme.colors.overlay,
+    left: 0,
     position: "absolute",
     top: 0,
+    zIndex: 0,
+  },
+  dismissArea: {
+    left: 0,
+    position: "absolute",
+    top: 0,
+    zIndex: 1,
+  },
+  drawerSlot: {
+    backgroundColor: theme.colors.blue,
+    bottom: 0,
+    position: "absolute",
+    right: 0,
+    top: 0,
+    zIndex: 2,
+  },
+  options: {
     backgroundColor: theme.colors.blue,
   },
-  optionsContent: {
+  optionsScroll: {
     flex: 1,
   },
+  optionsContent: {
+    paddingHorizontal: 0,
+    paddingTop: 0,
+  },
   item: {
-    color: theme.colors.pureWhite,
+    color: theme.colors.white,
     fontFamily: "proletarsk",
     flex: 1,
   },
   itemRow: {
     alignItems: "center",
     flexDirection: "row",
-    margin: 5,
-    padding: 8,
+    minHeight: 44,
+    paddingLeft: 14,
+    paddingRight: 12,
+    position: "relative",
+  },
+  tabletItemRow: {
+    minHeight: 48,
   },
   checkmark: {
     color: theme.colors.white,
-    fontSize: 18,
+    fontFamily: "proletarsk",
+    fontSize: 20,
     textAlign: "center",
-    width: 18,
+    width: 24,
   },
   checkmarkHidden: {
     opacity: 0,
+  },
+  stars: {
+    color: theme.colors.white,
+    fontSize: 15,
+    letterSpacing: 1,
+    textAlign: "right",
   },
 });

@@ -7,11 +7,13 @@ import Note from "./Note";
 import Frets from "./Frets";
 import Strings from "./Strings";
 import PositionBands from "./PositionBands";
-import { Store } from "../../../Store";
+import { PositionActionsStore, Store } from "../../../Store";
 import { positionForFret } from "../../utils/positions.mjs";
+import { withPressedOpacity } from "../../utils/pressable";
 
-const Neck = () => {
-  const { dimensions, globalState, insets, setPositionId, setShowPositionOverview } = useContext(Store);
+const Neck = React.memo(() => {
+  const { dimensions, globalState, insets } = useContext(Store);
+  const { setPositionId, setShowPositionOverview } = useContext(PositionActionsStore);
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
@@ -26,6 +28,7 @@ const Neck = () => {
   return (
     // TODO: make container responsive
     <Pressable
+      android_disableSound
       accessibilityHint="Opens the selected fretboard position"
       accessibilityLabel="Full fretboard overview"
       onPress={(event) => {
@@ -35,20 +38,23 @@ const Neck = () => {
         setPositionId(positionForFret(fret, globalState.key.key_offset));
         setShowPositionOverview(false);
       }}
-      style={[styles.container, neckDimensions]}
+      style={withPressedOpacity([styles.container, neckDimensions])}
     >
       <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 864 233">
         {!globalState.options.hideColors && (
           <PositionBands bassMode={globalState.options.bassMode} keyOffset={globalState.key.key_offset} leftHand={globalState.options.leftHand} upsideDown={globalState.options.upsideDown} />
         )}
-        <Strings count={tuning.length} />
-        <Frets leftHand={globalState.options.leftHand} />
+        <Strings count={tuning.length} strokeWidth={3} />
+        <Frets fretStrokeWidth={3} nutStrokeWidth={5} />
         {!globalState.options.hideAnchorFrets && <AnchorFrets leftHand={globalState.options.leftHand} />}
         {tuning.map((stringOffset, string) =>
           frets.map((fret) => (
             <Note
               key={`${string}-${fret}`}
               fret={fret}
+              circleRadius={12}
+              circleStrokeWidth={3}
+              labelFontSize={23}
               leftHand={globalState.options.leftHand}
               string={string + 1}
               stringCount={tuning.length}
@@ -59,7 +65,7 @@ const Neck = () => {
       </Svg>
     </Pressable>
   );
-};
+});
 
 export default Neck;
 

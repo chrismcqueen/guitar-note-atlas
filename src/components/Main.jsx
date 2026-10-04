@@ -6,12 +6,12 @@ import Neck from "./Neck";
 import PositionZoom from "./PositionZoom";
 import TabletNeck from "./TabletNeck";
 import { Footer } from "./Footer";
-import { Store } from "../../Store";
+import { PositionVisibilityStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 
-export const Main = () => {
-  const { dimensions, insets, showPositionOverview } = useContext(Store);
-  const fullDimensions = { height: dimensions.height, width: dimensions.width };
+export const Main = React.memo(() => {
+  const { dimensions, insets } = useContext(Store);
+  const { showPositionOverview } = useContext(PositionVisibilityStore);
   const fullScreen = { height: "100%", width: "100%" };
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const safeSideInset = Math.max(insets.left, insets.right);
@@ -20,7 +20,7 @@ export const Main = () => {
     : { paddingLeft: safeSideInset, paddingRight: safeSideInset };
 
   return (
-    <View style={[styles.container, fullDimensions]}>
+    <View style={styles.container}>
       <View style={fullScreen}>
         <View style={[styles.content, isTablet && styles.tabletContent, contentInsets]}>
           {isTablet ? (
@@ -50,7 +50,7 @@ export const Main = () => {
       </View>
     </View>
   );
-};
+});
 
 export default Main;
 
@@ -70,6 +70,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
+    transform: [{ translateY: -20 }],
     width: "100%",
   },
   tabletContent: {

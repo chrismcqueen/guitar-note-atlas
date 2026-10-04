@@ -4,10 +4,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import TitleSVG from "./TitleSVG";
 import NeckSVG from "./NeckSVG";
 
-import { StyleSheet, View } from "react-native";
+import { Dimensions, StyleSheet, View } from "react-native";
 import { Store } from "../../../Store";
 import { storeGlobalState, removeStorage } from "../../utils/functions";
 import { theme } from "../../utils/theme";
+import { orientScreenBounds } from "../../utils/screenBounds.mjs";
 
 const Splash = ({ setLoading }) => {
   const { setGlobalState, setShowTutorialPrompt, dimensions } = useContext(Store);
@@ -67,10 +68,10 @@ const Splash = ({ setLoading }) => {
   }, []);
 
   const paddingLeft = dimensions.width / 100;
-
+  const screenBounds = orientScreenBounds(Dimensions.get("screen"), dimensions);
   return (
     <>
-      <View style={[styles.container, { width: dimensions.width, height: dimensions.height }]}>
+      <View style={[styles.container, screenBounds]}>
         <View style={[styles.title, { paddingLeft: paddingLeft }]}>
           <TitleSVG />
         </View>
@@ -88,8 +89,8 @@ export default Splash;
 
 const styles = StyleSheet.create({
   container: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: theme.colors.blue,
-    flex: 1,
   },
 
   neck: {
