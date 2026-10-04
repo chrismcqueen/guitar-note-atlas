@@ -18,6 +18,7 @@ const Options = ({ mounted, transition, viewport }) => {
   const scrollViewportHeight = Math.min(viewportHeight, usableWindow.height);
   const width = getOptionsDrawerWidth(viewportWidth);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const useCompactStars = !isTablet && width < 300;
   const isShortViewport = scrollViewportHeight < 500;
   const bottomScrollPadding = Platform.OS === "android" && !isTablet
     ? Math.max(insets.bottom + 16, 44)
@@ -152,7 +153,13 @@ const Options = ({ mounted, transition, viewport }) => {
                   <View style={[styles.itemRow, isTablet && styles.tabletItemRow]}>
                     <Text style={styles.item}>{option}</Text>
                     {option === "Rate Us" ? (
-                      <Text accessibilityLabel="five stars" style={styles.stars}>★★★★★</Text>
+                      <Text
+                        accessibilityLabel="five stars"
+                        numberOfLines={1}
+                        style={[styles.stars, useCompactStars && styles.compactStars]}
+                      >
+                        ★★★★★
+                      </Text>
                     ) : (
                       <Text
                         accessibilityElementsHidden={!selected}
@@ -243,5 +250,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     letterSpacing: 1,
     textAlign: "right",
+  },
+  compactStars: {
+    flexShrink: 0,
+    fontSize: 13,
+    letterSpacing: 0,
+    marginLeft: 8,
   },
 });
