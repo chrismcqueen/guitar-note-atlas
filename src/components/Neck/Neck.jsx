@@ -7,12 +7,13 @@ import Note from "./Note";
 import Frets from "./Frets";
 import Strings from "./Strings";
 import PositionBands from "./PositionBands";
-import { Store } from "../../../Store";
+import { PositionActionsStore, Store } from "../../../Store";
 import { positionForFret } from "../../utils/positions.mjs";
 import { withPressedOpacity } from "../../utils/pressable";
 
-const Neck = () => {
-  const { dimensions, globalState, insets, setPositionId, setShowPositionOverview } = useContext(Store);
+const Neck = React.memo(() => {
+  const { dimensions, globalState, insets } = useContext(Store);
+  const { setPositionId, setShowPositionOverview } = useContext(PositionActionsStore);
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
@@ -27,6 +28,7 @@ const Neck = () => {
   return (
     // TODO: make container responsive
     <Pressable
+      android_disableSound
       accessibilityHint="Opens the selected fretboard position"
       accessibilityLabel="Full fretboard overview"
       onPress={(event) => {
@@ -63,7 +65,7 @@ const Neck = () => {
       </Svg>
     </Pressable>
   );
-};
+});
 
 export default Neck;
 

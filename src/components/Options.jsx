@@ -1,22 +1,28 @@
 import React, { useContext } from "react";
-import { StyleSheet, Text, View, Animated, Platform, Pressable, ScrollView } from "react-native";
+import { StyleSheet, Text, View, Animated, Platform, Pressable, ScrollView, useWindowDimensions } from "react-native";
 import * as Linking from "expo-linking";
 
-import { Store } from "../../Store";
+import { OverlayStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { storeGlobalState } from "../utils/functions";
 import { pressedOpacity } from "../utils/pressable";
+import { getOptionsDrawerWidth } from "../utils/screenBounds.mjs";
 
 const Options = ({ mounted, transition, viewport }) => {
-  const { dimensions, insets, setShowOptions, setShowTutorial, globalState, setGlobalState } = useContext(Store);
+  const { dimensions, insets, setShowTutorial, globalState, setGlobalState } = useContext(Store);
+  const { setShowOptions, showOptions } = useContext(OverlayStore);
+  const usableWindow = useWindowDimensions();
   const viewportWidth = viewport?.width || dimensions.width;
   const viewportHeight = viewport?.height || dimensions.height;
-  const width = Math.min(300, viewportWidth);
+  const scrollViewportHeight = Math.min(viewportHeight, usableWindow.height);
+  const width = getOptionsDrawerWidth(viewportWidth);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const reportedSideInset = Math.max(insets.left, insets.right);
-  const cutoutPadding = !isTablet && Platform.OS === "ios"
-    ? Math.max(reportedSideInset, 72)
-    : reportedSideInset;
+  const isShortViewport = scrollViewportHeight < 500;
+  const bottomScrollPadding = Platform.OS === "android" && !isTablet
+    ? Math.max(insets.bottom + 16, 44)
+    : isShortViewport
+      ? Math.max(insets.bottom + 16, 44)
+      : Math.max(insets.bottom, 16);
 
   const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Flip Upside Down", "Hide Anchor Frets", "Rate Us", "Give Us Feedback"];
 
@@ -80,8 +86,20 @@ const Options = ({ mounted, transition, viewport }) => {
 
   return (
       <View style={styles.modalContainer}>
-        <Animated.View pointerEvents="none" style={[styles.backdrop, { opacity: transition }]} />
+      {showOptions ? (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.backdrop,
+            {
+              height: viewportHeight,
+              width: viewportWidth,
+            },
+          ]}
+        />
+      ) : null}
         <Pressable
+          android_disableSound
           accessibilityLabel="Close options"
           onPress={() => setShowOptions(false)}
           style={[styles.dismissArea, { height: viewportHeight, width: viewportWidth - width }]}
@@ -91,7 +109,7 @@ const Options = ({ mounted, transition, viewport }) => {
             style={[
               styles.options,
               {
-                height: viewportHeight,
+                height: scrollViewportHeight,
                 width: width,
                 transform: [{ translateX: transition.interpolate({
                   inputRange: [0, 1],
@@ -102,24 +120,34 @@ const Options = ({ mounted, transition, viewport }) => {
           >
             <ScrollView
               bounces={false}
-              contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16), paddingRight: cutoutPadding }}
+              contentContainerStyle={styles.optionsContent}
+              nestedScrollEnabled={Platform.OS === "android"}
+              overScrollMode="always"
               showsVerticalScrollIndicator={false}
-              style={styles.optionsContent}
+              style={styles.optionsScroll}
             >
-              {options.map((option, i) => (
-                <Pressable key={i} onPress={() => handlePress(option)} style={pressedOpacity}>
-                  <View style={styles.itemRow}>
+              {options.map((option, i) => {
+                const selected = isSelected(option);
+                return (
+                <Pressable android_disableSound accessibilityRole="button" key={i} onPress={() => handlePress(option)} style={pressedOpacity}>
+                  <View style={[styles.itemRow, isTablet && styles.tabletItemRow]}>
                     <Text style={styles.item}>{option}</Text>
-                    <Text
-                      accessibilityElementsHidden={!isSelected(option)}
-                      importantForAccessibility={isSelected(option) ? "auto" : "no-hide-descendants"}
-                      style={[styles.checkmark, !isSelected(option) && styles.checkmarkHidden]}
-                    >
-                      ✓
-                    </Text>
+                    {option === "Rate Us" ? (
+                      <Text accessibilityLabel="five stars" style={styles.stars}>★★★★★</Text>
+                    ) : (
+                      <Text
+                        accessibilityElementsHidden={!selected}
+                        importantForAccessibility={selected ? "auto" : "no-hide-descendants"}
+                        style={[styles.checkmark, !selected && styles.checkmarkHidden]}
+                      >
+                        ✓
+                      </Text>
+                    )}
                   </View>
                 </Pressable>
-              ))}
+                );
+              })}
+              <View pointerEvents="none" style={{ height: bottomScrollPadding }} />
             </ScrollView>
           </Animated.View>
         </View>
@@ -135,8 +163,10 @@ const styles = StyleSheet.create({
     zIndex: 2000,
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor: theme.colors.overlay,
+    left: 0,
+    position: "absolute",
+    top: 0,
     zIndex: 0,
   },
   dismissArea: {
@@ -146,6 +176,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   drawerSlot: {
+    backgroundColor: theme.colors.blue,
     bottom: 0,
     position: "absolute",
     right: 0,
@@ -155,8 +186,12 @@ const styles = StyleSheet.create({
   options: {
     backgroundColor: theme.colors.blue,
   },
-  optionsContent: {
+  optionsScroll: {
     flex: 1,
+  },
+  optionsContent: {
+    paddingHorizontal: 0,
+    paddingTop: 0,
   },
   item: {
     color: theme.colors.white,
@@ -166,16 +201,28 @@ const styles = StyleSheet.create({
   itemRow: {
     alignItems: "center",
     flexDirection: "row",
-    margin: 5,
-    padding: 8,
+    minHeight: 44,
+    paddingLeft: 14,
+    paddingRight: 12,
+    position: "relative",
+  },
+  tabletItemRow: {
+    minHeight: 48,
   },
   checkmark: {
     color: theme.colors.white,
-    fontSize: 18,
+    fontFamily: "proletarsk",
+    fontSize: 20,
     textAlign: "center",
-    width: 18,
+    width: 24,
   },
   checkmarkHidden: {
     opacity: 0,
+  },
+  stars: {
+    color: theme.colors.white,
+    fontSize: 15,
+    letterSpacing: 1,
+    textAlign: "right",
   },
 });

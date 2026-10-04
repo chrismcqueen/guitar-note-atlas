@@ -1,17 +1,19 @@
 import React, { useContext } from "react";
-import { Text, View, StyleSheet, Pressable } from "react-native";
+import { Platform, Text, View, StyleSheet, Pressable } from "react-native";
 
-import { Store } from "../../Store";
+import { OverlayStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
 
 const Header = () => {
-  const { dimensions, globalState, insets, showMenu, setShowMenu, showOptions, setShowOptions } = useContext(Store);
+  const { dimensions, globalState, insets } = useContext(Store);
+  const { showMenu, setShowMenu, showOptions, setShowOptions } = useContext(OverlayStore);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const activeHeaderHeight = isTablet ? tabletHeaderHeight : phoneHeaderHeight;
   const fullScreen = { height: "100%", width: "100%" };
   const headerInset = isTablet ? 0 : insets.top;
   const controlTop = headerInset;
+  const optionsInset = Platform.OS === "android" ? Math.max(insets.right, 24) : insets.right;
   // The released iPad build was laid out inside an approximately 4:3 UIKit
   // canvas. Keep its navigation-item scale when immersive mode exposes a
   // wider modern iPad viewport.
@@ -32,6 +34,7 @@ const Header = () => {
         ]}
       >
         <Pressable
+          android_disableSound
           hitSlop={12}
           style={withPressedOpacity([styles.headerControl, styles.menuButton, { height: activeHeaderHeight, left: insets.left, top: controlTop }])}
           onPress={() => setShowMenu(!showMenu)}
@@ -60,9 +63,17 @@ const Header = () => {
           {title?.toUpperCase()}
         </Text>
         <Pressable
+          android_disableSound
+          accessibilityState={{ disabled: showMenu }}
+          disabled={showMenu}
           hitSlop={12}
-          style={withPressedOpacity([styles.headerControl, styles.settingsButtonContainer, { height: activeHeaderHeight, right: insets.right, top: controlTop }])}
-          onPress={() => !showMenu && setShowOptions(!showOptions)}
+          style={withPressedOpacity([
+            styles.headerControl,
+            styles.settingsButtonContainer,
+            Platform.OS === "android" && styles.androidSettingsButtonContainer,
+            { height: activeHeaderHeight, right: optionsInset, top: controlTop },
+          ])}
+          onPress={() => setShowOptions(!showOptions)}
         >
           <Text style={[styles.settingsButton, showMenu && styles.disableOptions]}>● ● ●</Text>
         </Pressable>
@@ -128,8 +139,10 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   settingsButtonContainer: {
-    alignItems: "flex-end",
-    paddingRight: 25,
+    alignItems: "center",
     width: 75,
+  },
+  androidSettingsButtonContainer: {
+    width: 120,
   },
 });

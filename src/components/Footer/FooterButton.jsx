@@ -28,14 +28,14 @@ export const FooterButton = ({ children, onPress }) => {
 
   if (undo) {
     return (
-      <Pressable accessibilityRole="button" hitSlop={FOOTER_ACTION_HIT_SLOP} onPress={handleUndo} style={withPressedOpacity([styles.button, isTablet && styles.tabletButton])}>
+      <Pressable android_disableSound accessibilityRole="button" hitSlop={FOOTER_ACTION_HIT_SLOP} onPress={handleUndo} style={withPressedOpacity([styles.button, isTablet && styles.tabletButton])}>
         <Text style={[styles.label, isTablet && styles.tabletLabel]}>Undo</Text>
       </Pressable>
     );
   }
 
   return (
-    <Pressable accessibilityRole="button" hitSlop={FOOTER_ACTION_HIT_SLOP} onPress={handlePress} style={withPressedOpacity([styles.button, isTablet && styles.tabletButton])}>
+    <Pressable android_disableSound accessibilityRole="button" hitSlop={FOOTER_ACTION_HIT_SLOP} onPress={handlePress} style={withPressedOpacity([styles.button, isTablet && styles.tabletButton])}>
       <Text style={[styles.label, isTablet && styles.tabletLabel]}>{children}</Text>
     </Pressable>
   );

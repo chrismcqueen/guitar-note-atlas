@@ -33,7 +33,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "dev.com.guitarnoteatlas"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -45,6 +46,7 @@
           "initialOrientation": "LANDSCAPE_RIGHT"
         }
       ],
+      "./plugins/withAndroidImmersiveMode",
       "expo-font",
       [
         "expo-navigation-bar",

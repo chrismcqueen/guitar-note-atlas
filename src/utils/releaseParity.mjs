@@ -1,3 +1,7 @@
+export const WELCOME_TITLE = "Welcome to Guitar Note Atlas";
+export const WELCOME_DECLINE_LABEL = "No Thanks";
+export const WELCOME_ACCEPT_LABEL = "OK";
+
 export const PHONE_WELCOME_MESSAGE =
   "Tap the diagram to zoom out and view the entire fretboard. Would you like to see the tutorial for more info?";
 

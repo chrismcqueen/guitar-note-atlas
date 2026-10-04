@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Defs, Line, LinearGradient, Rect, Stop, Text as SvgText } from "react-native-svg";
 
-import { Store } from "../../Store";
+import { PositionActionsStore, PositionStore, Store } from "../../Store";
 import coordinates from "../../data/positionCoordinates.json";
 import DegreeLabel from "./Neck/DegreeLabel";
 import { getScaleDegreeLabel } from "../utils/music.mjs";
@@ -53,7 +53,9 @@ const PhoneNeckBackdrop = ({ bassMode, height, neckWidth, short, stringCount, wi
 };
 
 const PositionZoom = ({ compact = false }) => {
-  const { dimensions, globalState, insets, positionId, setPositionId, setShowPositionOverview } = useContext(Store);
+  const { dimensions, globalState, insets } = useContext(Store);
+  const { positionId } = useContext(PositionStore);
+  const { setPositionId, setShowPositionOverview } = useContext(PositionActionsStore);
   if (!globalState.options || !globalState.strings) return null;
 
   const position = getPosition(positionId);
@@ -181,6 +183,7 @@ const PositionZoom = ({ compact = false }) => {
           </View>
         )}
         <Pressable
+          android_disableSound
           accessibilityLabel="Previous position"
           onPress={previous}
           style={withPressedOpacity([styles.arrowButton, !compact && styles.tabletArrowButton, !compact && { height: tabletNeckHeight * 0.5, left: safeWidth * 0.133, transform: [{ translateY: tabletArrowOffsetY }], width: tabletNeckHeight * 0.25 }, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, transform: [{ translateY: compactArrowOffsetY }], width: compactArrowRegionWidth }])}
@@ -188,6 +191,7 @@ const PositionZoom = ({ compact = false }) => {
           <View style={[styles.arrow, styles.arrowLeft, !compact && { borderBottomWidth: tabletNeckHeight * 0.232, borderRightWidth: tabletNeckHeight * 0.232, borderTopWidth: tabletNeckHeight * 0.232 }, compact && { borderBottomWidth: compactArrowHeight / 2, borderRightWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
         </Pressable>
         <Pressable
+          android_disableSound
           accessibilityHint={compact ? "Returns to the full fretboard" : undefined}
           accessibilityLabel={`${title} position`}
           disabled={!compact}
@@ -197,6 +201,7 @@ const PositionZoom = ({ compact = false }) => {
           {neck}
         </Pressable>
         <Pressable
+          android_disableSound
           accessibilityLabel="Next position"
           onPress={next}
           style={withPressedOpacity([styles.arrowButton, !compact && styles.tabletArrowButton, !compact && { height: tabletNeckHeight * 0.5, right: safeWidth * 0.133, transform: [{ translateY: tabletArrowOffsetY }], width: tabletNeckHeight * 0.25 }, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, transform: [{ translateY: compactArrowOffsetY }], width: compactArrowRegionWidth }])}

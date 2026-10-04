@@ -34,10 +34,10 @@ const KeySelector = ({ compact = false }) => {
     return (
       <View style={styles.compactContainer}>
         <View>
-          <Pressable accessibilityLabel="Next key" onPress={() => handlePressArrow("right")} style={withPressedOpacity(styles.compactArrowButton)}>
+          <Pressable android_disableSound accessibilityLabel="Next key" onPress={() => handlePressArrow("right")} style={withPressedOpacity(styles.compactArrowButton)}>
             <View style={[styles.compactArrow, styles.arrowUp]} />
           </Pressable>
-          <Pressable accessibilityLabel="Previous key" onPress={() => handlePressArrow("left")} style={withPressedOpacity(styles.compactArrowButton)}>
+          <Pressable android_disableSound accessibilityLabel="Previous key" onPress={() => handlePressArrow("left")} style={withPressedOpacity(styles.compactArrowButton)}>
             <View style={[styles.compactArrow, styles.arrowDown]} />
           </Pressable>
         </View>
@@ -48,13 +48,13 @@ const KeySelector = ({ compact = false }) => {
 
   return (
     <View style={styles.titleContainer}>
-      <Pressable style={withPressedOpacity(styles.arrowContainer)} onPress={() => handlePressArrow("left")}>
+      <Pressable android_disableSound style={withPressedOpacity(styles.arrowContainer)} onPress={() => handlePressArrow("left")}>
         <View style={[styles.arrow, styles.arrowLeft]}></View>
       </Pressable>
       <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={styles.title}>
         KEY CENTER - {globalState?.key.title}
       </Text>
-      <Pressable style={withPressedOpacity(styles.arrowContainer)} onPress={() => handlePressArrow("right")}>
+      <Pressable android_disableSound style={withPressedOpacity(styles.arrowContainer)} onPress={() => handlePressArrow("right")}>
         <View style={[styles.arrow, styles.arrowRight]}></View>
       </Pressable>
     </View>

@@ -1,15 +1,30 @@
 import React, { useContext, useRef, useEffect, useState } from "react";
-import { StyleSheet, Text, View, Pressable, Animated, Easing } from "react-native";
+import { StyleSheet, Text, View, Pressable, Animated, Easing, Platform } from "react-native";
 
 import { data } from "../../data";
-import { Store } from "../../Store";
+import { OverlayStore, Store } from "../../Store";
 import { storeGlobalState } from "../utils/functions";
 import { theme } from "../utils/theme";
 import { phoneHeaderHeight, tabletHeaderHeight } from "./Header";
 import { pressedOpacity } from "../utils/pressable";
 
+const splitToColumns = (items) => {
+  const midpoint = Math.ceil(items.length / 2);
+  return [items.slice(0, midpoint), items.slice(midpoint)];
+};
+
+const headings = Object.keys(data.scales);
+const scales = splitToColumns(data.scales.scales);
+const arpeggios = splitToColumns(data.scales.arpeggios);
+const intervals = splitToColumns(data.scales.intervals);
+const majorModes = splitToColumns(data.scales.major);
+const melodicMinorModes = splitToColumns(data.scales["Melodic Minor"]);
+const harmonicMinorModes = splitToColumns(data.scales["Harmonic Minor"]);
+const harmonicMajorModes = splitToColumns(data.scales["Harmonic Major"]);
+
 const Menu = () => {
-  const { dimensions, insets, showMenu, globalState, setGlobalState } = useContext(Store);
+  const { dimensions, insets, globalState, setGlobalState } = useContext(Store);
+  const { showMenu } = useContext(OverlayStore);
   const menuAnim = useRef(new Animated.Value(1)).current;
   const [mounted, setMounted] = useState(false);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
@@ -19,6 +34,11 @@ const Menu = () => {
   const menuRowHeight = isTablet ? dimensions.width / 27 : 28;
   const sectionHeaderFontSize = isTablet ? dimensions.width / 36 : 21;
   const sectionHeaderHeight = isTablet ? dimensions.width / 20.84 : 36;
+
+  useEffect(() => {
+    const task = requestIdleCallback(() => setMounted(true));
+    return () => cancelIdleCallback(task);
+  }, []);
 
   useEffect(() => {
     menuAnim.stopAnimation();
@@ -44,31 +64,12 @@ const Menu = () => {
           duration: 200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
-        }).start(({ finished }) => {
-          if (finished) setMounted(false);
-        });
+        }).start();
     } else {
       menuAnim.setValue(1);
     }
   }, [mounted, showMenu]);
 
-  const splitToColumns = (arr) => {
-    const col1 = [];
-    const col2 = [];
-    arr.forEach((item, i) => {
-      i < arr.length / 2 ? col1.push(item) : col2.push(item);
-    });
-    return new Array(col1, col2);
-  };
-
-  const headings = Object.keys(data.scales);
-  const scales = splitToColumns(data.scales.scales);
-  const arpeggios = splitToColumns(data.scales.arpeggios);
-  const intervals = splitToColumns(data.scales.intervals);
-  const majorModes = splitToColumns(data.scales.major);
-  const melodicMinorModes = splitToColumns(data.scales["Melodic Minor"]);
-  const harmonicMinorModes = splitToColumns(data.scales["Harmonic Minor"]);
-  const harmonicMajorModes = splitToColumns(data.scales["Harmonic Major"]);
   const modesOf = <Text style={styles.lowercase}>modes of </Text>;
 
   const handlePress = (item) => {
@@ -107,6 +108,8 @@ const Menu = () => {
   return (
     <Animated.ScrollView
       pointerEvents={showMenu ? "auto" : "none"}
+      removeClippedSubviews={Platform.OS === "android"}
+      renderToHardwareTextureAndroid={Platform.OS === "android"}
       style={[
         styles.menu,
         {
@@ -133,14 +136,14 @@ const Menu = () => {
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {scales[0].map((scale, i) => (
-            <Pressable key={i} onPress={() => handlePress(scale)} style={({ pressed }) => [menuItemPressableStyle(scale), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(scale)} style={({ pressed }) => [menuItemPressableStyle(scale), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(scale)}>{scale.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {scales[1].map((scale, i) => (
-            <Pressable key={i} onPress={() => handlePress(scale)} style={({ pressed }) => [menuItemPressableStyle(scale), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(scale)} style={({ pressed }) => [menuItemPressableStyle(scale), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(scale)}>{scale.menu_title}</Text>
             </Pressable>
           ))}
@@ -153,14 +156,14 @@ const Menu = () => {
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {arpeggios[0].map((arp, i) => (
-            <Pressable key={i} onPress={() => handlePress(arp)} style={({ pressed }) => [menuItemPressableStyle(arp), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(arp)} style={({ pressed }) => [menuItemPressableStyle(arp), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(arp)}>{arp.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {arpeggios[1].map((arp, i) => (
-            <Pressable key={i} onPress={() => handlePress(arp)} style={({ pressed }) => [menuItemPressableStyle(arp), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(arp)} style={({ pressed }) => [menuItemPressableStyle(arp), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(arp)}>{arp.menu_title}</Text>
             </Pressable>
           ))}
@@ -173,14 +176,14 @@ const Menu = () => {
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {intervals[0].map((int, i) => (
-            <Pressable key={i} onPress={() => handlePress(int)} style={({ pressed }) => [menuItemPressableStyle(int), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(int)} style={({ pressed }) => [menuItemPressableStyle(int), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(int)}>{int.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {intervals[1].map((int, i) => (
-            <Pressable key={i} onPress={() => handlePress(int)} style={({ pressed }) => [menuItemPressableStyle(int), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(int)} style={({ pressed }) => [menuItemPressableStyle(int), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(int)}>{int.menu_title}</Text>
             </Pressable>
           ))}
@@ -196,14 +199,14 @@ const Menu = () => {
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {majorModes[0].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {majorModes[1].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
@@ -219,14 +222,14 @@ const Menu = () => {
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {melodicMinorModes[0].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {melodicMinorModes[1].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
@@ -242,14 +245,14 @@ const Menu = () => {
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {harmonicMinorModes[0].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {harmonicMinorModes[1].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
@@ -265,14 +268,14 @@ const Menu = () => {
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {harmonicMajorModes[0].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {harmonicMajorModes[1].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
+            <Pressable android_disableSound key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle(mode), pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}

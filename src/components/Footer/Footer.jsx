@@ -13,7 +13,13 @@ export const Footer = () => {
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
 
   return (
-    <View style={[styles.container, isTablet && styles.tabletContainer, { paddingLeft: insets.left, paddingRight: insets.right }]}>
+    <View
+      style={[
+        styles.container,
+        isTablet && styles.tabletContainer,
+        { paddingLeft: insets.left, paddingRight: insets.right },
+      ]}
+    >
       <FooterButton onPress={handleClear}>Clear</FooterButton>
       <View style={styles.scaleDegreeContainer}>
         {degrees.map((d, i) => {

@@ -8,7 +8,7 @@ export const theme = {
     menuHeader: "#98B1E2",
     menuSelection: "#F1EED1",
     menuSelectionText: "#2C4A7B",
-    overlay: "#000000AA",
+    overlay: "#00000080",
     pureWhite: "#FFF",
     splashCream: "#F6F5D7",
     tutorialPaper: "#FBFAF1",

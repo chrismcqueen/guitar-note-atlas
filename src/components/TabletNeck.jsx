@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { View } from "react-native";
 import Svg, { G, Rect } from "react-native-svg";
 
-import { Store } from "../../Store";
+import { PositionStore, Store } from "../../Store";
 import AnchorFrets from "./Neck/AnchorFrets";
 import Frets from "./Neck/Frets";
 import Note from "./Neck/Note";
@@ -19,7 +19,8 @@ const NECK_RIGHT = 842;
 const LINE_WIDTH = 2.25;
 
 const TabletNeck = () => {
-  const { dimensions, globalState, insets, positionId } = useContext(Store);
+  const { dimensions, globalState, insets } = useContext(Store);
+  const { positionId } = useContext(PositionStore);
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;

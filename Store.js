@@ -1,8 +1,12 @@
-import React, { useState, createContext, useEffect } from "react";
-import { useWindowDimensions } from "react-native";
+import React, { useState, createContext, useMemo } from "react";
+import { Dimensions, Platform, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export const Store = createContext(null);
+export const OverlayStore = createContext(null);
+export const PositionStore = createContext(null);
+export const PositionActionsStore = createContext(null);
+export const PositionVisibilityStore = createContext(null);
 
 export const StoreProvider = ({ children }) => {
   const [showMenu, setShowMenu] = useState(false);
@@ -13,32 +17,46 @@ export const StoreProvider = ({ children }) => {
   const [showPositionOverview, setShowPositionOverview] = useState(true);
   const [globalState, setGlobalState] = useState({});
 
-  useEffect(() => {
-    //
-  }, [globalState]);
-
   const windowDimensions = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const dimensions = windowDimensions;
+  const dimensions = useMemo(
+    () => Platform.OS === "android" ? Dimensions.get("screen") : windowDimensions,
+    [windowDimensions.height, windowDimensions.width],
+  );
 
-  const value = {
+  const value = useMemo(() => ({
     dimensions,
     insets,
-    showMenu,
-    setShowMenu,
-    showOptions,
-    setShowOptions,
     showTutorial,
     setShowTutorial,
     showTutorialPrompt,
     setShowTutorialPrompt,
-    positionId,
-    setPositionId,
-    showPositionOverview,
-    setShowPositionOverview,
     globalState,
     setGlobalState,
-  };
+  }), [dimensions, globalState, insets, showTutorial, showTutorialPrompt]);
 
-  return <Store.Provider value={value}>{children}</Store.Provider>;
+  const overlayValue = useMemo(() => ({
+    showMenu,
+    setShowMenu,
+    showOptions,
+    setShowOptions,
+  }), [showMenu, showOptions]);
+
+  const positionValue = useMemo(() => ({
+    positionId,
+  }), [positionId]);
+  const positionVisibilityValue = useMemo(() => ({ showPositionOverview }), [showPositionOverview]);
+  const positionActions = useMemo(() => ({ setPositionId, setShowPositionOverview }), []);
+
+  return (
+    <Store.Provider value={value}>
+      <OverlayStore.Provider value={overlayValue}>
+        <PositionActionsStore.Provider value={positionActions}>
+          <PositionStore.Provider value={positionValue}>
+            <PositionVisibilityStore.Provider value={positionVisibilityValue}>{children}</PositionVisibilityStore.Provider>
+          </PositionStore.Provider>
+        </PositionActionsStore.Provider>
+      </OverlayStore.Provider>
+    </Store.Provider>
+  );
 };

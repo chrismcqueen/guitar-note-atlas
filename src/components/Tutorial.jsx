@@ -83,9 +83,10 @@ const Tutorial = () => {
   return (
     <View style={styles.container}>
       <Pressable
+        android_disableSound
         accessibilityLabel="Next tutorial page"
         onPress={advance}
-        style={withPressedOpacity([styles.pageButton, { marginHorizontal: sideInset }])}
+        style={[styles.pageButton, { marginHorizontal: sideInset }]}
       >
         <Image
           source={pages[page]}
@@ -94,6 +95,7 @@ const Tutorial = () => {
         />
       </Pressable>
       <Pressable
+        android_disableSound
         style={withPressedOpacity([styles.exit, { right: exitRight, top: insets.top + 12 }])}
         onPress={(event) => {
           event.stopPropagation();

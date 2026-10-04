@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useFonts } from "expo-font";
 import { useKeepAwake } from "expo-keep-awake";
-import { NavigationBar, addVisibilityListener } from "expo-navigation-bar";
 import * as ScreenOrientation from "expo-screen-orientation";
-import { Alert, Animated, AppState, Easing, Platform, StatusBar, StyleSheet, View } from "react-native";
+import { Alert, Animated, Dimensions, Easing, StatusBar, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import Header from "./src/components/Header";
@@ -12,34 +11,21 @@ import Options from "./src/components/Options";
 import Main from "./src/components/Main";
 import Tutorial from "./src/components/Tutorial";
 import { Splash } from "./src/components/Splash";
-import { Store, StoreProvider } from "./Store";
+import { OverlayStore, Store, StoreProvider } from "./Store";
 import { storeGlobalState } from "./src/utils/functions";
-import { getWelcomeMessage } from "./src/utils/releaseParity.mjs";
+import { getOptionsDrawerWidth, orientScreenBounds } from "./src/utils/screenBounds.mjs";
+import {
+  getWelcomeMessage,
+  WELCOME_ACCEPT_LABEL,
+  WELCOME_DECLINE_LABEL,
+  WELCOME_TITLE,
+} from "./src/utils/releaseParity.mjs";
 
 export default function App() {
   useKeepAwake();
 
   useEffect(() => {
     void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
-  }, []);
-
-  useEffect(() => {
-    if (Platform.OS !== "android") return undefined;
-
-    const enterImmersiveMode = () => NavigationBar.setHidden(true);
-    enterImmersiveMode();
-
-    const visibilitySubscription = addVisibilityListener(({ visibility }) => {
-      if (visibility === "visible") requestAnimationFrame(enterImmersiveMode);
-    });
-    const appStateSubscription = AppState.addEventListener("change", (state) => {
-      if (state === "active") enterImmersiveMode();
-    });
-
-    return () => {
-      visibilitySubscription.remove();
-      appStateSubscription.remove();
-    };
   }, []);
 
   let [fontsLoaded] = useFonts({
@@ -53,9 +39,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={styles.safeAreaProvider}>
       <StatusBar hidden />
-      <NavigationBar hidden style="dark" />
       <StoreProvider>
         {!fontsLoaded || loading ? (
           <Splash setLoading={setLoading} />
@@ -68,13 +53,15 @@ export default function App() {
 }
 
 const AppContent = () => {
-  const { dimensions, showOptions } = React.useContext(Store);
+  const { dimensions } = React.useContext(Store);
+  const { showOptions } = React.useContext(OverlayStore);
+  const screenBounds = orientScreenBounds(Dimensions.get("screen"), dimensions);
   const optionsTransition = useRef(new Animated.Value(0)).current;
   const [optionsMounted, setOptionsMounted] = useState(false);
   const [viewport, setViewport] = useState(dimensions);
   const viewportWidth = viewport.width || dimensions.width;
   const viewportHeight = viewport.height || dimensions.height;
-  const optionsWidth = Math.min(300, viewportWidth);
+  const optionsWidth = getOptionsDrawerWidth(viewportWidth);
 
   useEffect(() => {
     optionsTransition.stopAnimation();
@@ -124,7 +111,11 @@ const AppContent = () => {
         const { height, width } = nativeEvent.layout;
         if (width !== viewport.width || height !== viewport.height) setViewport({ height, width });
       }}
-      style={[styles.app, !optionsMounted && styles.appIdle]}
+      style={[
+        styles.app,
+        screenBounds,
+        !optionsMounted && styles.appIdle,
+      ]}
     >
       <Animated.View
         renderToHardwareTextureAndroid={optionsMounted}
@@ -132,10 +123,11 @@ const AppContent = () => {
         style={[
           styles.navigationScreen,
           !optionsMounted && styles.navigationScreenIdle,
-          {
-            height: optionsMounted ? viewportHeight : undefined,
-            width: optionsMounted ? viewportWidth : undefined,
-            transform: optionsMounted ? [{ translateX: appTranslateX }, { scale: appScale }] : undefined,
+          screenBounds,
+          optionsMounted && {
+            height: viewportHeight,
+            width: viewportWidth,
+            transform: [{ translateX: appTranslateX }, { scale: appScale }],
           },
         ]}
       >
@@ -165,11 +157,11 @@ const TutorialPrompt = () => {
     };
 
     Alert.alert(
-      "Welcome to Guitar Note Atlas",
+      WELCOME_TITLE,
       getWelcomeMessage(dimensions),
       [
-        { text: "No Thanks", onPress: () => finish(false), style: "cancel" },
-        { text: "OK", onPress: () => finish(true) },
+        { text: WELCOME_DECLINE_LABEL, onPress: () => finish(false), style: "cancel" },
+        { text: WELCOME_ACCEPT_LABEL, onPress: () => finish(true) },
       ],
       { cancelable: false },
     );
@@ -184,9 +176,12 @@ const TutorialGate = () => {
 };
 
 const styles = StyleSheet.create({
+  safeAreaProvider: {
+    ...StyleSheet.absoluteFillObject,
+  },
   app: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: "#000",
-    flex: 1,
   },
   appIdle: {
     backgroundColor: "#F9F8EF",
