@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import Svg, { G, Rect } from "react-native-svg";
 
 import { Store } from "../../Store";
@@ -23,7 +23,7 @@ const TabletNeck = () => {
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
-  const width = dimensions.width - insets.left - insets.right - 8;
+  const width = dimensions.width - (Platform.OS === "android" ? 0 : insets.left + insets.right) - 8;
   const height = (width * VIEWBOX_HEIGHT) / 864;
   const position = getPosition(positionId);
   const selectedFret = positionStartFret(positionId, globalState.key.key_offset);

@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
 import Svg from "react-native-svg";
 
 import AnchorFrets from "./AnchorFrets";
@@ -16,7 +16,7 @@ const Neck = () => {
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
-  const safeWidth = dimensions.width - insets.left - insets.right;
+  const safeWidth = Platform.OS === "android" ? dimensions.width : dimensions.width - insets.left - insets.right;
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const horizontalMargin = 8;
   const heightRatio = isTablet ? 0.38 : 0.56;

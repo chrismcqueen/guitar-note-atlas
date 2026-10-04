@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Text, View, StyleSheet, Pressable } from "react-native";
+import { Platform, Text, View, StyleSheet, Pressable } from "react-native";
 
 import { Store } from "../../Store";
 import { theme } from "../utils/theme";
@@ -10,7 +10,10 @@ const Header = () => {
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const activeHeaderHeight = isTablet ? tabletHeaderHeight : phoneHeaderHeight;
   const fullScreen = { height: "100%", width: "100%" };
-  const headerInset = isTablet ? 0 : insets.top;
+  const ignoreAndroidInsets = Platform.OS === "android";
+  const headerInset = isTablet || ignoreAndroidInsets ? 0 : insets.top;
+  const leftInset = ignoreAndroidInsets ? 0 : insets.left;
+  const rightInset = ignoreAndroidInsets ? 0 : insets.right;
   const controlTop = headerInset;
   // The released iPad build was laid out inside an approximately 4:3 UIKit
   // canvas. Keep its navigation-item scale when immersive mode exposes a
@@ -33,7 +36,7 @@ const Header = () => {
       >
         <Pressable
           hitSlop={12}
-          style={withPressedOpacity([styles.headerControl, styles.menuButton, { height: activeHeaderHeight, left: insets.left, top: controlTop }])}
+          style={withPressedOpacity([styles.headerControl, styles.menuButton, { height: activeHeaderHeight, left: leftInset, top: controlTop }])}
           onPress={() => setShowMenu(!showMenu)}
         >
           <Text
@@ -61,7 +64,7 @@ const Header = () => {
         </Text>
         <Pressable
           hitSlop={12}
-          style={withPressedOpacity([styles.headerControl, styles.settingsButtonContainer, { height: activeHeaderHeight, right: insets.right, top: controlTop }])}
+          style={withPressedOpacity([styles.headerControl, styles.settingsButtonContainer, { height: activeHeaderHeight, right: rightInset, top: controlTop }])}
           onPress={() => !showMenu && setShowOptions(!showOptions)}
         >
           <Text style={[styles.settingsButton, showMenu && styles.disableOptions]}>● ● ●</Text>

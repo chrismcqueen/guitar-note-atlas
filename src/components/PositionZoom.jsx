@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Defs, Line, LinearGradient, Rect, Stop, Text as SvgText } from "react-native-svg";
 
 import { Store } from "../../Store";
@@ -63,7 +63,7 @@ const PositionZoom = ({ compact = false }) => {
   const title = bassMode ? position.bassTitle : position.title;
   const colorName = `position${position.color[0].toUpperCase()}${position.color.slice(1)}`;
   const labels = position.short ? ["1", "2", "3", "4", "(4)"] : ["(1)", "1", "2", "3", "4", "(4)"];
-  const safeSideInset = Math.max(insets.left, insets.right);
+  const safeSideInset = Platform.OS === "android" ? 0 : Math.max(insets.left, insets.right);
   const safeWidth = dimensions.width - safeSideInset * 2;
   const compactNeckWidth = safeWidth * 0.505;
   const compactNeckHeight = dimensions.height * 0.53;

@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 
 import KeySelector from "./KeySelector";
 import Neck from "./Neck";
@@ -13,8 +13,10 @@ export const Main = () => {
   const { dimensions, insets, showPositionOverview } = useContext(Store);
   const fullScreen = { height: "100%", width: "100%" };
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const safeSideInset = Math.max(insets.left, insets.right);
-  const contentInsets = isTablet
+  const safeSideInset = Platform.OS === "android" ? 0 : Math.max(insets.left, insets.right);
+  const contentInsets = Platform.OS === "android"
+    ? { paddingLeft: 0, paddingRight: 0 }
+    : isTablet
     ? { paddingLeft: insets.left, paddingRight: insets.right }
     : { paddingLeft: safeSideInset, paddingRight: safeSideInset };
 
