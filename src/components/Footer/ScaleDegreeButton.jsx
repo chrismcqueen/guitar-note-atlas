@@ -5,7 +5,6 @@ import { Store } from "../../../Store";
 import { Accidental } from "./Accidental";
 import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
-import { pressedOpacity } from "../../utils/pressable";
 
 export const ScaleDegreeButton = (props) => {
   const { dimensions, globalState, setGlobalState } = useContext(Store);
@@ -45,7 +44,7 @@ export const ScaleDegreeButton = (props) => {
   if (altDegree) {
     if (altSelected) {
       return (
-        <Pressable android_disableSound onPress={onPressScaleDegree} onTouchStart={onTouchStart} style={pressedOpacity}>
+        <Pressable android_disableSound onPress={onPressScaleDegree} onTouchStart={onTouchStart}>
           <View style={[styles.scaleDegreeSelected, degreeContainerSize]}>
             <Text style={[styles.scaleDegree, degreeTextStyle, degreeContainerSize, styles.scaleDegreeSelectedText]}>
               {altAccidental && <Accidental>{altAccidental}</Accidental>}
@@ -58,7 +57,7 @@ export const ScaleDegreeButton = (props) => {
 
     if (selected) {
       return (
-        <Pressable android_disableSound onPress={onPressScaleDegree} onTouchStart={onTouchStart} style={pressedOpacity}>
+        <Pressable android_disableSound onPress={onPressScaleDegree} onTouchStart={onTouchStart}>
           <View style={[styles.scaleDegreeSelected, degreeContainerSize]}>
             <Text style={[styles.scaleDegree, degreeTextStyle, degreeContainerSize, styles.scaleDegreeSelectedText, !accidental && styles.accidentalOffset]}>
               {accidental && <Accidental>{accidental}</Accidental>}
@@ -70,7 +69,7 @@ export const ScaleDegreeButton = (props) => {
     }
 
     return (
-      <Pressable android_disableSound onPress={onPressScaleDegree} onTouchStart={onTouchStart} style={pressedOpacity}>
+      <Pressable android_disableSound onPress={onPressScaleDegree} onTouchStart={onTouchStart}>
         <View style={degreeContainerSize}>
           <Text style={[styles.scaleDegreeSmall, degreeSmallStyle, degreeSize, degreeSmallTopStyle, selected && styles.scaleDegreeSelected]}>
             <Text style={styles.accidental}>
@@ -92,7 +91,7 @@ export const ScaleDegreeButton = (props) => {
   }
 
   return (
-    <Pressable android_disableSound onPress={onPressScaleDegree} onTouchStart={onTouchStart} style={pressedOpacity}>
+    <Pressable android_disableSound onPress={onPressScaleDegree} onTouchStart={onTouchStart}>
       <View style={[degreeContainerSize, selected && styles.scaleDegreeSelected]}>
         <Text style={[styles.scaleDegree, degreeTextStyle, degreeContainerSize, selected && styles.scaleDegreeSelectedText, !accidental && styles.accidentalOffset]}>
           {accidental && <Accidental>{accidental}</Accidental>}
