@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useFonts } from "expo-font";
 import { useKeepAwake } from "expo-keep-awake";
-import * as ScreenOrientation from "expo-screen-orientation";
-import { Alert, Animated, Dimensions, Easing, StatusBar, StyleSheet, View } from "react-native";
+import { Animated, Dimensions, Easing, Pressable, StatusBar, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import Header from "./src/components/Header";
@@ -11,9 +10,11 @@ import Options from "./src/components/Options";
 import Main from "./src/components/Main";
 import Tutorial from "./src/components/Tutorial";
 import { Splash } from "./src/components/Splash";
+import RotatedViewport from "./src/components/RotatedViewport";
 import { OverlayStore, Store, StoreProvider } from "./Store";
 import { storeGlobalState } from "./src/utils/functions";
 import { getOptionsDrawerWidth, orientScreenBounds } from "./src/utils/screenBounds.mjs";
+import { theme } from "./src/utils/theme";
 import {
   getWelcomeMessage,
   WELCOME_ACCEPT_LABEL,
@@ -23,10 +24,6 @@ import {
 
 export default function App() {
   useKeepAwake();
-
-  useEffect(() => {
-    void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
-  }, []);
 
   let [fontsLoaded] = useFonts({
     blackout: require("./src/utils/fonts/Blackout-Midnight.ttf"),
@@ -41,13 +38,15 @@ export default function App() {
   return (
     <SafeAreaProvider style={styles.safeAreaProvider}>
       <StatusBar hidden />
-      <StoreProvider>
-        {!fontsLoaded || loading ? (
-          <Splash setLoading={setLoading} />
-        ) : (
-          <AppContent />
-        )}
-      </StoreProvider>
+      <RotatedViewport>
+        <StoreProvider>
+          {!fontsLoaded || loading ? (
+            <Splash setLoading={setLoading} />
+          ) : (
+            <AppContent />
+          )}
+        </StoreProvider>
+      </RotatedViewport>
     </SafeAreaProvider>
   );
 }
@@ -145,29 +144,32 @@ const AppContent = () => {
 const TutorialPrompt = () => {
   const { dimensions, globalState, setGlobalState, setShowTutorial, setShowTutorialPrompt, showTutorialPrompt } = React.useContext(Store);
 
-  useEffect(() => {
-    if (!showTutorialPrompt) return;
+  const finish = (openTutorial) => {
+    const nextState = { ...globalState, displayedTutorial: true };
+    setGlobalState(nextState);
+    storeGlobalState(nextState);
+    setShowTutorialPrompt(false);
+    if (openTutorial) setShowTutorial(true);
+  };
 
-    const finish = (openTutorial) => {
-      const nextState = { ...globalState, displayedTutorial: true };
-      setGlobalState(nextState);
-      storeGlobalState(nextState);
-      setShowTutorialPrompt(false);
-      if (openTutorial) setShowTutorial(true);
-    };
+  if (!showTutorialPrompt) return null;
 
-    Alert.alert(
-      WELCOME_TITLE,
-      getWelcomeMessage(dimensions),
-      [
-        { text: WELCOME_DECLINE_LABEL, onPress: () => finish(false), style: "cancel" },
-        { text: WELCOME_ACCEPT_LABEL, onPress: () => finish(true) },
-      ],
-      { cancelable: false },
-    );
-  }, [showTutorialPrompt]);
-
-  return null;
+  return (
+    <View accessibilityViewIsModal style={styles.promptOverlay}>
+      <View style={styles.promptCard}>
+        <Text style={styles.promptTitle}>{WELCOME_TITLE}</Text>
+        <Text style={styles.promptMessage}>{getWelcomeMessage(dimensions)}</Text>
+        <View style={styles.promptActions}>
+          <Pressable android_disableSound accessibilityRole="button" onPress={() => finish(false)} style={styles.promptButton}>
+            <Text style={styles.promptButtonText}>{WELCOME_DECLINE_LABEL}</Text>
+          </Pressable>
+          <Pressable android_disableSound accessibilityRole="button" onPress={() => finish(true)} style={styles.promptButton}>
+            <Text style={styles.promptButtonText}>{WELCOME_ACCEPT_LABEL}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
 };
 
 const TutorialGate = () => {
@@ -191,5 +193,52 @@ const styles = StyleSheet.create({
   },
   navigationScreenIdle: {
     ...StyleSheet.absoluteFillObject,
+  },
+  promptActions: {
+    borderTopColor: "#3C3C434A",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+  },
+  promptButton: {
+    alignItems: "center",
+    borderRightColor: "#3C3C434A",
+    borderRightWidth: StyleSheet.hairlineWidth,
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 44,
+  },
+  promptButtonText: {
+    color: "#007AFF",
+    fontSize: 17,
+  },
+  promptCard: {
+    backgroundColor: "#F2F2F7F2",
+    borderRadius: 14,
+    overflow: "hidden",
+    width: 320,
+  },
+  promptMessage: {
+    color: theme.colors.black,
+    fontSize: 13,
+    lineHeight: 18,
+    paddingBottom: 18,
+    paddingHorizontal: 18,
+    textAlign: "center",
+  },
+  promptOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    backgroundColor: theme.colors.overlay,
+    justifyContent: "center",
+    zIndex: 5000,
+  },
+  promptTitle: {
+    color: theme.colors.black,
+    fontSize: 17,
+    fontWeight: "600",
+    paddingBottom: 4,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    textAlign: "center",
   },
 });

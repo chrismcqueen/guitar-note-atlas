@@ -2,6 +2,8 @@ import React, { useState, createContext, useMemo } from "react";
 import { Dimensions, Platform, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { getLandscapeDimensions, getLandscapeInsets } from "./src/utils/orientation.mjs";
+
 export const Store = createContext(null);
 export const OverlayStore = createContext(null);
 export const PositionStore = createContext(null);
@@ -18,10 +20,15 @@ export const StoreProvider = ({ children }) => {
   const [globalState, setGlobalState] = useState({});
 
   const windowDimensions = useWindowDimensions();
-  const insets = useSafeAreaInsets();
+  const physicalInsets = useSafeAreaInsets();
+  const physicalDimensions = Platform.OS === "android" ? Dimensions.get("screen") : windowDimensions;
   const dimensions = useMemo(
-    () => Platform.OS === "android" ? Dimensions.get("screen") : windowDimensions,
+    () => Platform.OS === "web" ? windowDimensions : getLandscapeDimensions(physicalDimensions),
     [windowDimensions.height, windowDimensions.width],
+  );
+  const insets = useMemo(
+    () => Platform.OS === "web" ? physicalInsets : getLandscapeInsets(physicalInsets, physicalDimensions),
+    [physicalDimensions.height, physicalDimensions.width, physicalInsets.bottom, physicalInsets.left, physicalInsets.right, physicalInsets.top],
   );
 
   const value = useMemo(() => ({

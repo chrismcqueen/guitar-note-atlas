@@ -6,18 +6,18 @@ const appConfig = JSON.parse(
   await readFile(new URL("../app.json", import.meta.url), "utf8"),
 ).expo;
 
-test("keeps iPad in landscape-only full-screen mode", () => {
-  assert.equal(appConfig.orientation, "landscape");
+test("keeps the native shell portrait-only while the app renders full-screen", () => {
+  assert.equal(appConfig.orientation, "portrait");
   assert.equal(appConfig.ios.supportsTablet, true);
   assert.equal(appConfig.ios.requireFullScreen, true);
   assert.deepEqual(appConfig.ios.infoPlist.UISupportedInterfaceOrientations, [
-    "UIInterfaceOrientationLandscapeRight",
+    "UIInterfaceOrientationPortrait",
   ]);
   assert.deepEqual(appConfig.ios.infoPlist["UISupportedInterfaceOrientations~ipad"], [
-    "UIInterfaceOrientationLandscapeRight",
+    "UIInterfaceOrientationPortrait",
   ]);
   assert.deepEqual(appConfig.plugins[0], [
     "expo-screen-orientation",
-    { initialOrientation: "LANDSCAPE_RIGHT" },
+    { initialOrientation: "PORTRAIT_UP" },
   ]);
 });

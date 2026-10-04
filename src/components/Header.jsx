@@ -13,7 +13,10 @@ const Header = () => {
   const fullScreen = { height: "100%", width: "100%" };
   const headerInset = isTablet ? 0 : insets.top;
   const controlTop = headerInset;
-  const optionsInset = Platform.OS === "android" ? Math.max(insets.right, 24) : insets.right;
+  const menuInset = isTablet ? insets.left : Math.max(insets.left, 59);
+  const optionsInset = isTablet
+    ? insets.right
+    : Math.max(84, Platform.OS === "android" ? Math.max(insets.right, 24) : insets.right);
   // The released iPad build was laid out inside an approximately 4:3 UIKit
   // canvas. Keep its navigation-item scale when immersive mode exposes a
   // wider modern iPad viewport.
@@ -35,8 +38,10 @@ const Header = () => {
       >
         <Pressable
           android_disableSound
+          accessibilityLabel="Menu"
+          accessibilityRole="button"
           hitSlop={12}
-          style={withPressedOpacity([styles.headerControl, styles.menuButton, { height: activeHeaderHeight, left: insets.left, top: controlTop }])}
+          style={withPressedOpacity([styles.headerControl, styles.menuButton, { height: activeHeaderHeight, left: menuInset, top: controlTop }])}
           onPress={() => setShowMenu(!showMenu)}
         >
           <Text
@@ -64,6 +69,8 @@ const Header = () => {
         </Text>
         <Pressable
           android_disableSound
+          accessibilityLabel="Options"
+          accessibilityRole="button"
           accessibilityState={{ disabled: showMenu }}
           disabled={showMenu}
           hitSlop={12}
