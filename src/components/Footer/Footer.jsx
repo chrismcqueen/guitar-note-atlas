@@ -1,14 +1,19 @@
 import React, { useContext, useRef } from "react";
-import { View, StyleSheet } from "react-native";
+import { Platform, View, StyleSheet, useWindowDimensions } from "react-native";
 
 import { Store } from "../../../Store";
 import { FooterButton } from "./FooterButton";
 import { ScaleDegreeButton } from "./ScaleDegreeButton";
 import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
-import { footerDegreeIndexFromGestureX, toggleDegreeRange } from "../../utils/footerSelection.mjs";
+import {
+  footerDegreeIndexFromGestureX,
+  footerGestureDistance,
+  toggleDegreeRange,
+} from "../../utils/footerSelection.mjs";
 
 export const Footer = () => {
+  const nativeWindow = useWindowDimensions();
   const { dimensions, globalState, insets, setGlobalState } = useContext(Store);
   const { degrees, getMatchingScale, handleClear, handleAll } = useFooter();
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
@@ -17,9 +22,14 @@ export const Footer = () => {
   const dragStartIndex = useRef(0);
   const dragCurrentIndex = useRef(null);
   const touchStartPoint = useRef({ x: 0, y: 0 });
-
-  const indexAtGestureX = (x) => footerDegreeIndexFromGestureX(
-    x,
+  const useVerticalGestureAxis = Platform.OS !== "android"
+    && nativeWindow.height > nativeWindow.width;
+  const indexAtGestureEvent = (event) => footerDegreeIndexFromGestureX(
+    footerGestureDistance(
+      touchStartPoint.current,
+      { x: event.nativeEvent.pageX, y: event.nativeEvent.pageY },
+      useVerticalGestureAxis,
+    ),
     degreeRowWidth.current,
     degrees.length,
     dragStartIndex.current,
@@ -62,16 +72,18 @@ export const Footer = () => {
         onLayout={(event) => {
           degreeRowWidth.current = event.nativeEvent.layout.width;
         }}
-        onMoveShouldSetResponderCapture={(event) => {
-          const deltaX = event.nativeEvent.pageX - touchStartPoint.current.x;
-          const deltaY = event.nativeEvent.pageY - touchStartPoint.current.y;
-          return Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 4;
-        }}
+        onMoveShouldSetResponderCapture={(event) => Math.abs(footerGestureDistance(
+          touchStartPoint.current,
+          { x: event.nativeEvent.pageX, y: event.nativeEvent.pageY },
+          useVerticalGestureAxis,
+        )) > 4}
         onResponderGrant={(event) => {
           dragCurrentIndex.current = null;
-          paintThroughIndex(indexAtGestureX(event.nativeEvent.locationX));
+          paintThroughIndex(indexAtGestureEvent(event));
         }}
-        onResponderMove={(event) => paintThroughIndex(indexAtGestureX(event.nativeEvent.locationX))}
+        onResponderMove={(event) => {
+          paintThroughIndex(indexAtGestureEvent(event));
+        }}
         onResponderRelease={finishDrag}
         onResponderTerminate={finishDrag}
         style={styles.scaleDegreeContainer}

@@ -36,6 +36,12 @@ export const footerDegreeIndexFromGestureX = (localX, width, degreeCount, startI
   return footerDegreeIndexAtX(startIndex * degreeWidth + localX, width, degreeCount);
 };
 
+export const footerGestureDistance = (startPoint, currentPoint, useVerticalAxis = false) => (
+  useVerticalAxis
+    ? currentPoint.y - startPoint.y
+    : currentPoint.x - startPoint.x
+);
+
 export const degreeIndicesBetween = (fromIndex, toIndex) => {
   const start = Math.min(fromIndex, toIndex);
   const end = Math.max(fromIndex, toIndex);

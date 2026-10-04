@@ -5,6 +5,7 @@ import {
   degreeIndicesBetween,
   footerDegreeIndexAtX,
   footerDegreeIndexFromGestureX,
+  footerGestureDistance,
   isDegreeChoiceSelected,
   paintDegreeChoices,
   paintDegreeRange,
@@ -29,6 +30,13 @@ test("right-to-left gesture coordinates remain relative to their starting button
   assert.equal(footerDegreeIndexFromGestureX(25, 1200, 12, 10), 10);
   assert.equal(footerDegreeIndexFromGestureX(-75, 1200, 12, 10), 9);
   assert.equal(footerDegreeIndexFromGestureX(-275, 1200, 12, 10), 7);
+});
+
+test("footer gesture distance follows the platform's continuous screen axis", () => {
+  const start = { x: 100, y: 200 };
+  const current = { x: 160, y: 120 };
+  assert.equal(footerGestureDistance(start, current), 60);
+  assert.equal(footerGestureDistance(start, current, true), -80);
 });
 
 test("footer selection painting adds each crossed degree without toggling it twice", () => {
