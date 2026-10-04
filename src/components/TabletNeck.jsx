@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { View } from "react-native";
-import Svg, { G, Rect } from "react-native-svg";
+import Svg, { ClipPath, Defs, G, Rect } from "react-native-svg";
 
 import { PositionStore, Store } from "../../Store";
 import AnchorFrets from "./Neck/AnchorFrets";
@@ -37,6 +37,11 @@ const TabletNeck = () => {
   return (
     <View style={{ height, width }}>
       <Svg width="100%" height="100%" viewBox={`0 0 864 ${VIEWBOX_HEIGHT}`}>
+        <Defs>
+          <ClipPath id="active-position-clip">
+            <Rect x={selectedX} y="14" width={selectedWidth} height={STRING_SPAN} />
+          </ClipPath>
+        </Defs>
         <Rect x={NECK_LEFT} y="14" width={NECK_RIGHT - NECK_LEFT} height={STRING_SPAN} fill={theme.colors.neckLightGray} />
         <Rect x={selectedX} y="14" width={selectedWidth} height={STRING_SPAN} fill={theme.colors.white} />
         {!globalState.options.hideColors && (
@@ -58,6 +63,16 @@ const TabletNeck = () => {
             y1={14}
             y2={14 + STRING_SPAN}
           />
+          <G clipPath="url(#active-position-clip)">
+            <Strings color={theme.colors.black} count={tuning.length} span={STRING_SPAN} startX={41} strokeWidth={LINE_WIDTH} />
+            <Frets
+              color={theme.colors.black}
+              fretStrokeWidth={LINE_WIDTH}
+              nutStrokeWidth={3.5}
+              y1={14}
+              y2={14 + STRING_SPAN}
+            />
+          </G>
           {!globalState.options.hideAnchorFrets && (
             <G transform="translate(0 -75)">
               <AnchorFrets color={theme.colors.neckBlackAlpha} leftHand={globalState.options.leftHand} radius={2} />
