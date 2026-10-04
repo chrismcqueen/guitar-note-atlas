@@ -13,7 +13,7 @@ const CONTROL_HIT_SLOP = 3;
 
 export const AudioTrigger = () => {
   const { dimensions, insets } = useContext(Store);
-  const { openPopover } = useContext(AudioPlaybackStore);
+  const { isPlaying, openPopover } = useContext(AudioPlaybackStore);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const top = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + (isTablet ? 0 : insets.top)) + 12;
   const left = getMenuVisualCenterX(insets, isTablet) - 22;
@@ -23,19 +23,20 @@ export const AudioTrigger = () => {
       android_disableSound
       accessibilityLabel="Open audio player"
       accessibilityRole="button"
+      accessibilityState={{ selected: isPlaying }}
       onPress={openPopover}
-      style={withPressedOpacity([styles.trigger, { left, top }])}
+      style={withPressedOpacity([styles.trigger, !isPlaying && styles.triggerIdle, { left, top }])}
     >
-      <MixerIcon />
+      <MixerIcon filled={isPlaying} />
     </Pressable>
   );
 };
 
-const MixerIcon = () => (
+const MixerIcon = ({ filled }) => (
   <View accessible={false} style={styles.mixerIcon}>
-    <View style={styles.mixerTrack}><View style={[styles.mixerKnob, { left: 3 }]} /></View>
-    <View style={styles.mixerTrack}><View style={[styles.mixerKnob, { right: 3 }]} /></View>
-    <View style={styles.mixerTrack}><View style={[styles.mixerKnob, { left: 8 }]} /></View>
+    <View style={[styles.mixerTrack, !filled && styles.mixerTrackIdle]}><View style={[styles.mixerKnob, !filled && styles.mixerKnobIdle, { left: 3 }]} /></View>
+    <View style={[styles.mixerTrack, !filled && styles.mixerTrackIdle]}><View style={[styles.mixerKnob, !filled && styles.mixerKnobIdle, { right: 3 }]} /></View>
+    <View style={[styles.mixerTrack, !filled && styles.mixerTrackIdle]}><View style={[styles.mixerKnob, !filled && styles.mixerKnobIdle, { left: 8 }]} /></View>
   </View>
 );
 
@@ -165,7 +166,9 @@ const styles = StyleSheet.create({
   message: { color: theme.colors.grey, fontSize: 12, marginTop: 8, textAlign: "center" },
   mixerIcon: { gap: 5, width: 24 },
   mixerKnob: { backgroundColor: theme.colors.white, borderRadius: 3, height: 6, position: "absolute", top: -2, width: 6 },
+  mixerKnobIdle: { backgroundColor: theme.colors.blue },
   mixerTrack: { backgroundColor: theme.colors.white, height: 2, position: "relative", width: 24 },
+  mixerTrackIdle: { backgroundColor: theme.colors.blue },
   playButton: { alignItems: "center", backgroundColor: theme.colors.blue, borderRadius: 5, justifyContent: "center", minHeight: 44 },
   playText: { color: theme.colors.white, fontFamily: "proletarsk", fontSize: 17 },
   popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent", zIndex: 4500 },
@@ -194,5 +197,10 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     width: 44,
     zIndex: 300,
+  },
+  triggerIdle: {
+    backgroundColor: theme.colors.white,
+    borderColor: theme.colors.blue,
+    borderWidth: 2,
   },
 });
