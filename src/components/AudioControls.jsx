@@ -72,10 +72,11 @@ export const AudioPopover = () => {
       />
       <View style={[styles.card, { left: cardLeft, top: cardTop, width: cardWidth }]}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Note Player</Text>
           <Pressable android_disableSound onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
             <Text style={styles.closeText}>×</Text>
           </Pressable>
+          <Text style={styles.title}>Note Player</Text>
+          <View accessible={false} style={styles.closeButton} />
         </View>
 
         <Pressable
@@ -155,8 +156,8 @@ const styles = StyleSheet.create({
   stepText: { color: theme.colors.blue, fontSize: 24, lineHeight: Platform.OS === "android" ? 28 : 25 },
   tempoInput: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 19, marginLeft: 8, minWidth: 40, padding: 0, textAlign: "center" },
   tempoRow: { alignItems: "center", flexDirection: "row", marginTop: 12 },
-  title: { color: theme.colors.black, fontFamily: "blackout", fontSize: 20 },
-  titleRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
+  title: { color: theme.colors.black, flex: 1, fontFamily: "blackout", fontSize: 20, textAlign: "center" },
+  titleRow: { alignItems: "center", flexDirection: "row", marginBottom: 10 },
   toggle: { alignItems: "center", borderColor: theme.colors.lightBlue, borderRadius: 5, borderWidth: 1.5, flex: 1, justifyContent: "center", minHeight: 38 },
   toggleIcon: { height: 27, resizeMode: "contain", tintColor: theme.colors.blue, width: 41 },
   toggleIconSelected: { tintColor: theme.colors.white },
