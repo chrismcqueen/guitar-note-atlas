@@ -6,7 +6,7 @@ import { PositionActionsStore, PositionStore, Store } from "../../Store";
 import coordinates from "../../data/positionCoordinates.json";
 import DegreeLabel from "./Neck/DegreeLabel";
 import { getScaleDegreeLabel } from "../utils/music.mjs";
-import { getPosition, positionBandVerticalGeometry, resolvedPositionFret, stepPositionTarget } from "../utils/positions.mjs";
+import { getPosition, positionBandVerticalGeometry, positionStartFret, stepPosition } from "../utils/positions.mjs";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
 
@@ -172,9 +172,8 @@ const PositionZoom = ({ compact = false }) => {
   );
 
   const stepSelection = (amount) => {
-    const currentFret = resolvedPositionFret(positionId, positionFret, globalState.key.key_offset);
-    const nextTarget = stepPositionTarget(positionId, currentFret, amount, globalState.key.key_offset);
-    setPositionSelection({ id: nextTarget.id, fret: nextTarget.fret });
+    const nextId = stepPosition(positionId, amount);
+    setPositionSelection({ id: nextId, fret: positionStartFret(nextId, globalState.key.key_offset) });
   };
   const previous = () => stepSelection(-1);
   const next = () => stepSelection(1);
