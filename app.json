@@ -13,6 +13,7 @@
     ],
     "ios": {
       "supportsTablet": true,
+      "requireFullScreen": true,
       "bundleIdentifier": "dev.com.guitar-note-atlas",
       "buildNumber": "1.0.0",
       "config": {
