@@ -19,6 +19,8 @@ export const ScaleDegreeButton = (props) => {
   const degreeContainerSize = { height: isTablet ? TABLET_DEGREE_HEIGHT : SCALE_DEGREE_HEIGHT, width: degreeWidth };
   const degreeTextStyle = isTablet && styles.tabletScaleDegree;
   const degreeSmallStyle = isTablet && styles.tabletScaleDegreeSmall;
+  const degreeSmallTopStyle = isTablet ? styles.tabletScaleDegreeSmallTop : styles.scaleDegreeSmallTop;
+  const degreeSmallBottomStyle = isTablet ? styles.tabletScaleDegreeSmallBottom : styles.scaleDegreeSmallBottom;
 
   const onPressScaleDegree = () => {
     const currentDegrees = globalState.scale.degrees;
@@ -70,14 +72,14 @@ export const ScaleDegreeButton = (props) => {
     return (
       <Pressable onPress={onPressScaleDegree} style={pressedOpacity}>
         <View style={degreeContainerSize}>
-          <Text style={[styles.scaleDegreeSmall, degreeSmallStyle, degreeSize, styles.scaleDegreeSmallTop, selected && styles.scaleDegreeSelected]}>
+          <Text style={[styles.scaleDegreeSmall, degreeSmallStyle, degreeSize, degreeSmallTopStyle, selected && styles.scaleDegreeSelected]}>
             <Text style={styles.accidental}>
               <Accidental />
               {accidental}
             </Text>
             {degree}
           </Text>
-          <Text style={[styles.scaleDegreeSmall, degreeSmallStyle, degreeSize, styles.scaleDegreeSmallBottom, selected && styles.scaleDegreeSelected]}>
+          <Text style={[styles.scaleDegreeSmall, degreeSmallStyle, degreeSize, degreeSmallBottomStyle, selected && styles.scaleDegreeSelected]}>
             <Text style={styles.accidental}>
               <Accidental />
               {altAccidental}
@@ -132,12 +134,14 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
   },
   scaleDegreeSmall: {
+    position: "absolute",
     fontSize: 25,
+    lineHeight: 28,
     color: theme.colors.lightBlue,
     fontFamily: "basicManual",
     width: 52,
     textAlign: "center",
-    height: SCALE_DEGREE_HEIGHT / 2,
+    height: 28,
   },
   accidental: {
     fontFamily: "opus",
@@ -146,10 +150,10 @@ const styles = StyleSheet.create({
     transform: [{ translateY: 4 }],
   },
   scaleDegreeSmallTop: {
-    transform: [{ translateY: -3 }],
+    top: 1,
   },
   scaleDegreeSmallBottom: {
-    transform: [{ translateY: -6 }],
+    top: 17,
   },
   tabletScaleDegree: {
     fontSize: 49,
@@ -157,6 +161,13 @@ const styles = StyleSheet.create({
   },
   tabletScaleDegreeSmall: {
     fontSize: 36,
-    height: TABLET_DEGREE_HEIGHT / 2,
+    lineHeight: 42,
+    height: 42,
+  },
+  tabletScaleDegreeSmallTop: {
+    top: 2,
+  },
+  tabletScaleDegreeSmallBottom: {
+    top: 35,
   },
 });
