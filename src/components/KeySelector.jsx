@@ -6,6 +6,7 @@ import { storeGlobalState } from "../utils/functions";
 import { theme } from "../utils/theme";
 import { data } from "../../data";
 import { withPressedOpacity } from "../utils/pressable";
+import { nextKeyOffset } from "../utils/keyNavigation.mjs";
 
 const TabletKeyTitle = ({ title }) => (
   <Text adjustsFontSizeToFit minimumFontScale={0.7} numberOfLines={1} style={styles.compactTitle}>
@@ -21,13 +22,15 @@ const KeySelector = ({ compact = false }) => {
   const { globalState, setGlobalState } = useContext(Store);
 
   const handlePressArrow = (direction) => {
-    data.keys.forEach((key, i) => {
-      if (key.title === globalState?.key.title) {
-        const value = data.keys[i === 11 && direction === "right" ? 0 : i === 0 && direction === "left" ? 11 : direction === "right" ? i + 1 : i - 1];
-        setGlobalState({ ...globalState, key: value });
-        storeGlobalState({ ...globalState, key: value });
-      }
-    });
+    const offset = nextKeyOffset(
+      globalState?.key.key_offset ?? 0,
+      direction,
+      globalState?.options.keyNavigation,
+    );
+    const value = data.keys.find((key) => key.key_offset === offset);
+    const nextState = { ...globalState, key: value };
+    setGlobalState(nextState);
+    storeGlobalState(nextState);
   };
 
   if (compact) {

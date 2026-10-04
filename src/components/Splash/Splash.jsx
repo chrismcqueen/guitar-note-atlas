@@ -31,6 +31,7 @@ const Splash = ({ setLoading }) => {
       leftHand: false,
       upsideDown: false,
       hideAnchorFrets: false,
+      keyNavigation: "chromatic",
     },
     displayedTutorial: false,
   };

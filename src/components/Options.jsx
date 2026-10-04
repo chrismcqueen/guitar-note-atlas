@@ -7,6 +7,7 @@ import { theme } from "../utils/theme";
 import { storeGlobalState } from "../utils/functions";
 import { pressedOpacity } from "../utils/pressable";
 import { getOptionsDrawerWidth } from "../utils/screenBounds.mjs";
+import { KEY_NAVIGATION_MODES } from "../utils/keyNavigation.mjs";
 
 const Options = ({ mounted, transition, viewport }) => {
   const { dimensions, insets, setShowTutorial, globalState, setGlobalState } = useContext(Store);
@@ -30,6 +31,15 @@ const Options = ({ mounted, transition, viewport }) => {
     const nextState = {
       ...globalState,
       options: { ...globalState.options, [name]: !globalState.options[name] },
+    };
+    setGlobalState(nextState);
+    storeGlobalState(nextState);
+  };
+
+  const setKeyNavigation = (keyNavigation) => {
+    const nextState = {
+      ...globalState,
+      options: { ...globalState.options, keyNavigation },
     };
     setGlobalState(nextState);
     storeGlobalState(nextState);
@@ -147,6 +157,33 @@ const Options = ({ mounted, transition, viewport }) => {
                 </Pressable>
                 );
               })}
+              <View style={[styles.navigationSection, isTablet && styles.tabletNavigationSection]}>
+                <Text style={styles.navigationTitle}>KEY NAVIGATION</Text>
+                <View accessibilityRole="radiogroup" style={styles.navigationSelector}>
+                  {[
+                    [KEY_NAVIGATION_MODES.CHROMATIC, "CHROMATIC"],
+                    [KEY_NAVIGATION_MODES.CIRCLE, "CIRCLE"],
+                  ].map(([mode, label]) => {
+                    const selected = (globalState.options.keyNavigation || KEY_NAVIGATION_MODES.CHROMATIC) === mode;
+                    return (
+                      <Pressable
+                        android_disableSound
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: selected }}
+                        key={mode}
+                        onPress={() => setKeyNavigation(mode)}
+                        style={({ pressed }) => [
+                          styles.navigationChoice,
+                          selected && styles.navigationChoiceSelected,
+                          pressed && styles.navigationChoicePressed,
+                        ]}
+                      >
+                        <Text style={[styles.navigationChoiceText, selected && styles.navigationChoiceTextSelected]}>{label}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
               <View pointerEvents="none" style={{ height: bottomScrollPadding }} />
             </ScrollView>
           </Animated.View>
@@ -224,5 +261,43 @@ const styles = StyleSheet.create({
     fontSize: 15,
     letterSpacing: 1,
     textAlign: "right",
+  },
+  navigationSection: {
+    paddingBottom: 8,
+    paddingHorizontal: 14,
+    paddingTop: 6,
+  },
+  tabletNavigationSection: {
+    paddingTop: 10,
+  },
+  navigationTitle: {
+    color: theme.colors.white,
+    fontFamily: "proletarsk",
+    marginBottom: 7,
+  },
+  navigationSelector: {
+    borderColor: theme.colors.white,
+    borderWidth: 1,
+    flexDirection: "row",
+  },
+  navigationChoice: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 36,
+  },
+  navigationChoiceSelected: {
+    backgroundColor: theme.colors.white,
+  },
+  navigationChoicePressed: {
+    opacity: 0.55,
+  },
+  navigationChoiceText: {
+    color: theme.colors.white,
+    fontFamily: "proletarsk",
+    fontSize: 12,
+  },
+  navigationChoiceTextSelected: {
+    color: theme.colors.blue,
   },
 });
