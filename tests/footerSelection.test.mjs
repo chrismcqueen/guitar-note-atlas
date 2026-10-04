@@ -8,6 +8,7 @@ import {
   isDegreeChoiceSelected,
   paintDegreeChoices,
   paintDegreeRange,
+  toggleDegreeRange,
 } from "../src/utils/footerSelection.mjs";
 
 const choices = [{ d: 0 }, { d: 1 }, { d: 3.1, e: 3 }, { d: 4 }];
@@ -50,4 +51,14 @@ test("reversing an erase swipe reselects degree one after it leaves the live ran
   const initial = [0, 1, 3, 4];
   assert.deepEqual(paintDegreeRange(initial, choices, 3, 0, false), []);
   assert.deepEqual(paintDegreeRange(initial, choices, 3, 1, false), [0]);
+});
+
+test("footer swipes toggle every crossed choice from its initial state", () => {
+  assert.deepEqual(toggleDegreeRange([0, 3], choices, 0, 3), [1, 4]);
+  assert.deepEqual(toggleDegreeRange([0, 3], choices, 0, 1), [1, 3]);
+});
+
+test("swiping an active enharmonic choice turns it fully off", () => {
+  assert.deepEqual(toggleDegreeRange([3], choices, 2, 2), []);
+  assert.deepEqual(toggleDegreeRange([3.1], choices, 2, 2), []);
 });

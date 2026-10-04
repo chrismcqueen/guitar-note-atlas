@@ -49,3 +49,24 @@ export const paintDegreeRange = (initialDegrees, choices, startIndex, currentInd
     degreeIndicesBetween(startIndex, currentIndex),
     shouldSelect,
   );
+
+export const toggleDegreeRange = (initialDegrees, choices, startIndex, currentIndex) => {
+  const nextDegrees = [...initialDegrees];
+
+  for (const index of degreeIndicesBetween(startIndex, currentIndex)) {
+    const choice = choices[index];
+    if (!choice) continue;
+
+    const values = choice.e === undefined ? [choice.d] : [choice.d, choice.e];
+    const wasSelected = values.some((value) => initialDegrees.includes(value));
+
+    for (const value of values) {
+      const valueIndex = nextDegrees.indexOf(value);
+      if (valueIndex >= 0) nextDegrees.splice(valueIndex, 1);
+    }
+
+    if (!wasSelected) nextDegrees.push(choice.e ?? choice.d);
+  }
+
+  return nextDegrees.sort((a, b) => a - b);
+};

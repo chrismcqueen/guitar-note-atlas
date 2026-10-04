@@ -6,7 +6,7 @@ import { FooterButton } from "./FooterButton";
 import { ScaleDegreeButton } from "./ScaleDegreeButton";
 import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
-import { footerDegreeIndexFromGestureX, isDegreeChoiceSelected, paintDegreeRange } from "../../utils/footerSelection.mjs";
+import { footerDegreeIndexFromGestureX, toggleDegreeRange } from "../../utils/footerSelection.mjs";
 
 export const Footer = () => {
   const { dimensions, globalState, insets, setGlobalState } = useContext(Store);
@@ -16,7 +16,6 @@ export const Footer = () => {
   const dragInitialDegrees = useRef([]);
   const dragStartIndex = useRef(0);
   const dragCurrentIndex = useRef(null);
-  const dragSelects = useRef(true);
   const dragMoved = useRef(false);
 
   const indexAtGestureX = (x) => footerDegreeIndexFromGestureX(
@@ -31,12 +30,11 @@ export const Footer = () => {
     dragCurrentIndex.current = index;
 
     setGlobalState((currentState) => {
-      const nextDegrees = paintDegreeRange(
+      const nextDegrees = toggleDegreeRange(
         dragInitialDegrees.current,
         degrees,
         dragStartIndex.current,
         index,
-        dragSelects.current,
       );
       const matchingScale = getMatchingScale(nextDegrees);
       const scale = matchingScale
@@ -69,7 +67,6 @@ export const Footer = () => {
           dragCurrentIndex.current = null;
           dragMoved.current = false;
           dragInitialDegrees.current = [...globalState.scale.degrees];
-          dragSelects.current = !isDegreeChoiceSelected(globalState.scale.degrees, degrees[dragStartIndex.current]);
           paintThroughIndex(indexAtGestureX(event.nativeEvent.locationX));
         }}
         onResponderMove={(event) => {
