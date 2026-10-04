@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Platform, View, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 
 import { Store } from "../../../Store";
 import { FooterButton } from "./FooterButton";
@@ -11,12 +11,9 @@ export const Footer = () => {
   const { dimensions, globalState, insets } = useContext(Store);
   const { degrees, handleClear, handleAll } = useFooter();
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const sideInsets = Platform.OS === "android"
-    ? { paddingLeft: 0, paddingRight: 0 }
-    : { paddingLeft: insets.left, paddingRight: insets.right };
 
   return (
-    <View style={[styles.container, isTablet && styles.tabletContainer, sideInsets]}>
+    <View style={[styles.container, isTablet && styles.tabletContainer, { paddingLeft: insets.left, paddingRight: insets.right }]}>
       <FooterButton onPress={handleClear}>Clear</FooterButton>
       <View style={styles.scaleDegreeContainer}>
         {degrees.map((d, i) => {

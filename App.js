@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useFonts } from "expo-font";
 import { useKeepAwake } from "expo-keep-awake";
-import { NavigationBar } from "expo-navigation-bar";
+import { NavigationBar, addVisibilityListener } from "expo-navigation-bar";
 import * as ScreenOrientation from "expo-screen-orientation";
-import { Alert, Animated, Easing, StatusBar, StyleSheet, View } from "react-native";
+import { Alert, Animated, AppState, Easing, Platform, StatusBar, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import Header from "./src/components/Header";
@@ -21,6 +21,25 @@ export default function App() {
 
   useEffect(() => {
     void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
+  }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return undefined;
+
+    const enterImmersiveMode = () => NavigationBar.setHidden(true);
+    enterImmersiveMode();
+
+    const visibilitySubscription = addVisibilityListener(({ visibility }) => {
+      if (visibility === "visible") requestAnimationFrame(enterImmersiveMode);
+    });
+    const appStateSubscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") enterImmersiveMode();
+    });
+
+    return () => {
+      visibilitySubscription.remove();
+      appStateSubscription.remove();
+    };
   }, []);
 
   let [fontsLoaded] = useFonts({

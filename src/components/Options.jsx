@@ -16,7 +16,7 @@ const Options = ({ mounted, transition, viewport }) => {
   const reportedSideInset = Math.max(insets.left, insets.right);
   const cutoutPadding = !isTablet && Platform.OS === "ios"
     ? Math.max(reportedSideInset, 72)
-    : Platform.OS === "android" ? 0 : reportedSideInset;
+    : reportedSideInset;
 
   const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Flip Upside Down", "Hide Anchor Frets", "Rate Us", "Give Us Feedback"];
 
