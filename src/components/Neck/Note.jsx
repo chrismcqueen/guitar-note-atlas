@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import Svg, { G, Circle } from "react-native-svg";
+import { G, Circle } from "react-native-svg";
 
 import { Store } from "../../../Store";
 import DegreeLabel from "./DegreeLabel";
@@ -108,26 +108,24 @@ const Note = ({
 
   if (isNote(fret, stringOffset))
     return (
-      <G transform={`translate(${x}, ${y})`}>
-        <Svg width={noteSize} height={noteSize} overflow="visible">
-          <Circle
-            cx={noteSize / 2}
-            cy={noteSize / 2}
-            r={circleRadius}
-            stroke={muted ? theme.colors.neckBlackAlpha : fret === 0 ? theme.colors.grey : theme.colors.black}
-            fill={muted ? (scaleDegree === "1" || fret === 0 ? theme.colors.white : theme.colors.neckBlackAlpha) : fret === 0 ? theme.colors.white : scaleDegree === "1" ? theme.colors.white : theme.colors.black}
-            strokeWidth={fret === 0 ? circleRadius / 12 : circleStrokeWidth ?? 3.5}
+      <G>
+        <Circle
+          cx={x + noteSize / 2}
+          cy={y + noteSize / 2}
+          r={circleRadius}
+          stroke={muted ? theme.colors.neckBlackAlpha : fret === 0 ? theme.colors.grey : theme.colors.black}
+          fill={muted ? (scaleDegree === "1" || fret === 0 ? theme.colors.white : theme.colors.neckBlackAlpha) : fret === 0 ? theme.colors.white : scaleDegree === "1" ? theme.colors.white : theme.colors.black}
+          strokeWidth={fret === 0 ? circleRadius / 12 : circleStrokeWidth ?? 3.5}
+        />
+        {globalState.options.showScaleDegree && (
+          <DegreeLabel
+            label={scaleDegree}
+            x={x + noteSize * 0.545}
+            y={y + noteSize * (scaleDegree.length === 1 ? 0.76 : 0.82)}
+            fontSize={labelFontSize}
+            fill={muted ? (scaleDegree === "1" || fret === 0 ? theme.colors.neckBlackAlpha : theme.colors.white) : fret === 0 ? theme.colors.grey : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
           />
-          {globalState.options.showScaleDegree && (
-            <DegreeLabel
-              label={scaleDegree}
-              x={noteSize * 0.545}
-              y={scaleDegree.length === 1 ? "76%" : "82%"}
-              fontSize={labelFontSize}
-              fill={muted ? (scaleDegree === "1" || fret === 0 ? theme.colors.neckBlackAlpha : theme.colors.white) : fret === 0 ? theme.colors.grey : scaleDegree === "1" ? theme.colors.black : theme.colors.white}
-            />
-          )}
-        </Svg>
+        )}
       </G>
     );
   return <></>;

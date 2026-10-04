@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { StyleSheet, Text, View, Animated, Platform, Pressable } from "react-native";
+import { StyleSheet, Text, View, Animated, Platform, Pressable, ScrollView } from "react-native";
 import * as Linking from "expo-linking";
 
 import { Store } from "../../Store";
@@ -98,9 +98,11 @@ const Options = ({ mounted, transition }) => {
               },
             ]}
           >
-            <Pressable
-              onPress={(event) => event.stopPropagation()}
-              style={[styles.optionsContent, { paddingRight: cutoutPadding }]}
+            <ScrollView
+              bounces={false}
+              contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16), paddingRight: cutoutPadding }}
+              showsVerticalScrollIndicator={false}
+              style={styles.optionsContent}
             >
               {options.map((option, i) => (
                 <Pressable key={i} onPress={() => handlePress(option)} style={pressedOpacity}>
@@ -116,7 +118,7 @@ const Options = ({ mounted, transition }) => {
                   </View>
                 </Pressable>
               ))}
-            </Pressable>
+            </ScrollView>
           </Animated.View>
         </View>
       </View>

@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useEffect } from "react";
+import React, { useContext, useRef, useEffect, useState } from "react";
 import { StyleSheet, Text, View, Pressable, Animated, Easing } from "react-native";
 
 import { data } from "../../data";
@@ -11,6 +11,7 @@ import { pressedOpacity } from "../utils/pressable";
 const Menu = () => {
   const { dimensions, insets, showMenu, globalState, setGlobalState } = useContext(Store);
   const menuAnim = useRef(new Animated.Value(1)).current;
+  const [mounted, setMounted] = useState(false);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const menuTop = (isTablet ? tabletHeaderHeight : phoneHeaderHeight) + (isTablet ? 0 : insets.top);
   const footerHeight = isTablet ? 87 : 53;
@@ -20,20 +21,36 @@ const Menu = () => {
   const sectionHeaderHeight = isTablet ? dimensions.width / 20.84 : 36;
 
   useEffect(() => {
-    showMenu
-      ? Animated.timing(menuAnim, {
+    menuAnim.stopAnimation();
+
+    if (showMenu) {
+      if (!mounted) {
+        setMounted(true);
+        return;
+      }
+
+      Animated.timing(menuAnim, {
           toValue: 0,
           duration: 200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
-        }).start()
-      : Animated.timing(menuAnim, {
+        }).start();
+      return;
+    }
+
+    if (mounted) {
+      Animated.timing(menuAnim, {
           toValue: 1,
           duration: 200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
-        }).start();
-  }, [showMenu]);
+        }).start(({ finished }) => {
+          if (finished) setMounted(false);
+        });
+    } else {
+      menuAnim.setValue(1);
+    }
+  }, [mounted, showMenu]);
 
   const splitToColumns = (arr) => {
     const col1 = [];
@@ -84,6 +101,8 @@ const Menu = () => {
       transform: [{ translateY: isTablet ? 14 : 8 }],
     },
   ];
+
+  if (!mounted) return null;
 
   return (
     <Animated.ScrollView

@@ -68,7 +68,7 @@ const AppContent = () => {
         duration: 150,
         easing: Easing.inOut(Easing.ease),
         toValue: 1,
-        useNativeDriver: false,
+        useNativeDriver: true,
       }).start();
       return;
     }
@@ -78,7 +78,7 @@ const AppContent = () => {
         duration: 150,
         easing: Easing.inOut(Easing.ease),
         toValue: 0,
-        useNativeDriver: false,
+        useNativeDriver: true,
       }).start(({ finished }) => {
         if (finished) setOptionsMounted(false);
       });
@@ -97,15 +97,16 @@ const AppContent = () => {
   });
 
   return (
-    <View style={styles.app}>
+    <View style={[styles.app, !optionsMounted && styles.appIdle]}>
       <Animated.View
-        renderToHardwareTextureAndroid
-        shouldRasterizeIOS
+        renderToHardwareTextureAndroid={optionsMounted}
+        shouldRasterizeIOS={optionsMounted}
         style={[
           styles.navigationScreen,
+          !optionsMounted && styles.navigationScreenIdle,
           {
-            height: dimensions.height,
-            width: dimensions.width,
+            height: optionsMounted ? dimensions.height : undefined,
+            width: optionsMounted ? dimensions.width : undefined,
             transform: [{ translateX: appTranslateX }, { scale: appScale }],
           },
         ]}
@@ -159,7 +160,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
     flex: 1,
   },
+  appIdle: {
+    backgroundColor: "#F9F8EF",
+  },
   navigationScreen: {
     position: "absolute",
+  },
+  navigationScreenIdle: {
+    ...StyleSheet.absoluteFillObject,
   },
 });

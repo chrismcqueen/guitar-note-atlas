@@ -15,8 +15,8 @@ const WIDTH = 642;
 const SPACING_X = 100;
 const OFFSET_X = 21;
 const OFFSET_Y = 24;
-const PhoneNeckBackdrop = ({ bassMode, height, short, stringCount, width }) => {
-  const activeWidth = width * 0.53;
+const PhoneNeckBackdrop = ({ bassMode, height, neckWidth, short, stringCount, width }) => {
+  const activeWidth = neckWidth;
   const fretWidth = activeWidth / 6.42;
   const activeOffset = OFFSET_X + (short ? SPACING_X / 2 : 0);
   const firstFret = (width - activeWidth) / 2 + activeOffset * (activeWidth / WIDTH);
@@ -177,7 +177,7 @@ const PositionZoom = ({ compact = false }) => {
       <View style={[styles.row, compact && styles.phoneRow]}>
         {compact && (
           <View pointerEvents="none" style={[styles.phoneBackdrop, { height: compactNeckHeight, transform: [{ translateY: -compactNeckHeight / 2 }], width: safeWidth }]}>
-            <PhoneNeckBackdrop bassMode={bassMode} height={compactNeckHeight} short={position.short} stringCount={stringCount} width={safeWidth} />
+            <PhoneNeckBackdrop bassMode={bassMode} height={compactNeckHeight} neckWidth={compactNeckWidth} short={position.short} stringCount={stringCount} width={safeWidth} />
           </View>
         )}
         <Pressable
