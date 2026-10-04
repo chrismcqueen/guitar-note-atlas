@@ -6,7 +6,7 @@ import { PositionActionsStore, PositionStore, Store } from "../../Store";
 import coordinates from "../../data/positionCoordinates.json";
 import DegreeLabel from "./Neck/DegreeLabel";
 import { getScaleDegreeLabel } from "../utils/music.mjs";
-import { getPosition, positionBandVerticalGeometry, stepPosition } from "../utils/positions.mjs";
+import { getPosition, positionBandVerticalGeometry, resolvedPositionFret, stepPositionTarget } from "../utils/positions.mjs";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
 
@@ -54,8 +54,8 @@ const PhoneNeckBackdrop = ({ bassMode, height, neckWidth, short, stringCount, wi
 
 const PositionZoom = ({ compact = false }) => {
   const { dimensions, globalState, insets } = useContext(Store);
-  const { positionId } = useContext(PositionStore);
-  const { setPositionId, setShowPositionOverview } = useContext(PositionActionsStore);
+  const { positionFret, positionId } = useContext(PositionStore);
+  const { setPositionFret, setPositionId, setShowPositionOverview } = useContext(PositionActionsStore);
   if (!globalState.options || !globalState.strings) return null;
 
   const position = getPosition(positionId);
@@ -171,8 +171,14 @@ const PositionZoom = ({ compact = false }) => {
     </Svg>
   );
 
-  const previous = () => setPositionId((id) => stepPosition(id, -1));
-  const next = () => setPositionId((id) => stepPosition(id, 1));
+  const stepSelection = (amount) => {
+    const currentFret = resolvedPositionFret(positionId, positionFret, globalState.key.key_offset);
+    const nextTarget = stepPositionTarget(positionId, currentFret, amount, globalState.key.key_offset);
+    setPositionId(nextTarget.id);
+    setPositionFret(nextTarget.fret);
+  };
+  const previous = () => stepSelection(-1);
+  const next = () => stepSelection(1);
   return (
     <View style={[styles.container, !compact && { height: dimensions.height * 0.53 }, compact && styles.phoneContainer]}>
       <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.title, compact && styles.phoneTitle]}>{title}</Text>

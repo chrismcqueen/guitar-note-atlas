@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { fretForNeckX, getPosition, POSITION_ORDER, positionBandFrets, positionBandVerticalGeometry, positionForFret, positionStartFret, positionTargets, stepPosition } from "../src/utils/positions.mjs";
+import { fretForNeckX, getPosition, POSITION_ORDER, positionBandFrets, positionBandVerticalGeometry, positionDisplayFret, positionForFret, positionStartFret, positionTargetForFret, positionTargets, resolvedPositionFret, stepPosition, stepPositionTarget } from "../src/utils/positions.mjs";
 
 test("positions follow the released seven-position order and wrap", () => {
   assert.deepEqual(POSITION_ORDER, [0, 2, 4, 6, 1, 3, 5]);
@@ -57,6 +57,30 @@ test("overview neck touch coordinates map to frets in either handedness", () => 
   assert.equal(fretForNeckX(40 + 7 * 49 + 1, 864, true), 9);
   assert.equal(fretForNeckX(-100, 864), 0);
   assert.equal(fretForNeckX(1000, 864), 16);
+});
+
+test("full-neck selection preserves the touched octave occurrence", () => {
+  assert.deepEqual(positionTargetForFret(0, 0), { fret: 0, id: 3, distance: 0 });
+  assert.deepEqual(positionTargetForFret(12, 0), { fret: 12, id: 3, distance: 0 });
+  assert.equal(resolvedPositionFret(3, 12, 0), 12);
+  assert.equal(resolvedPositionFret(3, 99, 0), 0);
+});
+
+test("position navigation moves linearly and stops at visible neck ends", () => {
+  assert.deepEqual(stepPositionTarget(3, 0, -1, 0), { fret: 0, id: 3 });
+  assert.deepEqual(stepPositionTarget(3, 0, 1, 0), { fret: 2, id: 5 });
+  assert.deepEqual(stepPositionTarget(0, 15, 1, 0), { fret: 15, id: 0 });
+
+  for (let keyOffset = 0; keyOffset < 12; keyOffset += 1) {
+    const visibleIds = new Set(positionTargets(keyOffset).map(({ id }) => id));
+    assert.equal(POSITION_ORDER.every((id) => visibleIds.has(id)), true, `key ${keyOffset}`);
+  }
+});
+
+test("selected position windows stay fully inside the visible neck", () => {
+  assert.equal(positionDisplayFret(0, 15, 0), 10);
+  assert.equal(positionDisplayFret(5, 14, 0), 11);
+  assert.equal(positionDisplayFret(3, 0, 0), 0);
 });
 
 test("every visible color band opens its matching index position in every key", () => {

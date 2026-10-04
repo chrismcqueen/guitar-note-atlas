@@ -8,7 +8,7 @@ import Frets from "./Frets";
 import Strings from "./Strings";
 import PositionBands from "./PositionBands";
 import { PositionActionsStore, Store } from "../../../Store";
-import { fretForNeckX, getPosition, positionForFret, positionStartFret } from "../../utils/positions.mjs";
+import { fretForNeckX, getPosition, positionDisplayFret, positionTargetForFret } from "../../utils/positions.mjs";
 import { theme } from "../../utils/theme";
 
 const FRET_WIDTH = 49;
@@ -20,9 +20,10 @@ const ACTIVE_CLIP_OVERDRAW = LINE_WIDTH;
 
 const Neck = React.memo(() => {
   const { dimensions, globalState, insets } = useContext(Store);
-  const { setPositionId, setShowPositionOverview } = useContext(PositionActionsStore);
+  const { setPositionFret, setPositionId, setShowPositionOverview } = useContext(PositionActionsStore);
   const [pressedPositionId, setPressedPositionId] = useState(null);
-  const pressedPositionIdRef = useRef(null);
+  const [pressedPositionFret, setPressedPositionFret] = useState(null);
+  const pressedTargetRef = useRef(null);
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
@@ -34,37 +35,41 @@ const Neck = React.memo(() => {
   const scale = Math.min((safeWidth - horizontalMargin) / 864, (dimensions.height * heightRatio) / 233, maxScale);
   const neckDimensions = { height: 233 * scale, width: 864 * scale };
   const pressedPosition = pressedPositionId === null ? null : getPosition(pressedPositionId);
-  const selectedFret = pressedPosition && positionStartFret(pressedPositionId, globalState.key.key_offset);
+  const selectedFret = pressedPosition && positionDisplayFret(pressedPositionId, pressedPositionFret, globalState.key.key_offset);
   const selectedFretCount = pressedPosition?.short ? 5 : 6;
   const selectedWidth = selectedFretCount * FRET_WIDTH;
   const activeFretRange = pressedPosition && { start: selectedFret, end: selectedFret + selectedFretCount };
   const naturalSelectedX = NECK_LEFT + (selectedFret ?? 0) * FRET_WIDTH;
   const selectedX = globalState.options.leftHand ? 864 - naturalSelectedX - selectedWidth : naturalSelectedX;
 
-  const positionAtX = (x) => positionForFret(
+  const positionAtX = (x) => positionTargetForFret(
     fretForNeckX(x, neckDimensions.width, globalState.options.leftHand),
     globalState.key.key_offset,
   );
 
   const handlePressIn = (event) => {
-    const nextPositionId = positionAtX(event.nativeEvent.locationX);
-    if (nextPositionId === pressedPositionIdRef.current) return;
-    pressedPositionIdRef.current = nextPositionId;
-    setPressedPositionId(nextPositionId);
+    const nextTarget = positionAtX(event.nativeEvent.locationX);
+    if (nextTarget.id === pressedTargetRef.current?.id && nextTarget.fret === pressedTargetRef.current?.fret) return;
+    pressedTargetRef.current = nextTarget;
+    setPressedPositionId(nextTarget.id);
+    setPressedPositionFret(nextTarget.fret);
   };
 
   const finishSelection = () => {
-    if (pressedPositionIdRef.current !== null) {
-      setPositionId(pressedPositionIdRef.current);
+    if (pressedTargetRef.current !== null) {
+      setPositionId(pressedTargetRef.current.id);
+      setPositionFret(pressedTargetRef.current.fret);
       setShowPositionOverview(false);
     }
-    pressedPositionIdRef.current = null;
+    pressedTargetRef.current = null;
     setPressedPositionId(null);
+    setPressedPositionFret(null);
   };
 
   const cancelSelection = () => {
-    pressedPositionIdRef.current = null;
+    pressedTargetRef.current = null;
     setPressedPositionId(null);
+    setPressedPositionFret(null);
   };
 
   return (

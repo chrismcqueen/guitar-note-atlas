@@ -8,7 +8,7 @@ import Frets from "./Neck/Frets";
 import Note from "./Neck/Note";
 import Strings from "./Neck/Strings";
 import PositionBands from "./Neck/PositionBands";
-import { fretForNeckX, getPosition, positionForFret, positionStartFret, stepPosition } from "../utils/positions.mjs";
+import { fretForNeckX, getPosition, positionDisplayFret, positionTargetForFret, resolvedPositionFret, stepPositionTarget } from "../utils/positions.mjs";
 import { theme } from "../utils/theme";
 
 const VIEWBOX_HEIGHT = 175;
@@ -21,15 +21,16 @@ const ACTIVE_CLIP_OVERDRAW = LINE_WIDTH;
 
 const TabletNeck = () => {
   const { dimensions, globalState, insets } = useContext(Store);
-  const { positionId } = useContext(PositionStore);
-  const { setPositionId } = useContext(PositionActionsStore);
+  const { positionFret, positionId } = useContext(PositionStore);
+  const { setPositionFret, setPositionId } = useContext(PositionActionsStore);
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
   const width = dimensions.width - insets.left - insets.right - 8;
   const height = (width * VIEWBOX_HEIGHT) / 864;
   const position = getPosition(positionId);
-  const selectedFret = positionStartFret(positionId, globalState.key.key_offset);
+  const selectedOccurrenceFret = resolvedPositionFret(positionId, positionFret, globalState.key.key_offset);
+  const selectedFret = positionDisplayFret(positionId, selectedOccurrenceFret, globalState.key.key_offset);
   const selectedFretCount = position.short ? 5 : 6;
   const selectedWidth = selectedFretCount * FRET_WIDTH;
   const activeFretRange = { start: selectedFret, end: selectedFret + selectedFretCount };
@@ -38,8 +39,15 @@ const TabletNeck = () => {
 
   const selectPositionAtX = (x) => {
     const fret = fretForNeckX(x, width, globalState.options.leftHand);
-    const nextPositionId = positionForFret(fret, globalState.key.key_offset);
-    if (nextPositionId !== positionId) setPositionId(nextPositionId);
+    const nextTarget = positionTargetForFret(fret, globalState.key.key_offset);
+    if (nextTarget.id !== positionId) setPositionId(nextTarget.id);
+    if (nextTarget.fret !== positionFret) setPositionFret(nextTarget.fret);
+  };
+
+  const stepSelection = (amount) => {
+    const nextTarget = stepPositionTarget(positionId, selectedOccurrenceFret, amount, globalState.key.key_offset);
+    setPositionId(nextTarget.id);
+    setPositionFret(nextTarget.fret);
   };
 
   return (
@@ -49,8 +57,8 @@ const TabletNeck = () => {
       accessibilityLabel="Full fretboard position selector"
       accessibilityRole="adjustable"
       onAccessibilityAction={(event) => {
-        if (event.nativeEvent.actionName === "increment") setPositionId(stepPosition(positionId, 1));
-        if (event.nativeEvent.actionName === "decrement") setPositionId(stepPosition(positionId, -1));
+        if (event.nativeEvent.actionName === "increment") stepSelection(1);
+        if (event.nativeEvent.actionName === "decrement") stepSelection(-1);
       }}
       onMoveShouldSetResponder={() => true}
       onResponderGrant={(event) => selectPositionAtX(event.nativeEvent.locationX)}
