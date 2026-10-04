@@ -76,7 +76,7 @@ export const AudioPopover = () => {
           <Pressable android_disableSound onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
             <Text style={styles.closeText}>×</Text>
           </Pressable>
-          <Text style={styles.title}>Note Player</Text>
+          <Text style={styles.title}>Audio Player</Text>
           <View accessible={false} style={styles.closeButton} />
         </View>
 
