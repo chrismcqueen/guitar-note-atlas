@@ -16,6 +16,7 @@ export const Footer = () => {
   const dragInitialDegrees = useRef([]);
   const dragStartIndex = useRef(0);
   const dragCurrentIndex = useRef(null);
+  const touchStartPoint = useRef({ x: 0, y: 0 });
 
   const indexAtGestureX = (x) => footerDegreeIndexFromGestureX(
     x,
@@ -61,10 +62,11 @@ export const Footer = () => {
         onLayout={(event) => {
           degreeRowWidth.current = event.nativeEvent.layout.width;
         }}
-        onMoveShouldSetResponderCapture={(_, gestureState) => (
-          Math.abs(gestureState.dx) > 4
-          && Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
-        )}
+        onMoveShouldSetResponderCapture={(event) => {
+          const deltaX = event.nativeEvent.pageX - touchStartPoint.current.x;
+          const deltaY = event.nativeEvent.pageY - touchStartPoint.current.y;
+          return Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 4;
+        }}
         onResponderGrant={(event) => {
           dragCurrentIndex.current = null;
           paintThroughIndex(indexAtGestureX(event.nativeEvent.locationX));
@@ -84,9 +86,13 @@ export const Footer = () => {
               e={d.e}
               selected={selected}
               altSelected={altSelected}
-              onTouchStart={() => {
+              onTouchStart={(event) => {
                 dragStartIndex.current = i;
                 dragInitialDegrees.current = [...globalState.scale.degrees];
+                touchStartPoint.current = {
+                  x: event.nativeEvent.pageX,
+                  y: event.nativeEvent.pageY,
+                };
               }}
             />
           );
