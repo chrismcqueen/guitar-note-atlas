@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  degreeIndicesBetween,
   footerDegreeIndexAtX,
   isDegreeChoiceSelected,
   paintDegreeChoices,
@@ -14,6 +15,11 @@ test("footer drag coordinates map across every degree button", () => {
   assert.equal(footerDegreeIndexAtX(199, 400, 4), 1);
   assert.equal(footerDegreeIndexAtX(399, 400, 4), 3);
   assert.equal(footerDegreeIndexAtX(500, 400, 4), 3);
+});
+
+test("footer swipes include every crossed button in either direction", () => {
+  assert.deepEqual(degreeIndicesBetween(1, 3), [1, 2, 3]);
+  assert.deepEqual(degreeIndicesBetween(3, 1), [1, 2, 3]);
 });
 
 test("footer selection painting adds each crossed degree without toggling it twice", () => {

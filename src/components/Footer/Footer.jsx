@@ -6,7 +6,7 @@ import { FooterButton } from "./FooterButton";
 import { ScaleDegreeButton } from "./ScaleDegreeButton";
 import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
-import { footerDegreeIndexAtX, isDegreeChoiceSelected, paintDegreeChoices } from "../../utils/footerSelection.mjs";
+import { degreeIndicesBetween, footerDegreeIndexAtX, isDegreeChoiceSelected, paintDegreeChoices } from "../../utils/footerSelection.mjs";
 
 export const Footer = () => {
   const { dimensions, globalState, insets, setGlobalState } = useContext(Store);
@@ -22,11 +22,9 @@ export const Footer = () => {
   const paintThroughIndex = (index) => {
     const visited = [...visitedIndices.current];
     const lastIndex = visited.length ? visited[visited.length - 1] : dragStartIndex.current;
-    const start = Math.min(lastIndex, index);
-    const end = Math.max(lastIndex, index);
     const indices = [];
 
-    for (let candidate = start; candidate <= end; candidate += 1) {
+    for (const candidate of degreeIndicesBetween(lastIndex, index)) {
       if (!visitedIndices.current.has(candidate)) {
         visitedIndices.current.add(candidate);
         indices.push(candidate);

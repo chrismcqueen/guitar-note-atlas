@@ -30,3 +30,9 @@ export const footerDegreeIndexAtX = (x, width, degreeCount) => {
   if (width <= 0 || degreeCount <= 0) return 0;
   return Math.max(0, Math.min(degreeCount - 1, Math.floor((x / width) * degreeCount)));
 };
+
+export const degreeIndicesBetween = (fromIndex, toIndex) => {
+  const start = Math.min(fromIndex, toIndex);
+  const end = Math.max(fromIndex, toIndex);
+  return Array.from({ length: end - start + 1 }, (_, offset) => start + offset);
+};
