@@ -15,8 +15,7 @@ export const StoreProvider = ({ children }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showTutorialPrompt, setShowTutorialPrompt] = useState(false);
-  const [positionId, setPositionId] = useState(0);
-  const [positionFret, setPositionFret] = useState(null);
+  const [positionSelection, setPositionSelection] = useState({ fret: null, id: 0 });
   const [showPositionOverview, setShowPositionOverview] = useState(true);
   const [globalState, setGlobalState] = useState({});
 
@@ -51,11 +50,11 @@ export const StoreProvider = ({ children }) => {
   }), [showMenu, showOptions]);
 
   const positionValue = useMemo(() => ({
-    positionFret,
-    positionId,
-  }), [positionFret, positionId]);
+    positionFret: positionSelection.fret,
+    positionId: positionSelection.id,
+  }), [positionSelection]);
   const positionVisibilityValue = useMemo(() => ({ showPositionOverview }), [showPositionOverview]);
-  const positionActions = useMemo(() => ({ setPositionFret, setPositionId, setShowPositionOverview }), []);
+  const positionActions = useMemo(() => ({ setPositionSelection, setShowPositionOverview }), []);
 
   return (
     <Store.Provider value={value}>

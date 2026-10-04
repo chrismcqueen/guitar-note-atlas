@@ -55,7 +55,7 @@ const PhoneNeckBackdrop = ({ bassMode, height, neckWidth, short, stringCount, wi
 const PositionZoom = ({ compact = false }) => {
   const { dimensions, globalState, insets } = useContext(Store);
   const { positionFret, positionId } = useContext(PositionStore);
-  const { setPositionFret, setPositionId, setShowPositionOverview } = useContext(PositionActionsStore);
+  const { setPositionSelection, setShowPositionOverview } = useContext(PositionActionsStore);
   if (!globalState.options || !globalState.strings) return null;
 
   const position = getPosition(positionId);
@@ -174,8 +174,7 @@ const PositionZoom = ({ compact = false }) => {
   const stepSelection = (amount) => {
     const currentFret = resolvedPositionFret(positionId, positionFret, globalState.key.key_offset);
     const nextTarget = stepPositionTarget(positionId, currentFret, amount, globalState.key.key_offset);
-    setPositionId(nextTarget.id);
-    setPositionFret(nextTarget.fret);
+    setPositionSelection({ id: nextTarget.id, fret: nextTarget.fret });
   };
   const previous = () => stepSelection(-1);
   const next = () => stepSelection(1);

@@ -22,7 +22,7 @@ const ACTIVE_CLIP_OVERDRAW = LINE_WIDTH;
 const TabletNeck = () => {
   const { dimensions, globalState, insets } = useContext(Store);
   const { positionFret, positionId } = useContext(PositionStore);
-  const { setPositionFret, setPositionId } = useContext(PositionActionsStore);
+  const { setPositionSelection } = useContext(PositionActionsStore);
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
@@ -40,14 +40,14 @@ const TabletNeck = () => {
   const selectPositionAtX = (x) => {
     const fret = fretForNeckX(x, width, globalState.options.leftHand);
     const nextTarget = positionTargetForFret(fret, globalState.key.key_offset);
-    if (nextTarget.id !== positionId) setPositionId(nextTarget.id);
-    if (nextTarget.fret !== positionFret) setPositionFret(nextTarget.fret);
+    if (nextTarget.id !== positionId || nextTarget.fret !== positionFret) {
+      setPositionSelection({ id: nextTarget.id, fret: nextTarget.fret });
+    }
   };
 
   const stepSelection = (amount) => {
     const nextTarget = stepPositionTarget(positionId, selectedOccurrenceFret, amount, globalState.key.key_offset);
-    setPositionId(nextTarget.id);
-    setPositionFret(nextTarget.fret);
+    setPositionSelection({ id: nextTarget.id, fret: nextTarget.fret });
   };
 
   return (

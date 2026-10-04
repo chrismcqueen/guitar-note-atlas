@@ -20,7 +20,7 @@ const ACTIVE_CLIP_OVERDRAW = LINE_WIDTH;
 
 const Neck = React.memo(() => {
   const { dimensions, globalState, insets } = useContext(Store);
-  const { setPositionFret, setPositionId, setShowPositionOverview } = useContext(PositionActionsStore);
+  const { setPositionSelection, setShowPositionOverview } = useContext(PositionActionsStore);
   const [pressedPositionId, setPressedPositionId] = useState(null);
   const [pressedPositionFret, setPressedPositionFret] = useState(null);
   const pressedTargetRef = useRef(null);
@@ -57,8 +57,7 @@ const Neck = React.memo(() => {
 
   const finishSelection = () => {
     if (pressedTargetRef.current !== null) {
-      setPositionId(pressedTargetRef.current.id);
-      setPositionFret(pressedTargetRef.current.fret);
+      setPositionSelection({ id: pressedTargetRef.current.id, fret: pressedTargetRef.current.fret });
       setShowPositionOverview(false);
     }
     pressedTargetRef.current = null;
