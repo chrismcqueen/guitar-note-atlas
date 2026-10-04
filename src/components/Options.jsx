@@ -25,7 +25,7 @@ const Options = ({ mounted, transition, viewport }) => {
       ? Math.max(insets.bottom + 16, 44)
       : Math.max(insets.bottom, 16);
 
-  const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Flip Upside Down", "Hide Anchor Frets", "Rate Us", "Give Us Feedback"];
+  const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Flip Upside Down", "Hide Anchor Frets", "Enable Circle of 4ths/5ths Mode", "Rate Us", "Give Us Feedback"];
 
   const updateOption = (name) => {
     const nextState = {
@@ -36,10 +36,14 @@ const Options = ({ mounted, transition, viewport }) => {
     storeGlobalState(nextState);
   };
 
-  const setKeyNavigation = (keyNavigation) => {
+  const toggleCircleNavigation = () => {
+    const circleEnabled = globalState.options.keyNavigation === KEY_NAVIGATION_MODES.CIRCLE;
     const nextState = {
       ...globalState,
-      options: { ...globalState.options, keyNavigation },
+      options: {
+        ...globalState.options,
+        keyNavigation: circleEnabled ? KEY_NAVIGATION_MODES.CHROMATIC : KEY_NAVIGATION_MODES.CIRCLE,
+      },
     };
     setGlobalState(nextState);
     storeGlobalState(nextState);
@@ -57,6 +61,8 @@ const Options = ({ mounted, transition, viewport }) => {
         return globalState.options.upsideDown;
       case "Hide Anchor Frets":
         return globalState.options.hideAnchorFrets;
+      case "Enable Circle of 4ths/5ths Mode":
+        return globalState.options.keyNavigation === KEY_NAVIGATION_MODES.CIRCLE;
       default:
         return false;
     }
@@ -82,6 +88,9 @@ const Options = ({ mounted, transition, viewport }) => {
         break;
       case "Hide Anchor Frets":
         updateOption("hideAnchorFrets");
+        break;
+      case "Enable Circle of 4ths/5ths Mode":
+        toggleCircleNavigation();
         break;
       case "Rate Us":
         Linking.openURL("https://apps.apple.com/us/app/guitar-note-atlas/id971847390");
@@ -157,33 +166,6 @@ const Options = ({ mounted, transition, viewport }) => {
                 </Pressable>
                 );
               })}
-              <View style={[styles.navigationSection, isTablet && styles.tabletNavigationSection]}>
-                <Text style={styles.navigationTitle}>KEY NAVIGATION</Text>
-                <View accessibilityRole="radiogroup" style={styles.navigationSelector}>
-                  {[
-                    [KEY_NAVIGATION_MODES.CHROMATIC, "CHROMATIC"],
-                    [KEY_NAVIGATION_MODES.CIRCLE, "CIRCLE"],
-                  ].map(([mode, label]) => {
-                    const selected = (globalState.options.keyNavigation || KEY_NAVIGATION_MODES.CHROMATIC) === mode;
-                    return (
-                      <Pressable
-                        android_disableSound
-                        accessibilityRole="radio"
-                        accessibilityState={{ checked: selected }}
-                        key={mode}
-                        onPress={() => setKeyNavigation(mode)}
-                        style={({ pressed }) => [
-                          styles.navigationChoice,
-                          selected && styles.navigationChoiceSelected,
-                          pressed && styles.navigationChoicePressed,
-                        ]}
-                      >
-                        <Text style={[styles.navigationChoiceText, selected && styles.navigationChoiceTextSelected]}>{label}</Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
               <View pointerEvents="none" style={{ height: bottomScrollPadding }} />
             </ScrollView>
           </Animated.View>
@@ -261,43 +243,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     letterSpacing: 1,
     textAlign: "right",
-  },
-  navigationSection: {
-    paddingBottom: 8,
-    paddingHorizontal: 14,
-    paddingTop: 6,
-  },
-  tabletNavigationSection: {
-    paddingTop: 10,
-  },
-  navigationTitle: {
-    color: theme.colors.white,
-    fontFamily: "proletarsk",
-    marginBottom: 7,
-  },
-  navigationSelector: {
-    borderColor: theme.colors.white,
-    borderWidth: 1,
-    flexDirection: "row",
-  },
-  navigationChoice: {
-    alignItems: "center",
-    flex: 1,
-    justifyContent: "center",
-    minHeight: 36,
-  },
-  navigationChoiceSelected: {
-    backgroundColor: theme.colors.white,
-  },
-  navigationChoicePressed: {
-    opacity: 0.55,
-  },
-  navigationChoiceText: {
-    color: theme.colors.white,
-    fontFamily: "proletarsk",
-    fontSize: 12,
-  },
-  navigationChoiceTextSelected: {
-    color: theme.colors.blue,
   },
 });
