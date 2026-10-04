@@ -87,7 +87,7 @@ export const AudioPopover = () => {
           onPress={play}
           style={withPressedOpacity([styles.playButton, (isLoading || sequenceEmpty) && styles.disabled])}
         >
-          <Text style={styles.playText}>{isLoading ? "Loading sounds…" : isPlaying ? "Stop" : "Play scale"}</Text>
+          <Text style={styles.playText}>{isLoading ? "Loading sounds…" : isPlaying ? "Stop" : "Play"}</Text>
         </Pressable>
 
         <View style={styles.tempoRow}>
