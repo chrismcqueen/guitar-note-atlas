@@ -14,6 +14,10 @@ const Menu = () => {
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const menuTop = (isTablet ? tabletHeaderHeight : phoneHeaderHeight) + (isTablet ? 0 : insets.top);
   const footerHeight = isTablet ? 87 : 53;
+  const menuItemFontSize = dimensions.width / (isTablet ? 40 : 32);
+  const menuRowHeight = dimensions.width / (isTablet ? 27 : 22);
+  const sectionHeaderFontSize = dimensions.width / 36;
+  const sectionHeaderHeight = dimensions.width / 20.84;
 
   useEffect(() => {
     showMenu
@@ -55,7 +59,24 @@ const Menu = () => {
     storeGlobalState({ ...globalState, scale: item });
   };
 
-  const menuItemStyle = (item) => [styles.menuItem, globalState.scale.menu_title === item.menu_title && styles.menuItemSelected];
+  const menuItemStyle = (item) => [
+    styles.menuItem,
+    {
+      fontSize: menuItemFontSize,
+      lineHeight: menuItemFontSize * 1.08,
+    },
+    globalState.scale.menu_title === item.menu_title && styles.menuItemSelected,
+  ];
+
+  const menuItemPressableStyle = [styles.menuItemPressable, { height: menuRowHeight }];
+  const menuHeaderWrapperStyle = [styles.menuHeaderWrapper, { height: sectionHeaderHeight }];
+  const menuHeaderStyle = [
+    styles.menuHeader,
+    {
+      fontSize: sectionHeaderFontSize,
+      lineHeight: sectionHeaderFontSize * 1.08,
+    },
+  ];
 
   return (
     <Animated.ScrollView
@@ -71,72 +92,72 @@ const Menu = () => {
           }) }],
         },
       ]}
-      contentContainerStyle={{ paddingLeft: insets.left + 25, paddingRight: insets.right + 25 }}
+      contentContainerStyle={styles.menuContent}
       stickyHeaderIndices={[0, 2, 4, 6, 8, 10, 12]}
     >
       {/* SCALES */}
-      <View style={styles.menuHeaderWrapper}>
-        <Text style={styles.menuHeader}>{headings[0]}</Text>
+      <View style={menuHeaderWrapperStyle}>
+        <Text style={menuHeaderStyle}>{headings[0]}</Text>
       </View>
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {scales[0].map((scale, i) => (
-            <Pressable key={i} onPress={() => handlePress(scale)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(scale)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(scale)}>{scale.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {scales[1].map((scale, i) => (
-            <Pressable key={i} onPress={() => handlePress(scale)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(scale)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(scale)}>{scale.menu_title}</Text>
             </Pressable>
           ))}
         </View>
       </View>
       {/* ARPEGGIOS */}
-      <View style={styles.menuHeaderWrapper}>
-        <Text style={styles.menuHeader}>{headings[1]}</Text>
+      <View style={menuHeaderWrapperStyle}>
+        <Text style={menuHeaderStyle}>{headings[1]}</Text>
       </View>
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {arpeggios[0].map((arp, i) => (
-            <Pressable key={i} onPress={() => handlePress(arp)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(arp)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(arp)}>{arp.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {arpeggios[1].map((arp, i) => (
-            <Pressable key={i} onPress={() => handlePress(arp)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(arp)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(arp)}>{arp.menu_title}</Text>
             </Pressable>
           ))}
         </View>
       </View>
       {/* INTERVALS */}
-      <View style={styles.menuHeaderWrapper}>
-        <Text style={styles.menuHeader}>{headings[2]}</Text>
+      <View style={menuHeaderWrapperStyle}>
+        <Text style={menuHeaderStyle}>{headings[2]}</Text>
       </View>
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {intervals[0].map((int, i) => (
-            <Pressable key={i} onPress={() => handlePress(int)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(int)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(int)}>{int.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {intervals[1].map((int, i) => (
-            <Pressable key={i} onPress={() => handlePress(int)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(int)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(int)}>{int.menu_title}</Text>
             </Pressable>
           ))}
         </View>
       </View>
       {/* MODES OF MAJOR */}
-      <View style={styles.menuHeaderWrapper}>
-        <Text style={styles.menuHeader}>
+      <View style={menuHeaderWrapperStyle}>
+        <Text style={menuHeaderStyle}>
           {modesOf}
           {headings[3]}
         </Text>
@@ -144,22 +165,22 @@ const Menu = () => {
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {majorModes[0].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {majorModes[1].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
         </View>
       </View>
       {/* MODES OF MELODIC MINOR */}
-      <View style={styles.menuHeaderWrapper}>
-        <Text style={styles.menuHeader}>
+      <View style={menuHeaderWrapperStyle}>
+        <Text style={menuHeaderStyle}>
           {modesOf}
           {headings[4]}
         </Text>
@@ -167,22 +188,22 @@ const Menu = () => {
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {melodicMinorModes[0].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {melodicMinorModes[1].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
         </View>
       </View>
       {/* MODES OF HARMONIC MINOR */}
-      <View style={styles.menuHeaderWrapper}>
-        <Text style={styles.menuHeader}>
+      <View style={menuHeaderWrapperStyle}>
+        <Text style={menuHeaderStyle}>
           {modesOf}
           {headings[5]}
         </Text>
@@ -190,22 +211,22 @@ const Menu = () => {
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {harmonicMinorModes[0].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {harmonicMinorModes[1].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
         </View>
       </View>
       {/* MODES OF HARMONIC MAJOR */}
-      <View style={styles.menuHeaderWrapper}>
-        <Text style={styles.menuHeader}>
+      <View style={menuHeaderWrapperStyle}>
+        <Text style={menuHeaderStyle}>
           {modesOf}
           {headings[6]}
         </Text>
@@ -213,14 +234,14 @@ const Menu = () => {
       <View style={styles.menuColumnContainer}>
         <View style={styles.menuColumn}>
           {harmonicMajorModes[0].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
         </View>
         <View style={styles.menuColumn}>
           {harmonicMajorModes[1].map((mode, i) => (
-            <Pressable key={i} onPress={() => handlePress(mode)} style={pressedOpacity}>
+            <Pressable key={i} onPress={() => handlePress(mode)} style={({ pressed }) => [menuItemPressableStyle, pressedOpacity({ pressed })]}>
               <Text style={menuItemStyle(mode)}>{mode.menu_title}</Text>
             </Pressable>
           ))}
@@ -238,21 +259,32 @@ const styles = StyleSheet.create({
     position: "absolute",
     zIndex: 1000,
   },
+  menuContent: {
+    paddingBottom: 0,
+  },
   menuHeader: {
+    fontFamily: "proletarsk",
+    includeFontPadding: false,
+    letterSpacing: 0,
     textAlign: "center",
     textTransform: "uppercase",
-    fontSize: 18,
   },
   menuHeaderWrapper: {
+    alignItems: "center",
     backgroundColor: theme.colors.menuHeader,
-    paddingTop: 4,
-    paddingBottom: 6,
+    justifyContent: "center",
+    width: "100%",
   },
   menuItem: {
-    color: theme.colors.pureWhite,
+    color: theme.colors.white,
+    fontFamily: "proletarsk",
+    includeFontPadding: false,
+    letterSpacing: 1,
     textAlign: "center",
-    paddingVertical: 4,
-    fontSize: 18,
+  },
+  menuItemPressable: {
+    justifyContent: "center",
+    width: "100%",
   },
   menuItemSelected: {
     backgroundColor: theme.colors.menuSelection,
@@ -260,10 +292,11 @@ const styles = StyleSheet.create({
   },
   menuColumnContainer: {
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: "5.4%",
   },
   menuColumn: {
-    width: "50%",
+    width: "41.67%",
   },
   lowercase: {
     textTransform: "lowercase",
