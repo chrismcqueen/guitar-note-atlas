@@ -57,13 +57,17 @@ const AppContent = () => {
     optionsTransition.stopAnimation();
 
     if (showOptions) {
-      setOptionsMounted(true);
+      if (!optionsMounted) {
+        setOptionsMounted(true);
+        return;
+      }
+
       optionsTransition.setValue(0);
       Animated.timing(optionsTransition, {
         duration: 150,
         easing: Easing.inOut(Easing.ease),
         toValue: 1,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start();
       return;
     }
@@ -73,14 +77,14 @@ const AppContent = () => {
         duration: 150,
         easing: Easing.inOut(Easing.ease),
         toValue: 0,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start(({ finished }) => {
         if (finished) setOptionsMounted(false);
       });
     } else {
       optionsTransition.setValue(0);
     }
-  }, [showOptions]);
+  }, [optionsMounted, showOptions]);
 
   const appScale = optionsTransition.interpolate({
     inputRange: [0, 1],

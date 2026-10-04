@@ -80,38 +80,41 @@ const Options = ({ mounted, transition }) => {
       <View style={styles.modalContainer}>
         <Animated.View pointerEvents="none" style={[styles.backdrop, { opacity: transition.interpolate({ inputRange: [0, 1], outputRange: [0, 0.5] }) }]} />
         <Pressable accessibilityLabel="Close options" onPress={() => setShowOptions(false)} style={withPressedOpacity(styles.dismissArea)} />
-        <Animated.View
-          style={[
-            styles.options,
-            {
-              width: width,
-              transform: [{ translateX: transition.interpolate({
-                inputRange: [0, 1],
-                outputRange: [width, 0],
-              }) }],
-            },
-          ]}
-        >
-          <Pressable
-            onPress={(event) => event.stopPropagation()}
-            style={[styles.optionsContent, { paddingRight: cutoutPadding }]}
+        <View pointerEvents="box-none" style={styles.drawerSlot}>
+          <Animated.View
+            style={[
+              styles.options,
+              {
+                height: dimensions.height,
+                width: width,
+                transform: [{ translateX: transition.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [width, 0],
+                }) }],
+              },
+            ]}
           >
-            {options.map((option, i) => (
-              <Pressable key={i} onPress={() => handlePress(option)} style={pressedOpacity}>
-                <View style={styles.itemRow}>
-                  <Text style={styles.item}>{option}</Text>
-                  <Text
-                    accessibilityElementsHidden={!isSelected(option)}
-                    importantForAccessibility={isSelected(option) ? "auto" : "no-hide-descendants"}
-                    style={[styles.checkmark, !isSelected(option) && styles.checkmarkHidden]}
-                  >
-                    ✓
-                  </Text>
-                </View>
-              </Pressable>
-            ))}
-          </Pressable>
-        </Animated.View>
+            <Pressable
+              onPress={(event) => event.stopPropagation()}
+              style={[styles.optionsContent, { paddingRight: cutoutPadding }]}
+            >
+              {options.map((option, i) => (
+                <Pressable key={i} onPress={() => handlePress(option)} style={pressedOpacity}>
+                  <View style={styles.itemRow}>
+                    <Text style={styles.item}>{option}</Text>
+                    <Text
+                      accessibilityElementsHidden={!isSelected(option)}
+                      importantForAccessibility={isSelected(option) ? "auto" : "no-hide-descendants"}
+                      style={[styles.checkmark, !isSelected(option) && styles.checkmarkHidden]}
+                    >
+                      ✓
+                    </Text>
+                  </View>
+                </Pressable>
+              ))}
+            </Pressable>
+          </Animated.View>
+        </View>
       </View>
   );
 };
@@ -126,15 +129,18 @@ const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: theme.colors.black,
+    zIndex: 0,
   },
   dismissArea: {
     ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+  },
+  drawerSlot: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "flex-end",
+    zIndex: 2,
   },
   options: {
-    bottom: 0,
-    position: "absolute",
-    right: 0,
-    top: 0,
     backgroundColor: theme.colors.blue,
   },
   optionsContent: {
