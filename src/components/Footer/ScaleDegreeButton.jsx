@@ -8,7 +8,7 @@ import { theme } from "../../utils/theme";
 
 export const ScaleDegreeButton = (props) => {
   const { dimensions, globalState, setGlobalState } = useContext(Store);
-  const { selected, altSelected, d, e, onTouchStart, shouldHandlePress = () => true } = props;
+  const { selected, altSelected, d, e, onTouchStart } = props;
   const { getScaleDegree, getMatchingScale } = useFooter();
   const [accidental, degree] = getScaleDegree(d).length === 2 ? getScaleDegree(d).split("") : [undefined, getScaleDegree(d)];
   const [altAccidental, altDegree] = e === undefined ? [] : getScaleDegree(e).split("");
@@ -22,8 +22,6 @@ export const ScaleDegreeButton = (props) => {
   const degreeSmallBottomStyle = isTablet ? styles.tabletScaleDegreeSmallBottom : styles.scaleDegreeSmallBottom;
 
   const onPressScaleDegree = () => {
-    if (!shouldHandlePress()) return;
-
     const currentDegrees = globalState.scale.degrees;
     let nextDegrees;
 

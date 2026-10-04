@@ -16,7 +16,6 @@ export const Footer = () => {
   const dragInitialDegrees = useRef([]);
   const dragStartIndex = useRef(0);
   const dragCurrentIndex = useRef(null);
-  const dragMoved = useRef(false);
 
   const indexAtGestureX = (x) => footerDegreeIndexFromGestureX(
     x,
@@ -62,18 +61,15 @@ export const Footer = () => {
         onLayout={(event) => {
           degreeRowWidth.current = event.nativeEvent.layout.width;
         }}
-        onMoveShouldSetResponderCapture={() => true}
+        onMoveShouldSetResponderCapture={(_, gestureState) => (
+          Math.abs(gestureState.dx) > 4
+          && Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
+        )}
         onResponderGrant={(event) => {
           dragCurrentIndex.current = null;
-          dragMoved.current = false;
-          dragInitialDegrees.current = [...globalState.scale.degrees];
           paintThroughIndex(indexAtGestureX(event.nativeEvent.locationX));
         }}
-        onResponderMove={(event) => {
-          const index = indexAtGestureX(event.nativeEvent.locationX);
-          if (index !== dragStartIndex.current) dragMoved.current = true;
-          paintThroughIndex(index);
-        }}
+        onResponderMove={(event) => paintThroughIndex(indexAtGestureX(event.nativeEvent.locationX))}
         onResponderRelease={finishDrag}
         onResponderTerminate={finishDrag}
         style={styles.scaleDegreeContainer}
@@ -88,8 +84,10 @@ export const Footer = () => {
               e={d.e}
               selected={selected}
               altSelected={altSelected}
-              onTouchStart={() => { dragStartIndex.current = i; }}
-              shouldHandlePress={() => !dragMoved.current}
+              onTouchStart={() => {
+                dragStartIndex.current = i;
+                dragInitialDegrees.current = [...globalState.scale.degrees];
+              }}
             />
           );
         })}
