@@ -12,6 +12,7 @@ import React, {
 
 import { Store } from "../../Store";
 import { guitarSources, drumSources } from "../utils/audioSources";
+import { getMissedBeatCount, getNextBeatDelay, monotonicNow } from "../utils/audioClock.mjs";
 import {
   buildScaleSequence,
   clampTempo,
@@ -20,6 +21,7 @@ import {
 } from "../utils/audioSequence.mjs";
 
 const TEMPO_STORAGE_KEY = "audioTempo";
+const VOICES_PER_SOUND = 2;
 export const AudioPlaybackStore = createContext(null);
 
 const waitUntilLoaded = (player, timeout = 4000) => new Promise((resolve, reject) => {
@@ -45,8 +47,11 @@ export const AudioPlaybackProvider = ({ children }) => {
 
   const guitarPlayers = useRef(new Map());
   const drumPlayers = useRef(new Map());
+  const activeGuitarPlayer = useRef(null);
+  const nextVoice = useRef(new Map());
   const timer = useRef(null);
   const generation = useRef(0);
+  const pendingReset = useRef(Promise.resolve());
   const playingRef = useRef(false);
   const loopRef = useRef(loopEnabled);
   const drumsRef = useRef(drumsEnabled);
@@ -73,34 +78,69 @@ export const AudioPlaybackProvider = ({ children }) => {
     }).catch(() => {});
   }, []);
 
-  const stopPlayers = useCallback(() => {
-    [...guitarPlayers.current.values(), ...drumPlayers.current.values()].forEach((player) => {
-      try {
-        player.pause();
-        player.seekTo(0).catch(() => {});
-      } catch (_error) {}
-    });
+  const allPlayers = useCallback(() => [
+    ...[...guitarPlayers.current.values()].flat(),
+    ...[...drumPlayers.current.values()].flat(),
+  ], []);
+
+  const resetPlayer = useCallback(async (player) => {
+    if (!player) return;
+    try {
+      player.pause();
+      await player.seekTo(0, 0, 0);
+    } catch (_error) {}
   }, []);
+
+  const stopPlayers = useCallback(async () => {
+    activeGuitarPlayer.current = null;
+    await Promise.all(allPlayers().map(resetPlayer));
+  }, [allPlayers, resetPlayer]);
 
   const stop = useCallback(() => {
     generation.current += 1;
     playingRef.current = false;
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
-    stopPlayers();
+    pendingReset.current = stopPlayers();
     setActivePitchClass(null);
     setIsPlaying(false);
   }, [stopPlayers]);
 
-  const ensurePlayer = useCallback(async (collection, key, source, volume = 1) => {
+  const ensurePlayers = useCallback(async (collection, key, source, volume = 1) => {
     if (!collection.current.has(key)) {
-      const player = createAudioPlayer(source, { downloadFirst: true, updateInterval: 1000 });
-      player.volume = volume;
-      collection.current.set(key, player);
+      const players = Array.from({ length: VOICES_PER_SOUND }, () => {
+        const player = createAudioPlayer(source, {
+          downloadFirst: true,
+          keepAudioSessionActive: true,
+          updateInterval: 1000,
+        });
+        player.volume = volume;
+        return player;
+      });
+      collection.current.set(key, players);
     }
-    const player = collection.current.get(key);
-    await waitUntilLoaded(player);
-    return player;
+    const players = collection.current.get(key);
+    await Promise.all(players.map(async (player) => {
+      await waitUntilLoaded(player);
+      if (!player.playing && player.currentTime !== 0) await player.seekTo(0, 0, 0);
+    }));
+    return players;
+  }, []);
+
+  const getReadyVoice = useCallback((collection, key, prefix) => {
+    const players = collection.current.get(key);
+    if (!players?.length) return null;
+    const voiceKey = `${prefix}:${key}`;
+    const voiceIndex = nextVoice.current.get(voiceKey) ?? 0;
+    nextVoice.current.set(voiceKey, (voiceIndex + 1) % players.length);
+    return players[voiceIndex];
+  }, []);
+
+  const startReadyVoice = useCallback((player) => {
+    if (!player) return;
+    try {
+      player.play();
+    } catch (_error) {}
   }, []);
 
   const prepare = useCallback(async (includeDrums = drumsRef.current) => {
@@ -109,14 +149,14 @@ export const AudioPlaybackProvider = ({ children }) => {
     setIsLoading(true);
     try {
       const sampleIds = [...new Set(sequenceRef.current.map(({ sample }) => sample))];
-      await Promise.all(sampleIds.map((sample) => ensurePlayer(
+      await Promise.all(sampleIds.map((sample) => ensurePlayers(
         guitarPlayers,
         sample,
         guitarSources[sample],
         0.92,
       )));
       if (includeDrums) {
-        await Promise.all(Object.entries(drumSources).map(([name, source]) => ensurePlayer(
+        await Promise.all(Object.entries(drumSources).map(([name, source]) => ensurePlayers(
           drumPlayers,
           name,
           source,
@@ -130,12 +170,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [ensurePlayer]);
-
-  const playOneShot = useCallback((player) => {
-    if (!player) return;
-    player.seekTo(0).then(() => player.play()).catch(() => {});
-  }, []);
+  }, [ensurePlayers]);
 
   const beginSequence = useCallback(() => {
     const run = generation.current + 1;
@@ -144,12 +179,21 @@ export const AudioPlaybackProvider = ({ children }) => {
     setIsPlaying(true);
     let index = 0;
     let beat = 0;
-    let targetTime = Date.now();
+    let targetTime = monotonicNow();
 
     const tick = () => {
       if (!playingRef.current || generation.current !== run) return;
       const currentSequence = sequenceRef.current;
       if (currentSequence.length === 0) return stop();
+
+      const beatDuration = millisecondsPerBeat(tempoRef.current);
+      const now = monotonicNow();
+      const missedBeats = getMissedBeatCount(now, targetTime, beatDuration);
+      if (missedBeats > 0) {
+        index += missedBeats;
+        beat += missedBeats;
+        if (loopRef.current) index %= currentSequence.length;
+      }
 
       if (index >= currentSequence.length) {
         if (!loopRef.current) return stop();
@@ -157,35 +201,56 @@ export const AudioPlaybackProvider = ({ children }) => {
       }
 
       const note = currentSequence[index];
-      playOneShot(guitarPlayers.current.get(note.sample));
+      const previousPlayer = activeGuitarPlayer.current;
+      const notePlayer = getReadyVoice(guitarPlayers, note.sample, "guitar");
+      if (previousPlayer) void resetPlayer(previousPlayer);
+      activeGuitarPlayer.current = notePlayer;
+      startReadyVoice(notePlayer);
       setActivePitchClass(note.pitchClass);
 
       if (drumsRef.current) {
-        playOneShot(drumPlayers.current.get("hat"));
-        playOneShot(drumPlayers.current.get(beat % 4 === 0 || beat % 4 === 2 ? "kick" : "snare"));
+        startReadyVoice(getReadyVoice(drumPlayers, "hat", "drum"));
+        startReadyVoice(getReadyVoice(
+          drumPlayers,
+          beat % 4 === 0 || beat % 4 === 2 ? "kick" : "snare",
+          "drum",
+        ));
       }
 
       index += 1;
       beat += 1;
-      targetTime += millisecondsPerBeat(tempoRef.current);
-      timer.current = setTimeout(tick, Math.max(0, targetTime - Date.now()));
+      const nextDelay = getNextBeatDelay(now, targetTime, beatDuration, missedBeats);
+      targetTime = now + nextDelay;
+      timer.current = setTimeout(tick, nextDelay);
     };
 
     tick();
-  }, [playOneShot, stop]);
+  }, [getReadyVoice, resetPlayer, startReadyVoice, stop]);
 
   const play = useCallback(async () => {
     if (playingRef.current) return stop();
+    const command = generation.current + 1;
+    generation.current = command;
+    await pendingReset.current;
+    if (generation.current !== command) return;
     const ready = await prepare();
-    if (ready) beginSequence();
+    if (ready && generation.current === command) beginSequence();
   }, [beginSequence, prepare, stop]);
 
   const restart = useCallback(async () => {
     if (!playingRef.current) return;
-    stop();
+    const command = generation.current + 1;
+    generation.current = command;
+    playingRef.current = false;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+    setActivePitchClass(null);
+    pendingReset.current = stopPlayers();
+    await pendingReset.current;
+    if (generation.current !== command) return;
     const ready = await prepare();
-    if (ready) beginSequence();
-  }, [beginSequence, prepare, stop]);
+    if (ready && generation.current === command) beginSequence();
+  }, [beginSequence, prepare, stopPlayers]);
 
   const musicalSignature = `${globalState.key?.key_offset}:${globalState.scale?.degrees?.join(",")}`;
   useEffect(() => {
@@ -210,8 +275,8 @@ export const AudioPlaybackProvider = ({ children }) => {
 
   useEffect(() => () => {
     if (timer.current) clearTimeout(timer.current);
-    [...guitarPlayers.current.values(), ...drumPlayers.current.values()].forEach((player) => player.release());
-  }, []);
+    allPlayers().forEach((player) => player.release());
+  }, [allPlayers]);
 
   const value = useMemo(() => ({
     activePitchClass,
