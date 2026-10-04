@@ -5,6 +5,7 @@ import { Store } from "../../../Store";
 import DegreeLabel from "./DegreeLabel";
 import { theme } from "../../utils/theme";
 import { getScaleDegreeLabel, normalizePitchClass } from "../../utils/music.mjs";
+import { AudioPlaybackStore } from "../AudioPlaybackProvider";
 
 const Note = ({
   circleRadius = 13,
@@ -23,6 +24,7 @@ const Note = ({
   stringSpan = 180,
 }) => {
   const { globalState } = useContext(Store);
+  const { activePitchClass } = useContext(AudioPlaybackStore);
   const degrees = globalState.scale.degrees;
 
   const getOffset = (f, stringOffset) => {
@@ -105,10 +107,21 @@ const Note = ({
   const x = leftHand ? 864 - noteSize - fretTranslate : fretTranslate;
   const y = getStringTranslate(string) + stringOffsetY;
   const scaleDegree = getScaleDegree(fret, stringOffset);
+  const highlighted = activePitchClass === normalizePitchClass(fret + stringOffset);
 
   if (isNote(fret, stringOffset))
     return (
       <G>
+        {highlighted && (
+          <Circle
+            cx={x + noteSize / 2}
+            cy={y + noteSize / 2}
+            fill="none"
+            r={circleRadius + 4}
+            stroke={theme.colors.blue}
+            strokeWidth={3}
+          />
+        )}
         <Circle
           cx={x + noteSize / 2}
           cy={y + noteSize / 2}

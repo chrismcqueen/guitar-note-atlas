@@ -1,0 +1,33 @@
+export const guitarSources = {
+  8: require("../../assets/audio/guitar/8.mp3"),
+  9: require("../../assets/audio/guitar/9.mp3"),
+  10: require("../../assets/audio/guitar/10.mp3"),
+  11: require("../../assets/audio/guitar/11.mp3"),
+  12: require("../../assets/audio/guitar/12.mp3"),
+  13: require("../../assets/audio/guitar/13.mp3"),
+  14: require("../../assets/audio/guitar/14.mp3"),
+  15: require("../../assets/audio/guitar/15.mp3"),
+  16: require("../../assets/audio/guitar/16.mp3"),
+  17: require("../../assets/audio/guitar/17.mp3"),
+  18: require("../../assets/audio/guitar/18.mp3"),
+  19: require("../../assets/audio/guitar/19.mp3"),
+  20: require("../../assets/audio/guitar/20.mp3"),
+  21: require("../../assets/audio/guitar/21.mp3"),
+  22: require("../../assets/audio/guitar/22.mp3"),
+  23: require("../../assets/audio/guitar/23.mp3"),
+  24: require("../../assets/audio/guitar/24.mp3"),
+  25: require("../../assets/audio/guitar/25.mp3"),
+  26: require("../../assets/audio/guitar/26.mp3"),
+  27: require("../../assets/audio/guitar/27.mp3"),
+  28: require("../../assets/audio/guitar/28.mp3"),
+  29: require("../../assets/audio/guitar/29.mp3"),
+  30: require("../../assets/audio/guitar/30.mp3"),
+  31: require("../../assets/audio/guitar/31.mp3"),
+  32: require("../../assets/audio/guitar/32.mp3"),
+};
+
+export const drumSources = {
+  kick: require("../../assets/audio/drums/kick.wav"),
+  snare: require("../../assets/audio/drums/snare.wav"),
+  hat: require("../../assets/audio/drums/hat.wav"),
+};

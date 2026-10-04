@@ -11,6 +11,8 @@ import Main from "./src/components/Main";
 import Tutorial from "./src/components/Tutorial";
 import { Splash } from "./src/components/Splash";
 import RotatedViewport from "./src/components/RotatedViewport";
+import { AudioPopover, AudioTrigger } from "./src/components/AudioControls";
+import { AudioPlaybackProvider } from "./src/components/AudioPlaybackProvider";
 import { OverlayStore, Store, StoreProvider } from "./Store";
 import { storeGlobalState } from "./src/utils/functions";
 import { getOptionsDrawerWidth, orientScreenBounds } from "./src/utils/screenBounds.mjs";
@@ -43,7 +45,7 @@ export default function App() {
           {!fontsLoaded || loading ? (
             <Splash setLoading={setLoading} />
           ) : (
-            <AppContent />
+            <AudioPlaybackProvider><AppContent /></AudioPlaybackProvider>
           )}
         </StoreProvider>
       </RotatedViewport>
@@ -133,8 +135,10 @@ const AppContent = () => {
         <Main />
         <Menu />
         <Header />
+        <AudioTrigger />
       </Animated.View>
       <Options mounted={optionsMounted} transition={optionsTransition} viewport={viewport} />
+      <AudioPopover />
       <TutorialGate />
       <TutorialPrompt />
     </View>

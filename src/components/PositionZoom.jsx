@@ -5,10 +5,11 @@ import Svg, { Circle, Defs, Line, LinearGradient, Rect, Stop, Text as SvgText } 
 import { PositionActionsStore, PositionStore, Store } from "../../Store";
 import coordinates from "../../data/positionCoordinates.json";
 import DegreeLabel from "./Neck/DegreeLabel";
-import { getScaleDegreeLabel } from "../utils/music.mjs";
+import { getScaleDegreeLabel, normalizePitchClass } from "../utils/music.mjs";
 import { getPosition, positionBandVerticalGeometry, positionStartFret, stepPosition } from "../utils/positions.mjs";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
+import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 
 const LEGACY_DEGREE_ID = { 0: 0, 1: 1, 2: 2, 3: 3, 3.1: 12, 4: 4, 5: 5, 6: 6, 6.1: 13, 7: 7, 8: 8, 8.1: 14, 9: 9, 10: 10, 11: 11 };
 const WIDTH = 642;
@@ -54,6 +55,7 @@ const PhoneNeckBackdrop = ({ bassMode, height, neckWidth, short, stringCount, wi
 
 const PositionZoom = ({ compact = false }) => {
   const { dimensions, globalState, insets } = useContext(Store);
+  const { activePitchClass } = useContext(AudioPlaybackStore);
   const { positionFret, positionId } = useContext(PositionStore);
   const { setPositionSelection, setShowPositionOverview } = useContext(PositionActionsStore);
   if (!globalState.options || !globalState.strings) return null;
@@ -148,8 +150,10 @@ const PositionZoom = ({ compact = false }) => {
         const fill = gray ? theme.colors.neckLightGray : white ? theme.colors.white : theme.colors.black;
         const stroke = gray ? theme.colors.neckDarkGray : theme.colors.black;
         const text = gray ? theme.colors.neckDarkGray : white ? theme.colors.black : theme.colors.white;
+        const highlighted = activePitchClass === normalizePitchClass(globalState.key.key_offset + Math.floor(note.degree));
         return (
           <React.Fragment key={note.key}>
+            {highlighted && <Circle cx={x} cy={y} r={noteRadius + 4} fill="none" stroke={theme.colors.blue} strokeWidth={3} />}
             <Circle cx={x} cy={y} r={noteRadius} fill={fill} stroke={stroke} strokeWidth={gray ? Math.max(1, noteStrokeWidth - 1) : noteStrokeWidth} />
             {globalState.options.showScaleDegree && (
               <DegreeLabel

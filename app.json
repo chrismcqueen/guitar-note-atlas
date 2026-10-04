@@ -62,7 +62,9 @@
         {
           "backgroundColor": "#3E69AF"
         }
-      ]
+      ],
+      "expo-audio",
+      "expo-asset"
     ]
   }
 }
