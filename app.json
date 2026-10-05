@@ -60,7 +60,18 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#3E69AF"
+          "backgroundColor": "#3E69AF",
+          "image": "./assets/splash.png"
+        }
+      ],
+      [
+        "react-native-audio-api",
+        {
+          "iosBackgroundMode": false,
+          "androidPermissions": [],
+          "androidForegroundService": false,
+          "disableFFmpeg": true,
+          "disableStaticExternalLibs": true
         }
       ],
       "expo-audio",

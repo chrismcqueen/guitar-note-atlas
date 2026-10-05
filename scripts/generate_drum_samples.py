@@ -43,16 +43,20 @@ def kick_renderer():
 
 def snare_renderer():
     low_passed_noise = 0
+    shell_phase = 0
 
     def render(time, _duration):
-        nonlocal low_passed_noise
+        nonlocal low_passed_noise, shell_phase
         noise = random.uniform(-1, 1)
-        low_passed_noise += 0.12 * (noise - low_passed_noise)
+        low_passed_noise += 0.16 * (noise - low_passed_noise)
         bright_noise = noise - low_passed_noise
-        noise_body = bright_noise * math.exp(-19 * time) * 0.82
-        shell = math.sin(2 * math.pi * 188 * time) * math.exp(-27 * time) * 0.28
-        snap = random.uniform(-1, 1) * math.exp(-75 * time) * 0.22
-        return noise_body + shell + snap
+        noise_body = bright_noise * math.exp(-19 * time) * 0.58
+        warm_noise = low_passed_noise * math.exp(-17 * time) * 0.20
+        shell_frequency = 148 + (66 * math.exp(-28 * time))
+        shell_phase += 2 * math.pi * shell_frequency / RATE
+        shell_body = math.sin(shell_phase) * math.exp(-23 * time) * 0.43
+        snap = random.uniform(-1, 1) * math.exp(-95 * time) * 0.13
+        return noise_body + warm_noise + shell_body + snap
 
     return render
 
@@ -66,15 +70,21 @@ def hat_renderer():
         low_passed_noise += 0.08 * (noise - low_passed_noise)
         bright_noise = noise - low_passed_noise
         metallic = (
-            math.sin(2 * math.pi * 6410 * time)
-            + math.sin(2 * math.pi * 8170 * time)
-            + math.sin(2 * math.pi * 10310 * time)
-        ) / 3
-        return (bright_noise * 0.78 + metallic * 0.22) * math.exp(-58 * time)
+            math.sin(2 * math.pi * 5791 * time)
+            + math.sin(2 * math.pi * 7483 * time + 0.7)
+            + math.sin(2 * math.pi * 9311 * time + 1.4)
+            + math.sin(2 * math.pi * 11257 * time + 2.1)
+        ) / 4
+        # Let the cymbal body decay naturally instead of collapsing into a
+        # short click. Playback uses four independent hat voices, so this tail
+        # may overlap later beats without either hit cutting the other off.
+        attack = min(1.0, time / 0.0015)
+        envelope = (0.82 * math.exp(-34 * time)) + (0.18 * math.exp(-11 * time))
+        return attack * (bright_noise * 0.86 + metallic * 0.14) * envelope
 
     return render
 
 
 write("kick.wav", 0.28, kick_renderer())
-write("snare.wav", 0.22, snare_renderer())
-write("hat.wav", 0.095, hat_renderer())
+write("snare.wav", 0.30, snare_renderer())
+write("hat.wav", 0.38, hat_renderer())

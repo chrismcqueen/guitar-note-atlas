@@ -3,6 +3,17 @@ import { normalizePitchClass } from "./music.mjs";
 export const MIN_TEMPO = 40;
 export const MAX_TEMPO = 240;
 export const DEFAULT_TEMPO = 100;
+export const DEFAULT_NOTE_RATE = "quarter";
+export const NOTE_RATES = [
+  { beats: 0.25, id: "sixteenth", label: "1/16" },
+  { beats: 1 / 3, id: "eighth-triplet", label: "1/8T" },
+  { beats: 0.5, id: "eighth", label: "1/8" },
+  { beats: 0.75, id: "dotted-eighth", label: "1/8." },
+  { beats: 1, id: "quarter", label: "1/4" },
+  { beats: 1.5, id: "dotted-quarter", label: "1/4." },
+  { beats: 2, id: "half", label: "1/2" },
+  { beats: 3, id: "dotted-half", label: "1/2." },
+];
 
 export const clampTempo = (tempo) => Math.max(
   MIN_TEMPO,
@@ -25,6 +36,25 @@ export const buildScaleSequence = (degrees = [], keyOffset = 0) => {
 };
 
 export const millisecondsPerBeat = (tempo) => 60000 / clampTempo(tempo);
+
+export const tempoFromTapTimes = (tapTimes = []) => {
+  if (tapTimes.length < 2) return null;
+  const recentTimes = tapTimes.slice(-6);
+  const intervals = recentTimes.slice(1).map((time, index) => time - recentTimes[index]);
+  if (intervals.some((interval) => interval <= 0)) return null;
+  const averageInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
+  return clampTempo(60000 / averageInterval);
+};
+
+export const normalizeNoteRate = (rate) => (
+  NOTE_RATES.some(({ id }) => id === rate) ? rate : DEFAULT_NOTE_RATE
+);
+
+export const millisecondsPerNote = (tempo, rate = DEFAULT_NOTE_RATE) => {
+  const normalizedRate = normalizeNoteRate(rate);
+  const { beats } = NOTE_RATES.find(({ id }) => id === normalizedRate);
+  return millisecondsPerBeat(tempo) * beats;
+};
 
 export const normalizePlaybackIndex = (index, sequenceLength, looping) => {
   if (index < sequenceLength) return index;
