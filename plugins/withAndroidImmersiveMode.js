@@ -1,13 +1,22 @@
-const { withMainActivity } = require("@expo/config-plugins");
+const { withAndroidManifest, withMainActivity } = require("@expo/config-plugins");
 
-const IMPORTS = `import android.os.Build
+const RESTRICTED_RESIZABILITY_PROPERTY =
+  "android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY";
+
+const IMPORTS = `import android.content.pm.ActivityInfo
 import android.view.WindowManager
 
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat`;
 
-const BEFORE_SUPER = `    WindowCompat.setDecorFitsSystemWindows(window, false)
+const BEFORE_SUPER = `    requestedOrientation =
+      if (resources.configuration.smallestScreenWidthDp >= 600) {
+        ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+      } else {
+        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+      }
+    WindowCompat.setDecorFitsSystemWindows(window, false)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
       window.attributes.layoutInDisplayCutoutMode =
         WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
@@ -33,6 +42,36 @@ const METHODS = `
 `;
 
 module.exports = function withAndroidImmersiveMode(config) {
+  config = withAndroidManifest(config, (manifestConfig) => {
+    const application = manifestConfig.modResults.manifest.application?.[0];
+
+    if (application) {
+      const mainActivity = application.activity?.find(
+        (activity) => activity.$?.["android:name"] === ".MainActivity",
+      );
+
+      if (mainActivity) mainActivity.$["android:screenOrientation"] = "unspecified";
+
+      application.property = application.property || [];
+      const existingProperty = application.property.find(
+        (property) => property.$?.["android:name"] === RESTRICTED_RESIZABILITY_PROPERTY,
+      );
+
+      if (existingProperty) {
+        existingProperty.$["android:value"] = "true";
+      } else {
+        application.property.push({
+          $: {
+            "android:name": RESTRICTED_RESIZABILITY_PROPERTY,
+            "android:value": "true",
+          },
+        });
+      }
+    }
+
+    return manifestConfig;
+  });
+
   return withMainActivity(config, (mainActivityConfig) => {
     let source = mainActivityConfig.modResults.contents;
 

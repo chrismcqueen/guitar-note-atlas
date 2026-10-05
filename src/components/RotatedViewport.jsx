@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Platform, StyleSheet, useWindowDimensions, View } from "react-native";
 
 import { getLandscapeDimensions, isPortraitWindow } from "../utils/orientation.mjs";
@@ -11,11 +11,34 @@ import { getLandscapeDimensions, isPortraitWindow } from "../utils/orientation.m
  */
 const RotatedViewport = ({ children }) => {
   const window = useWindowDimensions();
+  const portraitWindow = isPortraitWindow(window);
+  const nativeLandscapeTablet =
+    Platform.OS === "android" &&
+    !portraitWindow &&
+    Math.min(window.height, window.width) >= 600;
+  const lastPortraitWindow = useRef(null);
 
   if (Platform.OS === "web") return children;
 
-  const landscape = getLandscapeDimensions(window);
-  const shouldRotate = isPortraitWindow(window);
+  // Android tablets are naturally landscape. Rendering directly into that
+  // landscape activity avoids rotating a portrait compatibility box, while
+  // phones and iOS keep the app's established portrait-shell behavior.
+  if (nativeLandscapeTablet) {
+    return <View style={styles.nativeLandscape}>{children}</View>;
+  }
+
+  // Expo Go can briefly report its own landscape-shaped host window while it
+  // hands off to this project's portrait lock. Never let that transient host
+  // state flip the app canvas. A standalone build normally starts with the
+  // portrait window immediately, while Expo Go gets a black frame until its
+  // intended window is ready.
+  if (portraitWindow) lastPortraitWindow.current = window;
+
+  const stablePortraitWindow = lastPortraitWindow.current;
+
+  if (!stablePortraitWindow) return <View style={styles.screen} />;
+
+  const landscape = getLandscapeDimensions(stablePortraitWindow);
 
   return (
     <View style={styles.screen}>
@@ -26,7 +49,7 @@ const RotatedViewport = ({ children }) => {
             height: landscape.height,
             width: landscape.width,
           },
-          shouldRotate && styles.rotated,
+          styles.rotated,
         ]}
       >
         {children}
@@ -43,6 +66,11 @@ const styles = StyleSheet.create({
   },
   rotated: {
     transform: [{ rotate: "90deg" }],
+  },
+  nativeLandscape: {
+    backgroundColor: "#F9F8EF",
+    flex: 1,
+    overflow: "hidden",
   },
   screen: {
     alignItems: "center",
