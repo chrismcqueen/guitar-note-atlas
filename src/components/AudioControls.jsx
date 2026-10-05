@@ -20,7 +20,8 @@ export const AudioTrigger = () => {
   const { showMenu } = useContext(OverlayStore);
   const { drumsEnabled, isPlaying, openPopover } = useContext(AudioPlaybackStore);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const top = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + (isTablet ? 0 : insets.top)) + 12;
+  const phoneTopInset = Platform.OS === "android" ? 0 : insets.top;
+  const top = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + phoneTopInset) + 12;
   const left = getMenuVisualCenterX(insets, isTablet) - 22;
 
   if (showMenu) return null;
@@ -109,7 +110,8 @@ export const AudioPopover = () => {
   if (!popoverOpen) return null;
 
   const cardWidth = isTablet ? 330 : 292;
-  const cardTop = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + insets.top) + 10;
+  const phoneTopInset = Platform.OS === "android" ? 0 : insets.top;
+  const cardTop = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + phoneTopInset) + 10;
   // On tablets, align the close control with the trigger's visual center. The
   // extra card area to its left also keeps the trigger behind the opaque card,
   // including beneath the rounded top-left corner.

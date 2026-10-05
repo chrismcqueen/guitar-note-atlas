@@ -19,7 +19,11 @@ const Header = () => {
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const activeHeaderHeight = isTablet ? tabletHeaderHeight : phoneHeaderHeight;
   const fullScreen = { height: "100%", width: "100%" };
-  const headerInset = isTablet ? 0 : insets.top;
+  // Android's portrait-native shell reports the physical display-cutout inset
+  // before this view is rotated. That inset belongs on the landscape side,
+  // which is already handled by menuInset/optionsInset; applying it vertically
+  // stretches the phone header after a standalone rebuild.
+  const headerInset = isTablet || Platform.OS === "android" ? 0 : insets.top;
   const controlTop = headerInset;
   const menuInset = isTablet ? insets.left : Math.max(insets.left, 59);
   const optionsInset = isTablet
@@ -72,7 +76,7 @@ const Header = () => {
               fontSize: tabletTitleSize,
               lineHeight: tabletTitleSize * 1.06,
             },
-            { top: isTablet ? tabletTitleTop : insets.top - 13 },
+            { top: isTablet ? tabletTitleTop : headerInset - 13 },
           ]}
         >
           {title?.toUpperCase()}
