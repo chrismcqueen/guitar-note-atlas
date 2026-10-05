@@ -38,6 +38,10 @@ const Header = () => {
   const tabletMenuSize = 24;
   const menuTextWidth = isTablet ? tabletMenuTextWidth : phoneMenuTextWidth;
   const title = isTablet ? globalState?.scale.long_title : globalState?.scale.title;
+  const titleLeft = isTablet ? 0 : menuInset + 120;
+  const titleRight = isTablet
+    ? 0
+    : optionsInset + (Platform.OS === "android" ? 120 : 75);
 
   return (
     <View style={[styles.container, { height: activeHeaderHeight + headerInset }]}>
@@ -69,18 +73,32 @@ const Header = () => {
             Menu
           </Text>
         </Pressable>
-        <Text
+        <View
+          pointerEvents="none"
           style={[
-            styles.heading,
-            isTablet && {
-              fontSize: tabletTitleSize,
-              lineHeight: tabletTitleSize * 1.06,
+            styles.headingClip,
+            {
+              height: activeHeaderHeight,
+              left: titleLeft,
+              right: titleRight,
+              top: controlTop,
             },
-            { top: isTablet ? tabletTitleTop : headerInset - 13 },
           ]}
         >
-          {title?.toUpperCase()}
-        </Text>
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.heading,
+              isTablet && {
+                fontSize: tabletTitleSize,
+                lineHeight: tabletTitleSize * 1.06,
+              },
+              { top: isTablet ? tabletTitleTop : -13 },
+            ]}
+          >
+            {title?.toUpperCase()}
+          </Text>
+        </View>
         <Pressable
           android_disableSound
           accessibilityLabel="Options"
@@ -127,6 +145,10 @@ const styles = StyleSheet.create({
   disableOptions: {
     opacity: 0.5,
   },
+  headingClip: {
+    overflow: "hidden",
+    position: "absolute",
+  },
   heading: {
     position: "absolute",
     fontFamily: "blackout",
@@ -134,8 +156,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 58,
     lineHeight: 64,
-    left: 0,
-    right: 0,
+    left: -200,
+    right: -200,
     top: -18,
   },
   menu: {
