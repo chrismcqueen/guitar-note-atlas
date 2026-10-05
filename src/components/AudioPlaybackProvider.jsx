@@ -85,7 +85,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     });
     setAudioModeAsync({
       interruptionMode: "mixWithOthers",
-      playsInSilentMode: false,
+      playsInSilentMode: true,
       shouldPlayInBackground: false,
     }).catch(() => {});
   }, []);
