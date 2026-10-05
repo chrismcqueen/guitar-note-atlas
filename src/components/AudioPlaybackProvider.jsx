@@ -24,7 +24,8 @@ import {
 
 const TEMPO_STORAGE_KEY = "audioTempo";
 const VOICES_PER_SOUND = 2;
-const DRUM_RESET_DELAYS = { hat: 90, kick: 240, snare: 180 };
+const DRUM_RESET_DELAYS = { hat: 115, kick: 300, snare: 240 };
+const DRUM_VOLUMES = { hat: 0.28, kick: 0.58, snare: 0.48 };
 export const AudioPlaybackStore = createContext(null);
 
 const waitUntilLoaded = (player, timeout = 4000) => new Promise((resolve, reject) => {
@@ -208,7 +209,7 @@ export const AudioPlaybackProvider = ({ children }) => {
           drumPlayers,
           name,
           source,
-          name === "hat" ? 0.16 : 0.28,
+          DRUM_VOLUMES[name],
         )));
       }
       return true;
@@ -227,6 +228,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     setIsPlaying(true);
     let index = 0;
     let beat = 0;
+    let subdivision = 0;
     let targetTime = monotonicNow();
 
     const tick = () => {
@@ -235,40 +237,51 @@ export const AudioPlaybackProvider = ({ children }) => {
       if (currentSequence.length === 0) return stop();
 
       const beatDuration = millisecondsPerBeat(tempoRef.current);
+      const subdivisionDuration = beatDuration / 2;
       const now = monotonicNow();
-      const missedBeats = getMissedBeatCount(now, targetTime, beatDuration);
-      if (missedBeats > 0) {
-        index += missedBeats;
-        beat += missedBeats;
+      const missedSubdivisions = getMissedBeatCount(now, targetTime, subdivisionDuration);
+      if (missedSubdivisions > 0) {
+        for (let skipped = 0; skipped < missedSubdivisions; skipped += 1) {
+          if ((subdivision + skipped) % 2 === 0) {
+            index += 1;
+            beat += 1;
+          }
+        }
+        subdivision += missedSubdivisions;
       }
 
-      index = normalizePlaybackIndex(index, currentSequence.length, loopRef.current);
-      if (index >= currentSequence.length) return stop();
-
-      const note = currentSequence[index];
-      const previousPlayer = activeGuitarPlayer.current;
-      const notePlayer = getReadyVoice(guitarPlayers, note.sample, "guitar");
-      activeGuitarPlayer.current = notePlayer;
-
-      // Put the time-critical native play command ahead of cleanup and visual
-      // work. Seeking the previous voice first can delay the next attack on
-      // slower devices because both operations share the native audio queue.
-      startReadyVoice(notePlayer);
-      if (previousPlayer && previousPlayer !== notePlayer) void resetPlayer(previousPlayer);
-      updateActivePitchClass(note.pitchClass);
+      const isDownbeat = subdivision % 2 === 0;
+      if (isDownbeat) {
+        index = normalizePlaybackIndex(index, currentSequence.length, loopRef.current);
+        if (index >= currentSequence.length) return stop();
+      }
 
       if (drumsRef.current) {
-        // Basic 4/4 groove: eighth-note hats, kick on 1 and 3, snare on 2 and 4.
         triggerDrum("hat");
-        triggerDrum(beat % 4 === 0 || beat % 4 === 2 ? "kick" : "snare");
-        scheduleDrumTask(() => {
-          if (playingRef.current && generation.current === run && drumsRef.current) triggerDrum("hat");
-        }, beatDuration / 2);
+        if (isDownbeat) {
+          triggerDrum(beat % 4 === 0 || beat % 4 === 2 ? "kick" : "snare");
+        }
       }
 
-      index += 1;
-      beat += 1;
-      const nextDelay = getNextBeatDelay(now, targetTime, beatDuration, missedBeats);
+      if (isDownbeat) {
+        const note = currentSequence[index];
+        const previousPlayer = activeGuitarPlayer.current;
+        const notePlayer = getReadyVoice(guitarPlayers, note.sample, "guitar");
+        activeGuitarPlayer.current = notePlayer;
+
+        // Put the time-critical native play command ahead of cleanup and visual
+        // work. Seeking the previous voice first can delay the next attack on
+        // slower devices because both operations share the native audio queue.
+        startReadyVoice(notePlayer);
+        if (previousPlayer && previousPlayer !== notePlayer) void resetPlayer(previousPlayer);
+        updateActivePitchClass(note.pitchClass);
+
+        index += 1;
+        beat += 1;
+      }
+
+      subdivision += 1;
+      const nextDelay = getNextBeatDelay(now, targetTime, subdivisionDuration, missedSubdivisions);
       targetTime = now + nextDelay;
       timer.current = setTimeout(tick, nextDelay);
     };

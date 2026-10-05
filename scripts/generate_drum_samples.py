@@ -13,11 +13,13 @@ random.seed(7)
 
 
 def write(name, duration, render):
-    frames = []
+    samples = []
     for index in range(int(RATE * duration)):
         time = index / RATE
-        value = max(-1.0, min(1.0, render(time, duration)))
-        frames.append(struct.pack("<h", int(value * 32767)))
+        end_fade = min(1.0, (duration - time) / 0.006)
+        samples.append(render(time, duration) * end_fade)
+    peak = max(abs(sample) for sample in samples) or 1
+    frames = [struct.pack("<h", int(max(-1, min(1, sample * 0.94 / peak)) * 32767)) for sample in samples]
     with wave.open(str(OUTPUT / name), "wb") as output:
         output.setnchannels(1)
         output.setsampwidth(2)
@@ -25,19 +27,54 @@ def write(name, duration, render):
         output.writeframes(b"".join(frames))
 
 
-write(
-    "kick.wav",
-    0.22,
-    lambda t, d: math.sin(2 * math.pi * (92 - 55 * (t / d)) * t) * math.exp(-19 * t),
-)
-write(
-    "snare.wav",
-    0.16,
-    lambda t, _d: (random.uniform(-1, 1) * 0.72 + math.sin(2 * math.pi * 185 * t) * 0.28)
-    * math.exp(-27 * t),
-)
-write(
-    "hat.wav",
-    0.075,
-    lambda t, _d: random.uniform(-1, 1) * math.exp(-65 * t) * (1 if int(t * RATE) % 2 else -1),
-)
+def kick_renderer():
+    phase = 0
+
+    def render(time, _duration):
+        nonlocal phase
+        frequency = 48 + (112 * math.exp(-34 * time))
+        phase += 2 * math.pi * frequency / RATE
+        body = math.sin(phase) * math.exp(-15 * time)
+        beater = random.uniform(-1, 1) * math.exp(-115 * time) * 0.18
+        return body + beater
+
+    return render
+
+
+def snare_renderer():
+    low_passed_noise = 0
+
+    def render(time, _duration):
+        nonlocal low_passed_noise
+        noise = random.uniform(-1, 1)
+        low_passed_noise += 0.12 * (noise - low_passed_noise)
+        bright_noise = noise - low_passed_noise
+        noise_body = bright_noise * math.exp(-19 * time) * 0.82
+        shell = math.sin(2 * math.pi * 188 * time) * math.exp(-27 * time) * 0.28
+        snap = random.uniform(-1, 1) * math.exp(-75 * time) * 0.22
+        return noise_body + shell + snap
+
+    return render
+
+
+def hat_renderer():
+    low_passed_noise = 0
+
+    def render(time, _duration):
+        nonlocal low_passed_noise
+        noise = random.uniform(-1, 1)
+        low_passed_noise += 0.08 * (noise - low_passed_noise)
+        bright_noise = noise - low_passed_noise
+        metallic = (
+            math.sin(2 * math.pi * 6410 * time)
+            + math.sin(2 * math.pi * 8170 * time)
+            + math.sin(2 * math.pi * 10310 * time)
+        ) / 3
+        return (bright_noise * 0.78 + metallic * 0.22) * math.exp(-58 * time)
+
+    return render
+
+
+write("kick.wav", 0.28, kick_renderer())
+write("snare.wav", 0.22, snare_renderer())
+write("hat.wav", 0.095, hat_renderer())
