@@ -67,7 +67,10 @@ export const AudioPopover = () => {
 
   const cardWidth = isTablet ? 330 : 292;
   const cardTop = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + insets.top) + 10;
-  const cardLeft = isTablet ? Math.max(insets.left + 24, 34) : Math.max(insets.left + 24, 72);
+  // On tablets, align the close control with the trigger's visual center. The
+  // extra card area to its left also keeps the trigger behind the opaque card,
+  // including beneath the rounded top-left corner.
+  const cardLeft = isTablet ? Math.max(insets.left + 20, 20) : Math.max(insets.left + 24, 72);
   const commitTempo = () => {
     setTempo(tempoText);
     setTempoText(String(Math.max(MIN_TEMPO, Math.min(MAX_TEMPO, Math.round(Number(tempoText) || tempo)))));
