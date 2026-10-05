@@ -54,7 +54,7 @@ export default function App() {
 }
 
 const AppContent = () => {
-  const { dimensions } = React.useContext(Store);
+  const { dimensions, globalState } = React.useContext(Store);
   const { showOptions } = React.useContext(OverlayStore);
   const { popoverOpen } = React.useContext(AudioPlaybackStore);
   const screenBounds = orientScreenBounds(Dimensions.get("screen"), dimensions);
@@ -152,10 +152,10 @@ const AppContent = () => {
           animatedViewportStyle,
         ]}
       >
-        <AudioTrigger />
+        {globalState.options?.audioPlayer && <AudioTrigger />}
       </Animated.View>
       <Options interactionDisabled={popoverOpen} mounted={optionsMounted} transition={optionsTransition} viewport={viewport} />
-      <AudioPopover />
+      {globalState.options?.audioPlayer && <AudioPopover />}
       <TutorialGate />
       <TutorialPrompt />
     </View>

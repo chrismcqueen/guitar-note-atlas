@@ -189,16 +189,16 @@ export const AudioPopover = () => {
         </View>
 
         <View style={styles.noteRateRow}>
-          <Text style={styles.label}>Note Rate</Text>
+          <Text style={styles.label}>Subdivision</Text>
           <View style={styles.controlCluster}>
-            <Pressable android_disableSound accessibilityLabel="Select longer note rate" accessibilityRole="button" accessibilityState={{ disabled: !canSelectLongerRate }} disabled={!canSelectLongerRate} hitSlop={CONTROL_HIT_SLOP} onPress={() => setNoteRate(NOTE_RATES[noteRateIndex + 1].id)} style={withPressedOpacity([styles.stepButton, !canSelectLongerRate && styles.disabled])}>
+            <Pressable android_disableSound accessibilityLabel="Select longer subdivision" accessibilityRole="button" accessibilityState={{ disabled: !canSelectLongerRate }} disabled={!canSelectLongerRate} hitSlop={CONTROL_HIT_SLOP} onPress={() => setNoteRate(NOTE_RATES[noteRateIndex + 1].id)} style={withPressedOpacity([styles.stepButton, !canSelectLongerRate && styles.disabled])}>
               <Text style={styles.stepText}>‹</Text>
             </Pressable>
-            <View accessible accessibilityLabel={`Note rate ${selectedNoteRate.label}`} style={styles.rateValue}>
+            <View accessible accessibilityLabel={`Subdivision ${selectedNoteRate.label}`} style={styles.rateValue}>
               <Text style={styles.rateMainLabel}>{noteRateMainLabel}</Text>
               {dottedNoteRate && <Text style={styles.rateDot}>.</Text>}
             </View>
-            <Pressable android_disableSound accessibilityLabel="Select shorter note rate" accessibilityRole="button" accessibilityState={{ disabled: !canSelectShorterRate }} disabled={!canSelectShorterRate} hitSlop={CONTROL_HIT_SLOP} onPress={() => setNoteRate(NOTE_RATES[noteRateIndex - 1].id)} style={withPressedOpacity([styles.stepButton, !canSelectShorterRate && styles.disabled])}>
+            <Pressable android_disableSound accessibilityLabel="Select shorter subdivision" accessibilityRole="button" accessibilityState={{ disabled: !canSelectShorterRate }} disabled={!canSelectShorterRate} hitSlop={CONTROL_HIT_SLOP} onPress={() => setNoteRate(NOTE_RATES[noteRateIndex - 1].id)} style={withPressedOpacity([styles.stepButton, !canSelectShorterRate && styles.disabled])}>
               <Text style={styles.stepText}>›</Text>
             </Pressable>
           </View>

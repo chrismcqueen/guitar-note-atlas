@@ -4,12 +4,20 @@ import { getNextGridTime } from "./audioClock.mjs";
 const START_LEAD_SECONDS = 0.1;
 const LOOKAHEAD_SECONDS = 0.25;
 const SCHEDULER_INTERVAL_MS = 40;
-const RELEASE_SECONDS = 0.012;
+const ATTACK_SECONDS = 0.004;
+const RELEASE_SECONDS = 0.035;
+// Guitar and up to two drum transients can coincide. Web Audio sums those
+// floating-point signals before output, so leave enough shared headroom to
+// prevent the Android/iOS hardware output from hard-clipping the mix.
+const MASTER_VOLUME = 0.58;
 const DRUM_VOLUMES = { hat: 0.12, kick: 0.58, snare: 0.52 };
 
 export class NativeAudioTransport {
   constructor(AudioContext, AudioManager, { onNote, onNotesEnded }) {
     this.context = new AudioContext();
+    this.masterGain = this.context.createGain();
+    this.masterGain.gain.value = MASTER_VOLUME;
+    this.masterGain.connect(this.context.destination);
     // Do not race decoding/playback against Android audio-focus acquisition.
     // The previous fire-and-forget activation could leave a healthy-looking
     // clock (and therefore note highlights) connected to a silent output.
@@ -55,14 +63,18 @@ export class NativeAudioTransport {
     const source = this.context.createBufferSource();
     const gain = this.context.createGain();
     source.buffer = buffer;
-    gain.gain.setValueAtTime(volume, when);
+    gain.gain.setValueAtTime(0, when);
+    gain.gain.linearRampToValueAtTime(volume, when + ATTACK_SECONDS);
     source.connect(gain);
-    gain.connect(this.context.destination);
+    gain.connect(this.masterGain);
     if (duration) {
       const end = when + Math.min(duration, buffer.duration);
       gain.gain.setValueAtTime(volume, Math.max(when, end - RELEASE_SECONDS));
       gain.gain.linearRampToValueAtTime(0, end);
-      source.start(when, 0, Math.max(0.01, end - when));
+      // Explicitly stop after the gain reaches zero. Passing a duration to
+      // start() caused occasional hard buffer truncation/clicks on Android.
+      source.start(when);
+      source.stop(end + 0.005);
     } else {
       source.start(when);
     }

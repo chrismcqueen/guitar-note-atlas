@@ -32,6 +32,7 @@ const Splash = ({ setLoading }) => {
       upsideDown: false,
       hideAnchorFrets: false,
       keyNavigation: "chromatic",
+      audioPlayer: false,
     },
     displayedTutorial: false,
   };

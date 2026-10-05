@@ -427,6 +427,11 @@ export const AudioPlaybackProvider = ({ children }) => {
     if (shouldStartPendingNotes) beginSequence();
   }, [beginSequence, clearDrumTimers, stopDrumPlayers]);
 
+  const stopAll = useCallback(() => {
+    stop();
+    stopDrums();
+  }, [stop, stopDrums]);
+
   const beginDrums = useCallback(() => {
     const run = drumGeneration.current + 1;
     drumGeneration.current = run;
@@ -492,7 +497,7 @@ export const AudioPlaybackProvider = ({ children }) => {
   }, [beginDrums, prepareDrums, stopDrums]);
 
   const play = useCallback(async () => {
-    if (playingRef.current || noteStartPending.current) return stop();
+    if (playingRef.current || noteStartPending.current) return stopAll();
     const command = generation.current + 1;
     generation.current = command;
     await pendingReset.current;
@@ -518,7 +523,7 @@ export const AudioPlaybackProvider = ({ children }) => {
         beginSequence();
       }
     }
-  }, [beginSequence, prepare, stop]);
+  }, [beginSequence, prepare, stopAll]);
 
   const restart = useCallback(async () => {
     if (!playingRef.current) return;
@@ -598,9 +603,20 @@ export const AudioPlaybackProvider = ({ children }) => {
   }, []);
 
   const openPopover = useCallback(() => {
+    if (!globalState.options?.audioPlayer) return;
     setPopoverOpen(true);
     prepare();
-  }, [prepare]);
+  }, [globalState.options?.audioPlayer, prepare]);
+
+  useEffect(() => {
+    if (globalState.options?.audioPlayer) {
+      // Audio assets stay completely lazy until the beta feature is enabled.
+      void prepare();
+      return;
+    }
+    setPopoverOpen(false);
+    stopAll();
+  }, [globalState.options?.audioPlayer, prepare, stopAll]);
 
   useEffect(() => () => {
     generation.current += 1;
@@ -642,7 +658,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     setNoteRate,
     setPopoverOpen,
     setTempo,
-    stop,
+    stop: stopAll,
     tempo,
   }), [activePitchClass, drumsEnabled, error, isLoading, isPlaying, loopEnabled, noteRate, openPopover, play, popoverOpen, prepare, sequence.length, setLoopEnabled, setNoteRate, setTempo, stop, tempo]);
 
