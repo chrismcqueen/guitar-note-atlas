@@ -108,9 +108,13 @@ export const AudioPopover = () => {
           disabled={isLoading || sequenceEmpty}
           hitSlop={CONTROL_HIT_SLOP}
           onPress={play}
-          style={withPressedOpacity([styles.playButton, (isLoading || sequenceEmpty) && styles.disabled])}
+          style={withPressedOpacity([
+            styles.playButton,
+            !isPlaying && styles.playButtonIdle,
+            (isLoading || sequenceEmpty) && styles.disabled,
+          ])}
         >
-          <Text style={styles.playText}>{isLoading ? "Loading sounds…" : isPlaying ? "Stop" : "Play"}</Text>
+          <Text style={[styles.playText, !isPlaying && styles.playTextIdle]}>{isLoading ? "Loading sounds…" : isPlaying ? "Stop" : "Play"}</Text>
         </Pressable>
 
         <View style={styles.tempoRow}>
@@ -182,7 +186,9 @@ const styles = StyleSheet.create({
   mixerTrack: { backgroundColor: theme.colors.white, height: 2, position: "relative", width: 24 },
   mixerTrackIdle: { backgroundColor: theme.colors.blue },
   playButton: { alignItems: "center", backgroundColor: theme.colors.blue, borderRadius: 5, justifyContent: "center", minHeight: 44 },
+  playButtonIdle: { backgroundColor: theme.colors.white, borderColor: theme.colors.blue, borderWidth: 1.5 },
   playText: { color: theme.colors.white, fontFamily: "proletarsk", fontSize: 17 },
+  playTextIdle: { color: theme.colors.blue },
   popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent", zIndex: 4500 },
   stepButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", width: 38 },
   stepText: { color: theme.colors.blue, fontSize: 24, lineHeight: Platform.OS === "android" ? 28 : 25 },
