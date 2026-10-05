@@ -5,6 +5,7 @@ import {
   buildScaleSequence,
   clampTempo,
   millisecondsPerBeat,
+  normalizePlaybackIndex,
 } from "../src/utils/audioSequence.mjs";
 
 test("audio sequence climbs to the octave and returns to the root", () => {
@@ -25,4 +26,15 @@ test("tempo uses one-BPM values inside a safe practice range", () => {
   assert.equal(clampTempo(100.4), 100);
   assert.equal(clampTempo(241), 240);
   assert.equal(millisecondsPerBeat(120), 500);
+});
+
+test("looping continues above the low root instead of repeating it", () => {
+  assert.equal(normalizePlaybackIndex(6, 7, true), 6);
+  assert.equal(normalizePlaybackIndex(7, 7, true), 1);
+  assert.equal(normalizePlaybackIndex(13, 7, true), 1);
+});
+
+test("one-shot playback stops after sounding its final low root", () => {
+  assert.equal(normalizePlaybackIndex(6, 7, false), 6);
+  assert.equal(normalizePlaybackIndex(7, 7, false), 7);
 });

@@ -18,6 +18,7 @@ import {
   clampTempo,
   DEFAULT_TEMPO,
   millisecondsPerBeat,
+  normalizePlaybackIndex,
 } from "../utils/audioSequence.mjs";
 
 const TEMPO_STORAGE_KEY = "audioTempo";
@@ -192,13 +193,10 @@ export const AudioPlaybackProvider = ({ children }) => {
       if (missedBeats > 0) {
         index += missedBeats;
         beat += missedBeats;
-        if (loopRef.current) index %= currentSequence.length;
       }
 
-      if (index >= currentSequence.length) {
-        if (!loopRef.current) return stop();
-        index = 0;
-      }
+      index = normalizePlaybackIndex(index, currentSequence.length, loopRef.current);
+      if (index >= currentSequence.length) return stop();
 
       const note = currentSequence[index];
       const previousPlayer = activeGuitarPlayer.current;

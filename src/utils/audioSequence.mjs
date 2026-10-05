@@ -25,3 +25,12 @@ export const buildScaleSequence = (degrees = [], keyOffset = 0) => {
 };
 
 export const millisecondsPerBeat = (tempo) => 60000 / clampTempo(tempo);
+
+export const normalizePlaybackIndex = (index, sequenceLength, looping) => {
+  if (index < sequenceLength) return index;
+  if (!looping || sequenceLength <= 1) return looping ? 0 : sequenceLength;
+
+  // The sequence ends on the same low root it starts on. A looping pass has
+  // already sounded that root, so resume on the second note at the turnaround.
+  return 1 + ((index - sequenceLength) % (sequenceLength - 1));
+};
