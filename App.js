@@ -176,7 +176,16 @@ const TutorialPrompt = () => {
   if (!showTutorialPrompt) return null;
 
   return (
-    <View accessibilityViewIsModal style={styles.promptOverlay}>
+    <View
+      accessibilityViewIsModal
+      style={[
+        styles.promptOverlay,
+        {
+          height: dimensions.height,
+          width: dimensions.width,
+        },
+      ]}
+    >
       <View style={styles.promptCard}>
         <Text style={styles.promptTitle}>{WELCOME_TITLE}</Text>
         <Text style={styles.promptMessage}>{getWelcomeMessage(dimensions)}</Text>
