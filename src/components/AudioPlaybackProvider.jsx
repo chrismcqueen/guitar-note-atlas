@@ -24,6 +24,7 @@ import {
 
 const TEMPO_STORAGE_KEY = "audioTempo";
 const VOICES_PER_SOUND = 2;
+const DRUM_RESET_DELAYS = { hat: 90, kick: 240, snare: 180 };
 export const AudioPlaybackStore = createContext(null);
 
 const waitUntilLoaded = (player, timeout = 4000) => new Promise((resolve, reject) => {
@@ -62,6 +63,7 @@ export const AudioPlaybackProvider = ({ children }) => {
   const drumPlayers = useRef(new Map());
   const activeGuitarPlayer = useRef(null);
   const nextVoice = useRef(new Map());
+  const drumTimers = useRef(new Set());
   const timer = useRef(null);
   const generation = useRef(0);
   const pendingReset = useRef(Promise.resolve());
@@ -100,6 +102,19 @@ export const AudioPlaybackProvider = ({ children }) => {
     ...[...drumPlayers.current.values()].flat(),
   ], []);
 
+  const clearDrumTimers = useCallback(() => {
+    drumTimers.current.forEach(clearTimeout);
+    drumTimers.current.clear();
+  }, []);
+
+  const scheduleDrumTask = useCallback((task, delay) => {
+    const scheduled = setTimeout(() => {
+      drumTimers.current.delete(scheduled);
+      task();
+    }, delay);
+    drumTimers.current.add(scheduled);
+  }, []);
+
   const resetPlayer = useCallback(async (player) => {
     if (!player) return;
     try {
@@ -118,10 +133,11 @@ export const AudioPlaybackProvider = ({ children }) => {
     playingRef.current = false;
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
+    clearDrumTimers();
     pendingReset.current = stopPlayers();
     updateActivePitchClass(null);
     setIsPlaying(false);
-  }, [stopPlayers, updateActivePitchClass]);
+  }, [clearDrumTimers, stopPlayers, updateActivePitchClass]);
 
   const ensurePlayers = useCallback(async (collection, key, source, volume = 1) => {
     let players = collection.current.get(key);
@@ -168,6 +184,12 @@ export const AudioPlaybackProvider = ({ children }) => {
       player.play();
     } catch (_error) {}
   }, []);
+
+  const triggerDrum = useCallback((name) => {
+    const player = getReadyVoice(drumPlayers, name, "drum");
+    startReadyVoice(player);
+    scheduleDrumTask(() => { void resetPlayer(player); }, DRUM_RESET_DELAYS[name]);
+  }, [getReadyVoice, resetPlayer, scheduleDrumTask, startReadyVoice]);
 
   const prepare = useCallback(async (includeDrums = drumsRef.current) => {
     if (sequenceRef.current.length === 0) return false;
@@ -236,12 +258,12 @@ export const AudioPlaybackProvider = ({ children }) => {
       updateActivePitchClass(note.pitchClass);
 
       if (drumsRef.current) {
-        startReadyVoice(getReadyVoice(drumPlayers, "hat", "drum"));
-        startReadyVoice(getReadyVoice(
-          drumPlayers,
-          beat % 4 === 0 || beat % 4 === 2 ? "kick" : "snare",
-          "drum",
-        ));
+        // Basic 4/4 groove: eighth-note hats, kick on 1 and 3, snare on 2 and 4.
+        triggerDrum("hat");
+        triggerDrum(beat % 4 === 0 || beat % 4 === 2 ? "kick" : "snare");
+        scheduleDrumTask(() => {
+          if (playingRef.current && generation.current === run && drumsRef.current) triggerDrum("hat");
+        }, beatDuration / 2);
       }
 
       index += 1;
@@ -252,7 +274,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     };
 
     tick();
-  }, [getReadyVoice, resetPlayer, startReadyVoice, stop, updateActivePitchClass]);
+  }, [getReadyVoice, resetPlayer, scheduleDrumTask, startReadyVoice, stop, triggerDrum, updateActivePitchClass]);
 
   const play = useCallback(async () => {
     if (playingRef.current) return stop();
@@ -271,13 +293,14 @@ export const AudioPlaybackProvider = ({ children }) => {
     playingRef.current = false;
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
+    clearDrumTimers();
     updateActivePitchClass(null);
     pendingReset.current = stopPlayers();
     await pendingReset.current;
     if (generation.current !== command) return;
     const ready = await prepare();
     if (ready && generation.current === command) beginSequence();
-  }, [beginSequence, prepare, stopPlayers, updateActivePitchClass]);
+  }, [beginSequence, clearDrumTimers, prepare, stopPlayers, updateActivePitchClass]);
 
   const musicalSignature = `${globalState.key?.key_offset}:${globalState.scale?.degrees?.join(",")}`;
   useEffect(() => {
@@ -305,12 +328,13 @@ export const AudioPlaybackProvider = ({ children }) => {
     playingRef.current = false;
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
+    clearDrumTimers();
     allPlayers().forEach(disposePlayer);
     guitarPlayers.current.clear();
     drumPlayers.current.clear();
     nextVoice.current.clear();
     activeGuitarPlayer.current = null;
-  }, [allPlayers]);
+  }, [allPlayers, clearDrumTimers]);
 
   const value = useMemo(() => ({
     activePitchClass,
