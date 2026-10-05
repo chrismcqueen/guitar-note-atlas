@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { Store } from "../../Store";
+import { OverlayStore, Store } from "../../Store";
 import { MAX_TEMPO, MIN_TEMPO } from "../utils/audioSequence.mjs";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
@@ -14,10 +14,13 @@ const TRIGGER_HIT_SLOP = { bottom: 10, left: 8, right: 8, top: 0 };
 
 export const AudioTrigger = () => {
   const { dimensions, insets } = useContext(Store);
+  const { showMenu } = useContext(OverlayStore);
   const { isPlaying, openPopover } = useContext(AudioPlaybackStore);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const top = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + (isTablet ? 0 : insets.top)) + 12;
   const left = getMenuVisualCenterX(insets, isTablet) - 22;
+
+  if (showMenu) return null;
 
   return (
     <Pressable
