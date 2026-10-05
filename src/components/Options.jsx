@@ -9,7 +9,7 @@ import { pressedOpacity } from "../utils/pressable";
 import { getOptionsDrawerWidth } from "../utils/screenBounds.mjs";
 import { KEY_NAVIGATION_MODES } from "../utils/keyNavigation.mjs";
 
-const Options = ({ mounted, transition, viewport }) => {
+const Options = ({ interactionDisabled = false, mounted, transition, viewport }) => {
   const { dimensions, insets, setShowTutorial, globalState, setGlobalState } = useContext(Store);
   const { setShowOptions, showOptions } = useContext(OverlayStore);
   const usableWindow = useWindowDimensions();
@@ -105,7 +105,12 @@ const Options = ({ mounted, transition, viewport }) => {
   if (!mounted) return null;
 
   return (
-      <View style={styles.modalContainer}>
+      <View
+        accessibilityElementsHidden={interactionDisabled}
+        importantForAccessibility={interactionDisabled ? "no-hide-descendants" : "auto"}
+        pointerEvents={interactionDisabled ? "none" : "auto"}
+        style={styles.modalContainer}
+      >
       {showOptions ? (
         <View
           pointerEvents="none"

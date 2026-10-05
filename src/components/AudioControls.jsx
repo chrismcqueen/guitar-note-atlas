@@ -74,7 +74,12 @@ export const AudioPopover = () => {
   };
 
   return (
-    <View accessibilityViewIsModal pointerEvents="auto" style={styles.popoverLayer}>
+    <View
+      accessibilityViewIsModal
+      importantForAccessibility="yes"
+      pointerEvents="auto"
+      style={styles.popoverLayer}
+    >
       <Pressable
         android_disableSound
         accessibilityLabel="Close audio controls"

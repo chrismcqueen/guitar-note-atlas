@@ -12,7 +12,7 @@ import Tutorial from "./src/components/Tutorial";
 import { Splash } from "./src/components/Splash";
 import RotatedViewport from "./src/components/RotatedViewport";
 import { AudioPopover, AudioTrigger } from "./src/components/AudioControls";
-import { AudioPlaybackProvider } from "./src/components/AudioPlaybackProvider";
+import { AudioPlaybackProvider, AudioPlaybackStore } from "./src/components/AudioPlaybackProvider";
 import { OverlayStore, Store, StoreProvider } from "./Store";
 import { storeGlobalState } from "./src/utils/functions";
 import { getOptionsDrawerWidth, orientScreenBounds } from "./src/utils/screenBounds.mjs";
@@ -56,6 +56,7 @@ export default function App() {
 const AppContent = () => {
   const { dimensions } = React.useContext(Store);
   const { showOptions } = React.useContext(OverlayStore);
+  const { popoverOpen } = React.useContext(AudioPlaybackStore);
   const screenBounds = orientScreenBounds(Dimensions.get("screen"), dimensions);
   const optionsTransition = useRef(new Animated.Value(0)).current;
   const [optionsMounted, setOptionsMounted] = useState(false);
@@ -124,6 +125,9 @@ const AppContent = () => {
       ]}
     >
       <Animated.View
+        accessibilityElementsHidden={popoverOpen}
+        importantForAccessibility={popoverOpen ? "no-hide-descendants" : "auto"}
+        pointerEvents={popoverOpen ? "none" : "auto"}
         renderToHardwareTextureAndroid={optionsMounted}
         shouldRasterizeIOS={optionsMounted}
         style={[
@@ -138,7 +142,9 @@ const AppContent = () => {
         <Header />
       </Animated.View>
       <Animated.View
-        pointerEvents="box-none"
+        accessibilityElementsHidden={popoverOpen}
+        importantForAccessibility={popoverOpen ? "no-hide-descendants" : "auto"}
+        pointerEvents={popoverOpen ? "none" : "box-none"}
         style={[
           styles.audioTriggerLayer,
           !optionsMounted && styles.navigationScreenIdle,
@@ -148,7 +154,7 @@ const AppContent = () => {
       >
         <AudioTrigger />
       </Animated.View>
-      <Options mounted={optionsMounted} transition={optionsTransition} viewport={viewport} />
+      <Options interactionDisabled={popoverOpen} mounted={optionsMounted} transition={optionsTransition} viewport={viewport} />
       <AudioPopover />
       <TutorialGate />
       <TutorialPrompt />
