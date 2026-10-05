@@ -10,6 +10,7 @@ import { getMenuVisualCenterX, phoneHeaderHeight, tabletHeaderHeight } from "./H
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 
 const CONTROL_HIT_SLOP = 3;
+const TRIGGER_HIT_SLOP = { bottom: 10, left: 8, right: 8, top: 0 };
 
 export const AudioTrigger = () => {
   const { dimensions, insets } = useContext(Store);
@@ -24,6 +25,7 @@ export const AudioTrigger = () => {
       accessibilityLabel="Open audio player"
       accessibilityRole="button"
       accessibilityState={{ selected: isPlaying }}
+      hitSlop={TRIGGER_HIT_SLOP}
       onPress={openPopover}
       style={withPressedOpacity([styles.trigger, !isPlaying && styles.triggerIdle, { left, top }])}
     >
