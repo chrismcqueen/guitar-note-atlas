@@ -8,6 +8,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  startTransition,
 } from "react";
 
 import { Store } from "../../Store";
@@ -79,6 +80,10 @@ export const AudioPlaybackProvider = ({ children }) => {
   useEffect(() => { drumsRef.current = drumsEnabled; }, [drumsEnabled]);
   useEffect(() => { tempoRef.current = tempo; }, [tempo]);
 
+  const updateActivePitchClass = useCallback((pitchClass) => {
+    startTransition(() => setActivePitchClass(pitchClass));
+  }, []);
+
   useEffect(() => {
     AsyncStorage.getItem(TEMPO_STORAGE_KEY).then((storedTempo) => {
       if (storedTempo !== null) setTempoState(clampTempo(storedTempo));
@@ -114,9 +119,9 @@ export const AudioPlaybackProvider = ({ children }) => {
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
     pendingReset.current = stopPlayers();
-    setActivePitchClass(null);
+    updateActivePitchClass(null);
     setIsPlaying(false);
-  }, [stopPlayers]);
+  }, [stopPlayers, updateActivePitchClass]);
 
   const ensurePlayers = useCallback(async (collection, key, source, volume = 1) => {
     let players = collection.current.get(key);
@@ -221,10 +226,14 @@ export const AudioPlaybackProvider = ({ children }) => {
       const note = currentSequence[index];
       const previousPlayer = activeGuitarPlayer.current;
       const notePlayer = getReadyVoice(guitarPlayers, note.sample, "guitar");
-      if (previousPlayer) void resetPlayer(previousPlayer);
       activeGuitarPlayer.current = notePlayer;
+
+      // Put the time-critical native play command ahead of cleanup and visual
+      // work. Seeking the previous voice first can delay the next attack on
+      // slower devices because both operations share the native audio queue.
       startReadyVoice(notePlayer);
-      setActivePitchClass(note.pitchClass);
+      if (previousPlayer && previousPlayer !== notePlayer) void resetPlayer(previousPlayer);
+      updateActivePitchClass(note.pitchClass);
 
       if (drumsRef.current) {
         startReadyVoice(getReadyVoice(drumPlayers, "hat", "drum"));
@@ -243,7 +252,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     };
 
     tick();
-  }, [getReadyVoice, resetPlayer, startReadyVoice, stop]);
+  }, [getReadyVoice, resetPlayer, startReadyVoice, stop, updateActivePitchClass]);
 
   const play = useCallback(async () => {
     if (playingRef.current) return stop();
@@ -262,13 +271,13 @@ export const AudioPlaybackProvider = ({ children }) => {
     playingRef.current = false;
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
-    setActivePitchClass(null);
+    updateActivePitchClass(null);
     pendingReset.current = stopPlayers();
     await pendingReset.current;
     if (generation.current !== command) return;
     const ready = await prepare();
     if (ready && generation.current === command) beginSequence();
-  }, [beginSequence, prepare, stopPlayers]);
+  }, [beginSequence, prepare, stopPlayers, updateActivePitchClass]);
 
   const musicalSignature = `${globalState.key?.key_offset}:${globalState.scale?.degrees?.join(",")}`;
   useEffect(() => {
