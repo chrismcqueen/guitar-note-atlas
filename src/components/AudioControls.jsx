@@ -76,16 +76,14 @@ export const AudioPopover = () => {
   return (
     <View
       accessibilityViewIsModal
-      importantForAccessibility="yes"
       pointerEvents="auto"
       style={styles.popoverLayer}
     >
       <Pressable
+        accessible={false}
         android_disableSound
-        accessibilityLabel="Close audio controls"
-        accessibilityRole="button"
         onPress={() => setPopoverOpen(false)}
-        style={styles.dismissLayer}
+        style={[styles.dismissLayer, { height: dimensions.height, width: dimensions.width }]}
       />
       <View style={[styles.card, { left: cardLeft, top: cardTop, width: cardWidth }]}>
         <View style={styles.titleRow}>
@@ -161,11 +159,12 @@ const styles = StyleSheet.create({
     shadowOffset: { height: 4, width: 0 },
     shadowOpacity: 0.28,
     shadowRadius: 8,
+    zIndex: 1,
   },
   closeButton: { alignItems: "center", height: 38, justifyContent: "center", width: 38 },
   closeText: { color: theme.colors.blue, fontSize: 29, lineHeight: 30 },
   disabled: { opacity: 0.45 },
-  dismissLayer: { ...StyleSheet.absoluteFillObject },
+  dismissLayer: { backgroundColor: "rgba(0, 0, 0, 0.001)", left: 0, position: "absolute", top: 0, zIndex: 0 },
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
   label: { color: theme.colors.black, flex: 1, fontFamily: "proletarsk", fontSize: 17 },
   message: { color: theme.colors.grey, fontSize: 12, marginTop: 8, textAlign: "center" },
