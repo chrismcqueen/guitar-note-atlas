@@ -28,12 +28,23 @@ export const AudioPlaybackStore = createContext(null);
 const waitUntilLoaded = (player, timeout = 4000) => new Promise((resolve, reject) => {
   const startedAt = Date.now();
   const check = () => {
-    if (player.isLoaded) return resolve();
+    try {
+      if (player.isLoaded) return resolve();
+    } catch (_error) {
+      return reject(new Error("Audio player was refreshed while loading."));
+    }
     if (Date.now() - startedAt >= timeout) return reject(new Error("Audio took too long to load."));
     setTimeout(check, 25);
   };
   check();
 });
+
+const disposePlayer = (player) => {
+  try {
+    if (typeof player?.remove === "function") player.remove();
+    else player?.release?.();
+  } catch (_error) {}
+};
 
 export const AudioPlaybackProvider = ({ children }) => {
   const { globalState } = useContext(Store);
@@ -108,8 +119,18 @@ export const AudioPlaybackProvider = ({ children }) => {
   }, [stopPlayers]);
 
   const ensurePlayers = useCallback(async (collection, key, source, volume = 1) => {
-    if (!collection.current.has(key)) {
-      const players = Array.from({ length: VOICES_PER_SOUND }, () => {
+    let players = collection.current.get(key);
+    if (players) {
+      try {
+        players.forEach((player) => player.isLoaded);
+      } catch (_error) {
+        players.forEach(disposePlayer);
+        collection.current.delete(key);
+        players = null;
+      }
+    }
+    if (!players) {
+      players = Array.from({ length: VOICES_PER_SOUND }, () => {
         const player = createAudioPlayer(source, {
           downloadFirst: true,
           keepAudioSessionActive: true,
@@ -120,7 +141,6 @@ export const AudioPlaybackProvider = ({ children }) => {
       });
       collection.current.set(key, players);
     }
-    const players = collection.current.get(key);
     await Promise.all(players.map(async (player) => {
       await waitUntilLoaded(player);
       if (!player.playing && player.currentTime !== 0) await player.seekTo(0, 0, 0);
@@ -272,8 +292,15 @@ export const AudioPlaybackProvider = ({ children }) => {
   }, [prepare]);
 
   useEffect(() => () => {
+    generation.current += 1;
+    playingRef.current = false;
     if (timer.current) clearTimeout(timer.current);
-    allPlayers().forEach((player) => player.release());
+    timer.current = null;
+    allPlayers().forEach(disposePlayer);
+    guitarPlayers.current.clear();
+    drumPlayers.current.clear();
+    nextVoice.current.clear();
+    activeGuitarPlayer.current = null;
   }, [allPlayers]);
 
   const value = useMemo(() => ({
