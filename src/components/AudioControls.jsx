@@ -11,6 +11,7 @@ import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 
 const CONTROL_HIT_SLOP = 3;
 const TRIGGER_HIT_SLOP = { bottom: 10, left: 8, right: 8, top: 0 };
+const LOADING_LABEL_DELAY_MS = 180;
 
 export const AudioTrigger = () => {
   const { dimensions, insets } = useContext(Store);
@@ -63,11 +64,20 @@ export const AudioPopover = () => {
     tempo,
   } = useContext(AudioPlaybackStore);
   const [tempoText, setTempoText] = useState(String(tempo));
+  const [showLoadingLabel, setShowLoadingLabel] = useState(false);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const slowerTempoPress = useRepeatPress(() => setTempo(tempo - 1), { accelerate: true });
   const fasterTempoPress = useRepeatPress(() => setTempo(tempo + 1), { accelerate: true });
 
   useEffect(() => setTempoText(String(tempo)), [tempo]);
+  useEffect(() => {
+    if (!isLoading) {
+      setShowLoadingLabel(false);
+      return undefined;
+    }
+    const timeout = setTimeout(() => setShowLoadingLabel(true), LOADING_LABEL_DELAY_MS);
+    return () => clearTimeout(timeout);
+  }, [isLoading]);
   if (!popoverOpen) return null;
 
   const cardWidth = isTablet ? 330 : 292;
@@ -105,16 +115,17 @@ export const AudioPopover = () => {
         <Pressable
           android_disableSound
           accessibilityRole="button"
+          accessibilityState={{ busy: isLoading, disabled: isLoading || sequenceEmpty }}
           disabled={isLoading || sequenceEmpty}
           hitSlop={CONTROL_HIT_SLOP}
           onPress={play}
           style={withPressedOpacity([
             styles.playButton,
             !isPlaying && styles.playButtonIdle,
-            (isLoading || sequenceEmpty) && styles.disabled,
+            (showLoadingLabel || sequenceEmpty) && styles.disabled,
           ])}
         >
-          <Text style={[styles.playText, !isPlaying && styles.playTextIdle]}>{isLoading ? "Loading sounds…" : isPlaying ? "Stop" : "Play"}</Text>
+          <Text style={[styles.playText, !isPlaying && styles.playTextIdle]}>{showLoadingLabel ? "Loading sounds…" : isPlaying ? "Stop" : "Play"}</Text>
         </Pressable>
 
         <View style={styles.tempoRow}>
