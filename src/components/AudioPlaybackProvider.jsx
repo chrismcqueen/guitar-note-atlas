@@ -191,7 +191,7 @@ export const AudioPlaybackProvider = ({ children }) => {
         const now = monotonicNow();
         if (now >= origin + beat * beatMs) {
           beat = Math.max(beat, Math.floor((now - origin) / beatMs));
-          if (beat < countBeats || next.accompaniment === "metronome") trigger("drum:hat", 0.35);
+          if (beat < countBeats || next.accompaniment === "metronome") trigger("drum:click", 0.3);
           else if (next.accompaniment === "drums") {
             trigger("drum:hat", 0.12);
             if ((beat - countBeats) % 4 === 0) trigger("drum:kick", 0.58);

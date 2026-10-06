@@ -85,6 +85,13 @@ def hat_renderer():
     return render
 
 
+def click_renderer(time, _duration):
+    # A tonal, short pulse distinguishes the metronome from the cymbal hiss.
+    attack = min(1.0, time / 0.001)
+    return math.sin(2 * math.pi * 1400 * time) * attack * math.exp(-100 * time)
+
+
+write("click.wav", 0.05, click_renderer)
 write("kick.wav", 0.28, kick_renderer())
 write("snare.wav", 0.30, snare_renderer())
 write("hat.wav", 0.38, hat_renderer())

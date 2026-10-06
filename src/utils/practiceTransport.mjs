@@ -9,7 +9,7 @@ export class NativeAudioTransport {
   constructor(AudioContext, AudioManager, callbacks) {
     this.context = new AudioContext();
     this.masterGain = this.context.createGain();
-    this.masterGain.gain.value = 0.58;
+    this.masterGain.gain.value = 1;
     this.masterGain.connect(this.context.destination);
     this.sessionReady = AudioManager.setAudioSessionActivity(true);
     this.callbacks = callbacks;
@@ -32,6 +32,9 @@ export class NativeAudioTransport {
 
   configure(config, resetPosition = false) {
     this.config = config;
+    // Reserve shared headroom only when voices can overlap. A solo guitar
+    // should not inherit the attenuation needed by the full drum mix.
+    this.masterGain.gain.value = config.accompaniment === "drums" ? 0.58 : config.accompaniment === "metronome" ? 0.8 : 1;
     if (resetPosition) this.audibleIndex = 0;
     if (this.active) {
       this.cancel();
@@ -45,18 +48,26 @@ export class NativeAudioTransport {
     const source = this.context.createBufferSource();
     const gain = this.context.createGain();
     source.buffer = buffer;
-    source.playbackRate.value = rate;
+    if (rate !== 1) source.playbackRate.value = rate;
     const length = Math.min(duration ?? buffer.duration / rate, buffer.duration / rate);
     gain.gain.setValueAtTime(0, when);
     gain.gain.linearRampToValueAtTime(volume, when + 0.004);
-    gain.gain.setValueAtTime(volume, Math.max(when + 0.004, when + length - 0.035));
-    gain.gain.linearRampToValueAtTime(0, when + length);
     source.connect(gain);
     gain.connect(this.masterGain);
-    source.start(when);
-    source.stop(when + length + 0.005);
+    // Use the previous sample-rendering path: only gate sustained guitar
+    // notes. Percussion already has its own fade and ends naturally.
+    if (duration !== undefined) {
+      gain.gain.setValueAtTime(volume, Math.max(when + 0.004, when + length - 0.035));
+      gain.gain.linearRampToValueAtTime(0, when + length);
+      source.start(when);
+      source.stop(when + length + 0.005);
+    } else {
+      source.start(when);
+    }
     this.sources.set(source, gain);
-    this.visual(() => { this.sources.delete(source); source.disconnect(); gain.disconnect(); }, when + length + 0.1);
+    // Let the native engine retire finished nodes. Disconnecting them on a
+    // JS timer mutates the live audio graph independently of the audio clock.
+    this.visual(() => { this.sources.delete(source); }, when + length + 0.1);
   }
 
   visual(task, when) {
@@ -101,7 +112,7 @@ export class NativeAudioTransport {
     }
     while (this.nextBeat < horizon) {
       const counting = this.beat < this.countBeats;
-      if (counting || accompaniment === "metronome") this.buffer("drum:hat", this.nextBeat, 0.35);
+      if (counting || accompaniment === "metronome") this.buffer("drum:click", this.nextBeat, 0.3);
       else if (accompaniment === "drums") {
         this.buffer("drum:hat", this.nextBeat, VOLUMES.hat);
         if ((this.beat - this.countBeats) % 4 === 0) this.buffer("drum:kick", this.nextBeat, VOLUMES.kick);
@@ -131,7 +142,7 @@ export class NativeAudioTransport {
   cancel() {
     if (this.scheduler) clearInterval(this.scheduler);
     this.scheduler = null;
-    this.sources.forEach((gain, source) => { try { source.stop(this.context.currentTime); source.disconnect(); gain.disconnect(); } catch (_) {} });
+    this.sources.forEach((_gain, source) => { try { source.stop(this.context.currentTime); } catch (_) {} });
     this.sources.clear();
     this.timers.forEach(clearTimeout);
     this.timers.clear();

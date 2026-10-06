@@ -23,7 +23,7 @@ const make = async (t, overrides={}) => {
   const counts = [];
   let ended = 0;
   const transport = new NativeAudioTransport(Context, {setAudioSessionActivity:async()=>{}}, {onNote:n=>heard.push(n), onCount:n=>counts.push(n),onEnded:()=>ended++});
-  await transport.load([['drum:hat','hat'],['drum:kick','kick'],['drum:snare','snare'],...notes.map(n=>[`guitar:${n.sample}`,n.location])]);
+  await transport.load([['drum:click','click'],['drum:hat','hat'],['drum:kick','kick'],['drum:snare','snare'],...notes.map(n=>[`guitar:${n.sample}`,n.location])]);
   transport.configure({plan:buildPositionSequence(notes,0), tempo:120,noteRate:'quarter',loop:true,notesEnabled:true,accompaniment:'off',countIn:true,...overrides});
   return {transport,heard,counts,ended:()=>ended};
 };
@@ -31,7 +31,7 @@ test('four count-in clicks precede the first root on the audio clock',async t=>{
   const {transport}=await make(t);
   transport.start();
   for(let n=0;n<20;n++){transport.context.currentTime=n/10;transport.tick();}
-  assert.deepEqual(transport.context.starts.filter(s=>s.key==='hat').map(s=>s.when),[0.1,0.6,1.1,1.6]);
+  assert.deepEqual(transport.context.starts.filter(s=>s.key==='click').map(s=>s.when),[0.1,0.6,1.1,1.6]);
   const first=transport.context.starts.find(s=>s.key==='root');
   assert.ok(Math.abs(first.when-2.1)<1e-9);
   transport.stop();

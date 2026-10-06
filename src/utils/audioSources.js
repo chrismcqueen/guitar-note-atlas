@@ -27,6 +27,7 @@ export const guitarSources = {
 };
 
 export const drumSources = {
+  click: require("../../assets/audio/drums/click.wav"),
   kick: require("../../assets/audio/drums/kick.wav"),
   snare: require("../../assets/audio/drums/snare.wav"),
   hat: require("../../assets/audio/drums/hat.wav"),
