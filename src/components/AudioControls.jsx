@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { OverlayStore, Store } from "../../Store";
 import { monotonicNow } from "../utils/audioClock.mjs";
@@ -11,35 +11,38 @@ import { getMenuVisualCenterX, phoneHeaderHeight, tabletHeaderHeight } from "./H
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 
 const CONTROL_HIT_SLOP = 3;
-const TRIGGER_HIT_SLOP = { bottom: 10, left: 8, right: 8, top: 0 };
 const LOADING_LABEL_DELAY_MS = 180;
 const TAP_TEMPO_RESET_MS = 2000;
 
 export const AudioTrigger = () => {
   const { dimensions, insets } = useContext(Store);
   const { showMenu } = useContext(OverlayStore);
-  const { drumsEnabled, isPlaying, openPopover } = useContext(AudioPlaybackStore);
+  const { canPlay, isLoading, isPlaying, openPopover, play, error } = useContext(AudioPlaybackStore);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const phoneTopInset = Platform.OS === "android" ? 0 : insets.top;
   const top = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + phoneTopInset) + 12;
-  const left = getMenuVisualCenterX(insets, isTablet) - 22;
+  const left = isTablet ? getMenuVisualCenterX(insets, true) - 22 : Math.max(insets.left, insets.right) + 8;
 
   if (showMenu) return null;
 
-  const audioActive = isPlaying || drumsEnabled;
-
   return (
-    <Pressable
-      android_disableSound
-      accessibilityLabel="Open audio player"
-      accessibilityRole="button"
-      accessibilityState={{ selected: audioActive }}
-      hitSlop={TRIGGER_HIT_SLOP}
-      onPress={openPopover}
-      style={withPressedOpacity([styles.trigger, styles.triggerIdle, { left, top }])}
-    >
-      <MixerIcon filled={false} />
-    </Pressable>
+    <View style={[styles.triggerGroup, { left, top }]}>
+      <Pressable
+        android_disableSound
+        accessibilityLabel={isPlaying ? "Pause audio" : isLoading ? "Cancel audio loading" : "Play audio"}
+        accessibilityRole="button"
+        accessibilityState={{ busy: isLoading, disabled: !canPlay && !isPlaying }}
+        disabled={!canPlay && !isPlaying}
+        onPress={play}
+        style={withPressedOpacity([styles.trigger, !isPlaying && styles.triggerIdle])}
+      >
+        <Text style={[styles.transportIcon, { color: isPlaying ? theme.colors.white : theme.colors.blue }]}>{isLoading ? "…" : isPlaying ? "Ⅱ" : "▶"}</Text>
+      </Pressable>
+      <Pressable android_disableSound accessibilityLabel="Expand audio settings" accessibilityRole="button" onPress={openPopover} style={withPressedOpacity([styles.trigger, styles.triggerIdle, styles.settingsTrigger])}>
+        <MixerIcon filled={false} />
+        {!!error && <View style={styles.errorDot} />}
+      </Pressable>
+    </View>
   );
 };
 
@@ -54,7 +57,13 @@ const MixerIcon = ({ filled }) => (
 export const AudioPopover = () => {
   const { dimensions, insets } = useContext(Store);
   const {
-    drumsEnabled,
+    accompaniment,
+    canPlay,
+    countIn,
+    countRemaining,
+    notesEnabled,
+    overview,
+    startOnRoot,
     error,
     isLoading,
     isPlaying,
@@ -63,7 +72,11 @@ export const AudioPopover = () => {
     play,
     popoverOpen,
     sequenceEmpty,
-    setDrumsEnabled,
+    setAccompaniment,
+    setCountIn,
+    setNotesEnabled,
+    setStartOnRoot,
+    stop,
     setLoopEnabled,
     setNoteRate,
     setPopoverOpen,
@@ -133,7 +146,7 @@ export const AudioPopover = () => {
         onPress={() => setPopoverOpen(false)}
         style={[styles.dismissLayer, { height: dimensions.height, width: dimensions.width }]}
       />
-      <View style={[styles.card, { left: cardLeft, top: cardTop, width: cardWidth }]}>
+      <View style={[styles.card, { left: cardLeft, top: cardTop, width: cardWidth, maxHeight: dimensions.height - cardTop - 12 }]}>
         <View style={styles.titleRow}>
           <Pressable android_disableSound accessibilityLabel="Close audio controls" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
             <Text style={styles.closeText}>×</Text>
@@ -142,20 +155,21 @@ export const AudioPopover = () => {
           <View accessible={false} style={styles.closeButton} />
         </View>
 
+        <ScrollView showsVerticalScrollIndicator contentContainerStyle={{ paddingBottom: 2 }}>
         <Pressable
           android_disableSound
           accessibilityRole="button"
-          accessibilityState={{ busy: isLoading, disabled: isLoading || sequenceEmpty }}
-          disabled={isLoading || sequenceEmpty}
+          accessibilityState={{ busy: isLoading, disabled: !canPlay && !isPlaying }}
+          disabled={!canPlay && !isPlaying}
           hitSlop={CONTROL_HIT_SLOP}
           onPress={play}
           style={withPressedOpacity([
             styles.playButton,
             !isPlaying && styles.playButtonIdle,
-            (showLoadingLabel || sequenceEmpty) && styles.disabled,
+            (!canPlay && !isPlaying) && styles.disabled,
           ])}
         >
-          <Text style={[styles.playText, !isPlaying && styles.playTextIdle]}>{showLoadingLabel ? "Loading sounds…" : isPlaying ? "Stop" : "Play"}</Text>
+          <Text style={[styles.playText, !isPlaying && styles.playTextIdle]}>{showLoadingLabel ? "Loading sounds…" : isPlaying ? "Pause" : "Play"}</Text>
         </Pressable>
 
         <View style={styles.tempoRow}>
@@ -207,19 +221,35 @@ export const AudioPopover = () => {
         </View>
 
         <View style={styles.toggleRow}>
+          <Toggle accessibilityLabel="Notes" label="Notes" onPress={() => setNotesEnabled(!notesEnabled)} selected={notesEnabled} />
           <Toggle accessibilityLabel="Loop" icon={require("../../assets/audio/icons/loop.png")} onPress={() => setLoopEnabled(!loopEnabled)} selected={loopEnabled} />
-          <Toggle accessibilityLabel="Drums" icon={require("../../assets/audio/icons/drums.png")} onPress={() => setDrumsEnabled(!drumsEnabled)} selected={drumsEnabled} />
+          <Toggle accessibilityLabel="Four-click count-in" label="Count in" onPress={() => setCountIn(!countIn)} selected={countIn} />
         </View>
-        {sequenceEmpty && <Text style={styles.message}>Select at least one note to play.</Text>}
+        <View style={styles.toggleRow}>
+          {[['off', 'Off'], ['metronome', 'Click'], ['drums', 'Drums']].map(([mode, label]) => (
+            <Toggle key={mode} accessibilityLabel={`Accompaniment ${label}`} label={label} selected={accompaniment === mode} onPress={() => setAccompaniment(mode)} />
+          ))}
+        </View>
+        <Text style={styles.message}>Accompaniment</Text>
+        <View style={styles.toggleRow}>
+          <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
+          <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />
+        </View>
+        <Pressable android_disableSound accessibilityLabel="Stop and reset audio" accessibilityRole="button" onPress={stop} style={withPressedOpacity(styles.resetButton)}><Text style={styles.tapTempoText}>Stop / Reset</Text></Pressable>
+        {countRemaining > 0 && <Text accessibilityLiveRegion="polite" style={styles.message}>Count in: {countRemaining}</Text>}
+        {overview && <Text style={styles.message}>Select a position to hear notes. The pulse continues in overview.</Text>}
+        {!overview && notesEnabled && sequenceEmpty && <Text style={styles.message}>Select at least one note to play.</Text>}
+        {!notesEnabled && accompaniment === "off" && !overview && <Text style={styles.message}>Choose Click or Drums to practice without notes.</Text>}
         {!!error && <Text style={styles.error}>{error}</Text>}
+        </ScrollView>
       </View>
     </View>
   );
 };
 
-const Toggle = ({ accessibilityLabel, icon, onPress, selected }) => (
+const Toggle = ({ accessibilityLabel, icon, label, onPress, selected }) => (
   <Pressable android_disableSound accessibilityLabel={accessibilityLabel} accessibilityRole="button" accessibilityState={{ selected }} hitSlop={CONTROL_HIT_SLOP} onPress={onPress} style={withPressedOpacity([styles.toggle, selected && styles.toggleSelected])}>
-    <Image source={icon} style={[styles.toggleIcon, selected && styles.toggleIconSelected]} />
+    {icon ? <Image source={icon} style={[styles.toggleIcon, selected && styles.toggleIconSelected]} /> : <Text style={[styles.toggleLabel, selected && { color: theme.colors.white }]}>{label}</Text>}
   </Pressable>
 );
 
@@ -276,6 +306,12 @@ const styles = StyleSheet.create({
   toggleIconSelected: { tintColor: theme.colors.white },
   toggleRow: { flexDirection: "row", gap: 8, marginTop: 12 },
   toggleSelected: { backgroundColor: theme.colors.blue, borderColor: theme.colors.blue },
+  triggerGroup: { position: "absolute", flexDirection: "row", gap: 6, zIndex: 300 },
+  settingsTrigger: { width: 38, height: 44, borderRadius: 8 },
+  errorDot: { position: "absolute", right: 0, top: 0, width: 8, height: 8, borderRadius: 4, backgroundColor: "#A12622" },
+  transportIcon: { fontSize: 22 },
+  toggleLabel: { fontSize: 14, color: theme.colors.blue, fontFamily: "proletarsk" },
+  resetButton: { alignItems: "center", padding: 8, marginTop: 8 },
   trigger: {
     alignItems: "center",
     backgroundColor: theme.colors.blue,
@@ -283,7 +319,6 @@ const styles = StyleSheet.create({
     elevation: 7,
     height: 44,
     justifyContent: "center",
-    position: "absolute",
     shadowColor: "#000",
     shadowOffset: { height: 3, width: 0 },
     shadowOpacity: 0.25,

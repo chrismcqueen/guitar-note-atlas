@@ -20,7 +20,7 @@ const TabletKeyTitle = ({ title }) => (
 );
 
 const KeySelector = ({ compact = false }) => {
-  const { globalState, setGlobalState } = useContext(Store);
+  const { dimensions, insets, globalState, setGlobalState } = useContext(Store);
 
   const handlePressArrow = (direction) => {
     const offset = nextKeyOffset(
@@ -52,12 +52,15 @@ const KeySelector = ({ compact = false }) => {
     );
   }
 
+  const audioSpace = globalState.options?.audioPlayer ? 96 : 0;
+  const availableTitleWidth = Math.max(140, dimensions.width - Math.max(insets.left, insets.right) * 2 - audioSpace - 162);
+
   return (
-    <View style={styles.titleContainer}>
+    <View style={[styles.titleContainer, { marginLeft: audioSpace }]}>
       <Pressable android_disableSound accessibilityLabel="Previous key" {...previousKeyPress} style={withPressedOpacity(styles.arrowContainer)}>
         <View style={[styles.arrow, styles.arrowLeft]}></View>
       </Pressable>
-      <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={styles.title}>
+      <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={[styles.title, { width: Math.min(430, availableTitleWidth) }]}>
         KEY CENTER - {globalState?.key.title}
       </Text>
       <Pressable android_disableSound accessibilityLabel="Next key" {...nextKeyPress} style={withPressedOpacity(styles.arrowContainer)}>

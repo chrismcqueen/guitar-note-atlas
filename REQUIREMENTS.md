@@ -29,7 +29,7 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 - Begin at the lowest root in that position, ascend to its highest playable selected note, descend through the root to its lowest playable selected note, then continue ascending and descending while looping.
 - Include applicable greyed-out notes below the starting root. Grey presentation alone must not exclude a note from the practice sequence.
 - Start from the root only at the beginning of the run; subsequent looping traverses the full position range rather than resetting at the root each cycle.
-- Retain one-time playback and looping options. The stopping point for a one-time root-start run remains to be specified.
+- Retain one-time playback and looping options. A one-time run stops after descending to the lowest selected note in the position.
 
 ### Show the exact note being practiced
 
@@ -46,20 +46,22 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 - Keep tight native audio scheduling on bundled iOS and Android builds.
 - The existing note sound is acceptable for now. Prefer readily available drum sounds rather than adding a large sample collection. Chris is willing to record guitar samples as a future refinement; recording is not a release dependency.
 
-## Proposals and unresolved decisions
+## Implementation decisions — October 6
 
-These ideas were raised tentatively and should not be treated as settled requirements:
+Lane requested implementation after reviewing the combined requirements. The following interpretations are implemented for review; Chris has not separately reviewed their final UI or transition behavior.
 
-| Topic | Source and direction | Decision still needed |
-| --- | --- | --- |
-| Mobile overview audio | Chris's 8:20 PM email suggests turning notes off while the metronome continues, then starting notes when a position is selected. | Confirm transition behavior, including drums, timing, and interaction with the user's notes-off setting. |
-| Count-in | The same email suggests four clicks before notes start after stopping and restarting. | Confirm whether to include it, whether it is optional, and when it repeats. |
-| Opening settings | Lane proposed long-press on play; Chris questioned discoverability and suggested a dedicated expand/collapse button. | Prefer an explicit expand/collapse affordance when designing the controls; exact layout and mobile placement need review. |
-| Pause versus stop | Voice memo requests play/pause; Lane's email proposed play/stop. | Define whether restarting resumes the sequence or begins again at the lowest root, and how count-in applies. |
-| Starting note option | Chris and Lane both mentioned a possible root/lowest-note toggle while cautioning against complexity. | Root-start is the requested default; the alternative toggle is optional. |
-| Missing root / duplicate pitches | The feedback does not define positions with no selected root or which location to play when multiple strings contain the same pitch. | Specify fallback and location ordering before implementation. |
-| Changes during playback | No explicit behavior was given for changing key, position, or selected notes during a run. | Define a musically predictable transition consistent with the overview proposal. |
-| Sound refinement | Chris may explore alternative drum sounds or record guitar. | Revisit after core practice behavior is working. |
+| Topic | Implemented behavior |
+| --- | --- |
+| Mobile overview audio | Suppress position notes without changing the saved Notes toggle. Keep the selected click/drums; when accompaniment is Off, use a click in overview. Selecting a position starts its notes if Notes is enabled. No playback highlight appears on the overview. |
+| Count-in | Optional four-click count-in, enabled by default, on Play and resume. Changes to position/settings during playback do not repeat the count-in. |
+| Settings access | Dedicated visible settings button beside the compact play/pause button. Popover content scrolls on short screens. |
+| Pause versus stop | Pause preserves sequence progress; Play resumes at the next note. Stop / Reset resets to the starting note. One-time playback stops the whole player after reaching the position's lowest selected note. |
+| Starting note | Root start by default, with a Lowest note option. After the initial pass, loops traverse the full range without repeating endpoint notes. |
+| Missing root / duplicate pitches | When the root is excluded, start at the lowest selected note. Play each distinct pitch once per traversal, choosing a deterministic location on the lower string when there is a unison. |
+| Key, position, or note selection changes | Restart the new position's sequence. Native accompaniment retains its beat grid; no new count-in. Notes-off remains respected. Handedness and upside-down options transform the drawing without changing the sounding pitch/location. |
+| Sounds | Reuse the existing guitar and drum assets. Pitch-shift samples by octaves where necessary to match guitar/bass register. Additional recordings remain optional. |
+
+Native device timing, pitch shifting, and layout still require device listening/visual checks before release. Browser verification and simulated native-clock tests do not replace those checks.
 
 ## Acceptance checks for the requested changes
 
@@ -68,7 +70,7 @@ These ideas were raised tentatively and should not be treated as settled require
 - Disabling note playback leaves the selected accompaniment usable independently.
 - Collapsing settings leaves a usable playback control and restores the normal screen space on phone and tablet.
 - Preserve the approved navigation and selection gestures while adding playback controls.
-- Verify the unresolved overview, count-in, and restart behaviors once decisions are made; do not infer approval from their inclusion here.
+- Verify overview transitions, count-in, pause/resume, and Stop / Reset against the implementation decisions above on native devices before release.
 
 ## Source references
 

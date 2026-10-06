@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useFonts } from "expo-font";
 import { useKeepAwake } from "expo-keep-awake";
-import { Animated, Dimensions, Easing, Pressable, StatusBar, StyleSheet, Text, View } from "react-native";
+import { Animated, Dimensions, Easing, Platform, Pressable, StatusBar, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import Header from "./src/components/Header";
@@ -57,7 +57,7 @@ const AppContent = () => {
   const { dimensions, globalState } = React.useContext(Store);
   const { showOptions } = React.useContext(OverlayStore);
   const { popoverOpen } = React.useContext(AudioPlaybackStore);
-  const screenBounds = orientScreenBounds(Dimensions.get("screen"), dimensions);
+  const screenBounds = Platform.OS === "web" ? dimensions : orientScreenBounds(Dimensions.get("screen"), dimensions);
   const optionsTransition = useRef(new Animated.Value(0)).current;
   const [optionsMounted, setOptionsMounted] = useState(false);
   const [viewport, setViewport] = useState(dimensions);

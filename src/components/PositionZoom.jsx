@@ -5,14 +5,14 @@ import Svg, { Circle, Defs, Line, LinearGradient, Rect, Stop, Text as SvgText } 
 import { PositionActionsStore, PositionStore, Store } from "../../Store";
 import coordinates from "../../data/positionCoordinates.json";
 import DegreeLabel from "./Neck/DegreeLabel";
-import { getScaleDegreeLabel, normalizePitchClass } from "../utils/music.mjs";
+import { getScaleDegreeLabel } from "../utils/music.mjs";
 import { getPosition, positionBandVerticalGeometry, positionStartFret, stepPosition } from "../utils/positions.mjs";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
 import { useRepeatPress } from "../utils/useRepeatPress";
+import { getPositionNotes } from "../utils/positionPlayback.mjs";
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 
-const LEGACY_DEGREE_ID = { 0: 0, 1: 1, 2: 2, 3: 3, 3.1: 12, 4: 4, 5: 5, 6: 6, 6.1: 13, 7: 7, 8: 8, 8.1: 14, 9: 9, 10: 10, 11: 11 };
 const WIDTH = 642;
 const SPACING_X = 100;
 const OFFSET_X = 21;
@@ -56,7 +56,7 @@ const PhoneNeckBackdrop = ({ bassMode, height, neckWidth, short, stringCount, wi
 
 const PositionZoom = ({ compact = false }) => {
   const { dimensions, globalState, insets } = useContext(Store);
-  const { activePitchClass } = useContext(AudioPlaybackStore);
+  const { activeNote } = useContext(AudioPlaybackStore);
   const { positionFret, positionId } = useContext(PositionStore);
   const { setPositionSelection, setShowPositionOverview } = useContext(PositionActionsStore);
   if (!globalState.options || !globalState.strings) return null;
@@ -115,16 +115,11 @@ const PositionZoom = ({ compact = false }) => {
     verticalOffset: baseVerticalOffset,
   });
 
-  const notes = globalState.scale.degrees.flatMap((degree) => {
-    const legacyId = LEGACY_DEGREE_ID[degree];
-    return (coordinates[legacyId]?.[positionId] ?? []).flatMap((coordinate, index) => {
-      if ((!bassMode && coordinate.y === 6) || (bassMode && coordinate.y < 2)) return [];
-      let string = bassMode ? (coordinate.y === 6 ? 0 : coordinate.y - 2) : coordinate.y;
-      if (globalState.options.upsideDown) string = stringCount - 1 - string;
-      const xIndex = globalState.options.leftHand ? fretCount - coordinate.x : coordinate.x;
-      return [{ ...coordinate, degree, key: `${degree}-${index}`, string, xIndex }];
-    });
-  });
+  const notes = getPositionNotes(coordinates, globalState.scale.degrees, globalState.key.key_offset, positionId, positionFret, bassMode).map((note) => ({
+    ...note,
+    string: globalState.options.upsideDown ? stringCount - 1 - note.stringIndex : note.stringIndex,
+    xIndex: globalState.options.leftHand ? fretCount - note.x : note.x,
+  }));
 
   const neck = (
     <Svg width="100%" height="100%" viewBox={`0 0 ${WIDTH} ${viewBoxHeight}`}>
@@ -148,13 +143,13 @@ const PositionZoom = ({ compact = false }) => {
         const y = verticalOffset + tabletGridOffset + note.string * renderedStringGap;
         const gray = note.color === "gray";
         const white = note.color === "white";
-        const fill = gray ? theme.colors.neckLightGray : white ? theme.colors.white : theme.colors.black;
+        const highlighted = activeNote?.location === note.location;
+        const fill = highlighted ? "#FFD84D" : gray ? theme.colors.neckLightGray : white ? theme.colors.white : theme.colors.black;
         const stroke = gray ? theme.colors.neckDarkGray : theme.colors.black;
-        const text = gray ? theme.colors.neckDarkGray : white ? theme.colors.black : theme.colors.white;
-        const highlighted = activePitchClass === normalizePitchClass(globalState.key.key_offset + Math.floor(note.degree));
+        const text = highlighted ? theme.colors.black : gray ? theme.colors.neckDarkGray : white ? theme.colors.black : theme.colors.white;
         return (
           <React.Fragment key={note.key}>
-            {highlighted && <Circle cx={x} cy={y} r={noteRadius + 4} fill="none" stroke={theme.colors.blue} strokeWidth={3} />}
+            {highlighted && <Circle cx={x} cy={y} r={noteRadius + 4} fill="none" stroke={theme.colors.black} strokeWidth={3} />}
             <Circle cx={x} cy={y} r={noteRadius} fill={fill} stroke={stroke} strokeWidth={gray ? Math.max(1, noteStrokeWidth - 1) : noteStrokeWidth} />
             {globalState.options.showScaleDegree && (
               <DegreeLabel
