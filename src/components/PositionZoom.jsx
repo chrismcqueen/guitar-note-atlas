@@ -145,11 +145,11 @@ const PositionZoom = ({ compact = false }) => {
         const white = note.color === "white";
         const highlighted = activeNote?.location === note.location;
         const fill = highlighted ? "#FFD84D" : gray ? theme.colors.neckLightGray : white ? theme.colors.white : theme.colors.black;
-        const stroke = gray ? theme.colors.neckDarkGray : theme.colors.black;
+        const stroke = highlighted ? "#FFD84D" : gray ? theme.colors.neckDarkGray : theme.colors.black;
         const text = highlighted ? theme.colors.black : gray ? theme.colors.neckDarkGray : white ? theme.colors.black : theme.colors.white;
         return (
           <React.Fragment key={note.key}>
-            {highlighted && <Circle cx={x} cy={y} r={noteRadius + 4} fill="none" stroke={theme.colors.black} strokeWidth={3} />}
+            {highlighted && <Circle cx={x} cy={y} r={noteRadius + 4} fill="none" stroke="#FFD84D" strokeWidth={3} />}
             <Circle cx={x} cy={y} r={noteRadius} fill={fill} stroke={stroke} strokeWidth={gray ? Math.max(1, noteStrokeWidth - 1) : noteStrokeWidth} />
             {globalState.options.showScaleDegree && (
               <DegreeLabel
