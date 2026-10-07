@@ -46,7 +46,6 @@ export const AudioPlaybackProvider = ({ children }) => {
   const preparationQueue = useRef(Promise.resolve());
   const previousGuitar = useRef(null);
   const notesRequested = useRef(false);
-  const accompanimentStartRequested = useRef(false);
   const fallbackTimeline = useRef(new PracticeTimeline());
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const overview = !isTablet && showPositionOverview;
@@ -74,7 +73,6 @@ export const AudioPlaybackProvider = ({ children }) => {
     command.current += 1;
     running.current = false;
     notesRequested.current = false;
-    accompanimentStartRequested.current = false;
     pauseAudio();
     fallbackIndex.current = 0;
     setIsPlaying(false);
@@ -246,15 +244,14 @@ export const AudioPlaybackProvider = ({ children }) => {
     } finally { if (mounted.current && command.current === id) setIsLoading(false); }
   }, [begin, pause, pauseAudio, prepare]);
   const play = useCallback(() => {
-    if ((running.current && notesRequested.current) || isLoading) pause();
-    else { notesRequested.current = true; void start(!running.current); }
+    if (running.current || isLoading) pause();
+    else { notesRequested.current = true; void start(); }
   }, [isLoading, pause, start]);
   const lastConfig = useRef(config);
   useEffect(() => {
     const previous = lastConfig.current;
     lastConfig.current = config;
-    if (running.current || accompanimentStartRequested.current) {
-      accompanimentStartRequested.current = false;
+    if (running.current) {
       void start(false, previous.plan !== config.plan || previous.notesEnabled !== config.notesEnabled);
     }
   }, [config, start]);
@@ -270,7 +267,6 @@ export const AudioPlaybackProvider = ({ children }) => {
       command.current += 1;
       running.current = false;
       notesRequested.current = false;
-      accompanimentStartRequested.current = false;
       if (fallbackTimer.current) clearInterval(fallbackTimer.current);
       fallbackTimer.current = null;
       timers.current.forEach(clearTimeout);
@@ -285,8 +281,7 @@ export const AudioPlaybackProvider = ({ children }) => {
 
   const update = useCallback((key, value) => setSettings((previous) => ({ ...previous, [key]: value })), []);
   const setAccompaniment = useCallback((mode) => {
-    if (!running.current && mode !== "off") accompanimentStartRequested.current = true;
-    setSettings(previous => ({ ...previous, accompaniment: running.current && previous.accompaniment === mode ? "off" : mode }));
+    setSettings(previous => previous.accompaniment === mode ? previous : { ...previous, accompaniment: mode });
   }, []);
   const value = {
     activeNote, countRemaining, error, isLoading, isPlaying, popoverOpen, overview, ...settings,

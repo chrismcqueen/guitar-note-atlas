@@ -231,7 +231,7 @@ export const AudioPopover = () => {
           ))}
         </View>
         <Text style={styles.message}>Accompaniment</Text>
-        <Text style={styles.message}>Click or Drums starts alone. Play adds notes; Stop resets everything.</Text>
+        <Text style={styles.message}>Choose Notes and accompaniment, then press Play. Stop resets everything.</Text>
         <View style={styles.toggleRow}>
           <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
           <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />

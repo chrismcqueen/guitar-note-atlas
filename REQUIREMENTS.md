@@ -44,7 +44,7 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 - Provide a notes-on/off toggle so users can practice with only a metronome or drum groove.
 - Retain adjustable tempo, tap tempo, rhythmic subdivisions, and independent accompaniment controls from the demonstrated player.
 - Keep tight native audio scheduling on bundled iOS and Android builds.
-- Lane's testing clarification: clicking Click or Drums must start accompaniment independently while notes remain stopped. Play adds the selected position notes; Stop affects everything and resets the sequence. Selecting a position during accompaniment-only playback must not start notes automatically.
+- Lane's revised control preference: choose Notes and accompaniment, then press Play to start. Click and Drums select a mode without starting playback. Stop affects everything and resets the sequence. With Notes off, Play runs only the selected accompaniment.
 - Notes, click and drums must share one musical grid and audio clock, retaining exact beat/subdivision alignment through tempo, subdivision, position and accompaniment changes.
 - The existing note sound is acceptable for now. Prefer readily available drum sounds rather than adding a large sample collection. Chris is willing to record guitar samples as a future refinement; recording is not a release dependency.
 
@@ -55,7 +55,7 @@ Lane requested implementation after reviewing the combined requirements. The fol
 | Topic | Implemented behavior |
 | --- | --- |
 | Mobile overview audio | Suppress position notes without changing the saved Notes toggle. Keep the selected click/drums; when accompaniment is Off, global Play uses a click in overview. Selecting a position starts its notes only if global Play requested notes. Accompaniment-only playback stays accompaniment-only. No playback highlight appears on the overview. |
-| Independent accompaniment | Clicking Click or Drums starts that accompaniment immediately, with no notes/count-in when global Play has not requested notes. Play adds notes at a shared beat boundary. Clicking the selected running accompaniment toggles it off. Stop affects notes and accompaniment together and resets the sequence. |
+| Accompaniment selection | Click and Drums select the accompaniment without starting playback. Selecting the current mode again keeps it selected; Off disables accompaniment. Play starts the selected Notes/accompaniment combination. While playing, mode changes apply on the shared beat grid. Stop affects everything and resets the sequence. |
 | Shared clock | One 12-tick-per-beat timeline represents every supported subdivision exactly. Both lanes derive timestamps from the same anchor. Live changes take effect at a shared beat boundary without starting separate clocks. |
 | Count-in | Optional four-click count-in, enabled by default, when starting from stopped. Changes to position/settings during playback do not repeat the count-in. |
 | Settings access | Dedicated visible settings button beside the compact play/stop button. Popover content scrolls on short screens. |
