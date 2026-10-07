@@ -4,70 +4,68 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import TitleSVG from "./TitleSVG";
 import NeckSVG from "./NeckSVG";
 
-import { Dimensions, Platform, StyleSheet, View } from "react-native";
+import { Dimensions, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { Store } from "../../../Store";
-import { storeGlobalState, removeStorage } from "../../utils/functions";
+import { storeGlobalState } from "../../utils/functions";
 import { theme } from "../../utils/theme";
 import { orientScreenBounds } from "../../utils/screenBounds.mjs";
 
-const Splash = ({ setLoading }) => {
+const initialValue = {
+  key: {
+    key_offset: 0,
+    title: "C",
+  },
+  scale: {
+    title: "Major Scale",
+    long_title: "Major Scale",
+    menu_title: "Major Scale",
+    degrees: [0, 2, 4, 5, 7, 9, 11],
+  },
+  strings: [4, 11, 7, 2, 9, 4],
+  options: {
+    showScaleDegree: true,
+    bassMode: false,
+    leftHand: false,
+    upsideDown: false,
+    hideAnchorFrets: false,
+    keyNavigation: "chromatic",
+    audioPlayer: false,
+  },
+  displayedTutorial: false,
+};
+
+const Splash = ({ setLoading, error, onRetry }) => {
   const { setGlobalState, setShowTutorialPrompt, dimensions } = useContext(Store);
 
-  const initialValue = {
-    key: {
-      key_offset: 0,
-      title: "C",
-    },
-    scale: {
-      title: "Major Scale",
-      long_title: "Major Scale",
-      menu_title: "Major Scale",
-      degrees: [0, 2, 4, 5, 7, 9, 11],
-    },
-    strings: [4, 11, 7, 2, 9, 4],
-    options: {
-      showScaleDegree: true,
-      bassMode: false,
-      leftHand: false,
-      upsideDown: false,
-      hideAnchorFrets: false,
-      keyNavigation: "chromatic",
-      audioPlayer: false,
-    },
-    displayedTutorial: false,
-  };
-
-  //check local storage for previous global state
-  const getLocalStorage = async () => {
-    try {
-      const value = await AsyncStorage.getItem("globalState");
-      const parsedValue = value !== null ? JSON.parse(value) : null;
-      if (parsedValue !== null) {
-        const migratedValue = {
-          ...initialValue,
-          ...parsedValue,
-          key: { ...initialValue.key, ...parsedValue.key },
-          scale: { ...initialValue.scale, ...parsedValue.scale },
-          options: { ...initialValue.options, ...parsedValue.options },
-        };
-        setGlobalState(migratedValue);
-        setShowTutorialPrompt(!migratedValue.displayedTutorial);
-      } else {
-        //if no ls, set to C major scale
-        setGlobalState(initialValue);
-        storeGlobalState(initialValue);
-        setShowTutorialPrompt(true);
-      }
-      setTimeout(() => setLoading(false), 500);
-    } catch (e) {
-      throw e;
-    }
-  };
-
-  //check for ls on mount
   useEffect(() => {
-    getLocalStorage();
-  }, []);
+    let cancelled = false;
+    let timer;
+    (async () => {
+      let next = initialValue;
+      try {
+        const value = await AsyncStorage.getItem("globalState");
+        const saved = value ? JSON.parse(value) : null;
+        if (saved) {
+          next = {
+            ...initialValue,
+            ...saved,
+            key: { ...initialValue.key, ...saved.key },
+            scale: { ...initialValue.scale, ...saved.scale },
+            options: { ...initialValue.options, ...saved.options },
+          };
+        } else {
+          void storeGlobalState(initialValue).catch(() => {});
+        }
+      } catch (_) {
+        // An unreadable preference must not prevent the app from starting.
+      }
+      if (cancelled) return;
+      setGlobalState(next);
+      setShowTutorialPrompt(!next.displayedTutorial);
+      timer = setTimeout(() => setLoading(false), 500);
+    })();
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [setGlobalState, setLoading, setShowTutorialPrompt]);
 
   const paddingLeft = dimensions.width / 100;
   const screenBounds = (Platform.OS === "web" ? dimensions : orientScreenBounds(Dimensions.get("screen"), dimensions));
@@ -82,6 +80,12 @@ const Splash = ({ setLoading }) => {
             <NeckSVG dimensions={dimensions} />
           </View>
         </View>
+        {!!error && <View style={styles.loadError}>
+          <Text style={styles.errorText}>{error}</Text>
+          <Pressable accessibilityRole="button" onPress={onRetry} style={styles.retryButton}>
+            <Text style={styles.errorText}>Retry</Text>
+          </Pressable>
+        </View>}
       </View>
     </>
   );
@@ -90,6 +94,9 @@ const Splash = ({ setLoading }) => {
 export default Splash;
 
 const styles = StyleSheet.create({
+  loadError: { alignItems: "center", bottom: 24, left: 16, position: "absolute", right: 16 },
+  errorText: { color: theme.colors.splashCream, fontSize: 16 },
+  retryButton: { borderColor: theme.colors.splashCream, borderRadius: 6, borderWidth: 1, marginTop: 10, paddingHorizontal: 20, paddingVertical: 10 },
   container: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: theme.colors.blue,

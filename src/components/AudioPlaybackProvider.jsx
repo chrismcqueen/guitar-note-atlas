@@ -57,6 +57,10 @@ export const AudioPlaybackProvider = ({ children }) => {
   const config = useMemo(() => ({ ...settings, plan, ...practiceAudioMode({ ...settings, overview }) }), [settings, plan, overview]);
   const configRef = useRef(config);
   configRef.current = config;
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [audioReady, setAudioReady] = useState(false);
+  const [startupError, setStartupError] = useState("");
+  const [preloadAttempt, setPreloadAttempt] = useState(0);
 
   const pauseAudio = useCallback(() => {
     if (fallbackTimer.current) clearInterval(fallbackTimer.current);
@@ -93,7 +97,9 @@ export const AudioPlaybackProvider = ({ children }) => {
         const value = { ...DEFAULTS, ...legacy, ...(saved ? JSON.parse(saved) : {}) };
         if (!cancelled) setSettings({ ...value, tempo: clampTempo(value.tempo), noteRate: normalizeNoteRate(value.noteRate),
           accompaniment: ["off", "metronome", "drums"].includes(value.accompaniment) ? value.accompaniment : "off" });
-      } catch (_) {} finally { if (!cancelled) readySettings.current = true; }
+      } catch (_) {} finally {
+        if (!cancelled) { readySettings.current = true; setSettingsLoaded(true); }
+      }
     })();
     setAudioModeAsync({ interruptionMode: "mixWithOthers", playsInSilentMode: true, shouldPlayInBackground: false }).catch(() => {});
     const listener = AppState.addEventListener("change", (state) => { if (state !== "active") stop(); });
@@ -122,10 +128,11 @@ export const AudioPlaybackProvider = ({ children }) => {
     }));
   }, []);
 
-  const prepare = useCallback(async (next) => {
+  const prepare = useCallback(async (next, { all = false, activate = true } = {}) => {
     if (!mounted.current) return;
     const entries = [
-      ...[...new Set(next.notesEnabled ? next.plan.notes.map((note) => note.sample) : [])].map((sample) => [`guitar:${sample}`, guitarSources[sample]]),
+      ...(all ? Object.entries(guitarSources) : [...new Set(next.notesEnabled ? next.plan.notes.map((note) => note.sample) : [])]
+        .map((sample) => [sample, guitarSources[sample]])).map(([sample, source]) => [`guitar:${sample}`, source]),
       ...Object.entries(drumSources).map(([key, source]) => [`drum:${key}`, source]),
     ];
     if (native.current === undefined) {
@@ -137,7 +144,10 @@ export const AudioPlaybackProvider = ({ children }) => {
     }
     if (native.current) {
       const transport = native.current;
-      try { await withTimeout(transport.load(entries, next), 15000); return; }
+      try {
+        await withTimeout(activate ? transport.load(entries, next) : transport.preload(entries, next), 15000);
+        return;
+      }
       catch (_) {
         if (native.current !== transport) return;
         native.current = null;
@@ -146,6 +156,27 @@ export const AudioPlaybackProvider = ({ children }) => {
     }
     await Promise.all(entries.map(([key, source]) => ensurePlayer(key, source)));
   }, [ensurePlayer]);
+
+  useEffect(() => {
+    if (audioReady || !settingsLoaded || !globalState.key || !globalState.scale) return;
+    let cancelled = false;
+    setStartupError("");
+    const initial = { ...config, notesEnabled: true };
+    const preparation = preparationQueue.current.catch(() => {}).then(() => prepare(initial, { all: true, activate: false }));
+    preparationQueue.current = preparation;
+    preparation.then(() => {
+      if (!cancelled && mounted.current) setAudioReady(true);
+    }).catch(() => {
+      if (!cancelled && mounted.current) setStartupError("Couldn’t load the sounds. Try again.");
+    });
+    return () => { cancelled = true; };
+  }, [audioReady, config, globalState.key, globalState.scale, prepare, preloadAttempt, settingsLoaded]);
+
+  const retryAudioLoad = useCallback(() => {
+    players.current.forEach((pool) => pool.forEach(dispose));
+    players.current.clear();
+    setPreloadAttempt(attempt => attempt + 1);
+  }, []);
 
   const trigger = useCallback((key, volume, rate = 1) => {
     const pool = players.current.get(key);
@@ -260,6 +291,8 @@ export const AudioPlaybackProvider = ({ children }) => {
   }, [globalState.options?.audioPlayer, stop]);
   useEffect(() => {
     mounted.current = true;
+    setAudioReady(false);
+    setStartupError("");
     setIsPlaying(false);
     setIsLoading(false);
     return () => {
@@ -284,6 +317,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     setSettings(previous => previous.accompaniment === mode ? previous : { ...previous, accompaniment: mode });
   }, []);
   const value = {
+    audioReady, startupError, retryAudioLoad,
     activeNote, countRemaining, error, isLoading, isPlaying, popoverOpen, overview, ...settings,
     loopEnabled: settings.loop, sequenceEmpty: plan.notes.length === 0,
     canPlay: (config.notesEnabled && plan.notes.length > 0) || config.accompaniment !== "off",

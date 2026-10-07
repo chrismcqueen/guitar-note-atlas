@@ -44,6 +44,7 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 - Provide a notes-on/off toggle so users can practice with only a metronome or drum groove.
 - Retain adjustable tempo, tap tempo, rhythmic subdivisions, and independent accompaniment controls from the demonstrated player.
 - Keep tight native audio scheduling on bundled iOS and Android builds.
+- Load audio during startup behind the splash. Keep the splash visible until fonts, saved settings, all bundled guitar/drum samples, and the initial position buffers are ready; provide Retry if audio loading fails.
 - Lane's revised control preference: choose Notes and accompaniment, then press Play to start. Click and Drums select a mode without starting playback. Stop affects everything and resets the sequence. With Notes off, Play runs only the selected accompaniment.
 - Notes, click and drums must share one musical grid and audio clock, retaining exact beat/subdivision alignment through tempo, subdivision, position and accompaniment changes.
 - The existing note sound is acceptable for now. Prefer readily available drum sounds rather than adding a large sample collection. Chris is willing to record guitar samples as a future refinement; recording is not a release dependency.
@@ -63,6 +64,7 @@ Lane requested implementation after reviewing the combined requirements. The fol
 | Starting note | Root start by default, with a Lowest note option. After the initial pass, loops traverse the full range without repeating endpoint notes. |
 | Missing root / duplicate pitches | When the root is excluded, start at the lowest selected note. Play each distinct pitch once per traversal, choosing a deterministic location on the lower string when there is a unison. |
 | Key, position, or note selection changes | Restart the new position's sequence. Native accompaniment retains its beat grid; no new count-in. Notes-off remains respected. Handedness and upside-down options transform the drawing without changing the sounding pitch/location. |
+| Startup | Mount the audio provider behind the splash and preload all 25 guitar samples plus four percussion sounds, including when the Audio Player option is off. Prepare the initial position from saved practice settings. Keep native output suspended until Play; retain the splash during loading and offer Retry on failure. |
 | Sounds | Reuse the existing guitar and drum assets. Prepare pitch shifts and attack/release envelopes as PCM before native playback. Native notes play at unity rate and end naturally, with no scheduled note truncation. Stop suspends the native output after its fade; the next Play resumes it before scheduling. Additional recordings remain optional. |
 
 Native device timing, pitch shifting, and layout still require device listening/visual checks before release. Browser verification and simulated native-clock tests do not replace those checks.
@@ -74,6 +76,7 @@ Native device timing, pitch shifting, and layout still require device listening/
 - Disabling note playback leaves the selected accompaniment usable independently.
 - Collapsing settings leaves a usable playback control and restores the normal screen space on phone and tablet.
 - Preserve the approved navigation and selection gestures while adding playback controls.
+- On a cold launch, verify the splash stays visible until audio is ready, including with delayed loading. A failed audio load keeps the splash visible with a working Retry button. Opening audio controls and choosing Click/Drums must stay silent until Play.
 - Verify overview transitions, count-in, stop/restart, and Stop / Reset against the implementation decisions above on native devices before release.
 
 ## Source references

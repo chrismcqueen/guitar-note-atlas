@@ -82,3 +82,12 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 
 - Lane revised the controls: Click and Drums now select a mode without starting playback. Pressing the selected mode keeps it selected; Off disables accompaniment. Play starts the selected Notes/accompaniment combination, and Stop resets everything.
 - All 84 tests and iOS/Android/web exports pass. Actual iPad checks verified that selecting Click/Drums stays stopped without loading, Notes-off Play starts accompaniment alone, live changes and repeated selection retain the running transport, Stop suspends output, and Notes-on Play starts notes and drums at an identical timestamp. All checks passed with no app error. Only iPad remains running for manual testing.
+
+
+### Load audio behind the splash — October 6, 2026
+
+- Mount the audio provider during startup and wait for fonts, saved global/practice settings, all 25 guitar samples and four percussion sounds, and the initial position PCM buffers before showing the app. Loading leaves the native output suspended; Play activates it and reuses the cached data. This runs even when the Audio Player option is disabled.
+- All 86 automated tests pass, including suspended preload, cached first-Play reuse, and decoding failure/retry. Production exports pass for iOS, Android, and web.
+- Actual cold iPad launch loaded all 29 sample buffers plus 21 prepared buffers before showing AppContent. Output remained suspended at clock zero with no playback or startup error.
+- Injected delayed preloading kept the splash visible with AppContent absent; releasing the load opened the app while output stayed suspended. Injected failures in both native decoding and the fallback kept the splash visible with an error and Retry. After restoring loading and retrying, all 29 fallback player pools loaded and the app appeared with no error.
+- Cold-restarted the iPad after the injected checks and confirmed its native transport again has all 29 samples loaded, output suspended at clock zero, and no startup error. Only iPad remains running for manual testing.

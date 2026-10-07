@@ -21,7 +21,8 @@ class Context {
   }
   state = 'suspended';
   suspends = 0;
-  async resume() { this.state = 'running'; }
+  resumes = 0;
+  async resume() { this.resumes++; this.state = 'running'; }
   async suspend() { this.suspends++; this.state = 'suspended'; }
   async close() { this.state = 'closed'; }
   async decodeAudioData(key) { const b=this.createBuffer(1,3000,1000);b.key=key;return b; }
@@ -205,5 +206,39 @@ test('resume waits for an idle suspension already in progress',async t=>{
   finishSuspending();
   await loading;
   assert.equal(resumes,1);
+  await transport.close();
+});
+
+test('startup preload decodes and prepares notes without activating output; Play reuses them',async()=>{
+  let activations=0;
+  const transport=new NativeAudioTransport(Context,{setAudioSessionActivity:async()=>{activations++;}}, {onNote(){}});
+  const entries=[['guitar:8','root'],['drum:click','click']];
+  const config={...transport.config,countIn:false,plan:{notes:[{sample:8,playbackRate:1}],loopStart:0,oneShotLength:1}};
+  await transport.preload(entries,config);
+  const prepared=transport.prepared('guitar:8',0.92,0.6,1);
+  assert.equal(activations,0);
+  assert.equal(transport.context.resumes,0);
+  assert.equal(transport.context.state,'suspended');
+  assert.equal(transport.buffers.size,2);
+  assert.ok(prepared);
+  transport.context.decodeAudioData=async()=>{throw Error('A cached sample must not be decoded again');};
+  await transport.load(entries,config);
+  assert.equal(activations,1);
+  assert.equal(transport.context.resumes,1);
+  assert.equal(transport.prepared('guitar:8',0.92,0.6,1),prepared);
+  await transport.close();
+});
+
+test('a failed preload stays suspended and can be retried',async()=>{
+  let activations=0;
+  const transport=new NativeAudioTransport(Context,{setAudioSessionActivity:async()=>{activations++;}}, {onNote(){}});
+  const decode=transport.context.decodeAudioData;
+  transport.context.decodeAudioData=async()=>{throw Error('Temporary decode failure');};
+  await assert.rejects(transport.preload([['guitar:8','root']]),/Temporary decode failure/);
+  assert.equal(activations,0);
+  assert.equal(transport.context.state,'suspended');
+  transport.context.decodeAudioData=decode;
+  await transport.preload([['guitar:8','root']]);
+  assert.equal(transport.buffers.size,1);
   await transport.close();
 });

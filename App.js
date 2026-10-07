@@ -35,23 +35,27 @@ export default function App() {
     opusChords: require("./src/utils/fonts/OpusChordsSansStd.otf"),
     proletarsk: require("./src/utils/fonts/Proletarsk.ttf"),
   });
-  const [loading, setLoading] = useState(true);
 
   return (
     <SafeAreaProvider style={styles.safeAreaProvider}>
       <StatusBar hidden />
       <RotatedViewport>
         <StoreProvider>
-          {!fontsLoaded || loading ? (
-            <Splash setLoading={setLoading} />
-          ) : (
-            <AudioPlaybackProvider><AppContent /></AudioPlaybackProvider>
-          )}
+          <AudioPlaybackProvider><AppStartup fontsLoaded={fontsLoaded} /></AudioPlaybackProvider>
         </StoreProvider>
       </RotatedViewport>
     </SafeAreaProvider>
   );
 }
+
+const AppStartup = ({ fontsLoaded }) => {
+  const [loading, setLoading] = useState(true);
+  const { audioReady, startupError, retryAudioLoad } = React.useContext(AudioPlaybackStore);
+  if (!fontsLoaded || loading || !audioReady) {
+    return <Splash setLoading={setLoading} error={startupError} onRetry={retryAudioLoad} />;
+  }
+  return <AppContent />;
+};
 
 const AppContent = () => {
   const { dimensions, globalState } = React.useContext(Store);

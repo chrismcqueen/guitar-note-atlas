@@ -14,7 +14,8 @@ export class NativeAudioTransport {
     this.masterGain = this.context.createGain();
     this.masterGain.gain.value = 0.8;
     this.masterGain.connect(this.context.destination);
-    this.sessionReady = AudioManager.setAudioSessionActivity(true);
+    this.audioManager = AudioManager;
+    this.sessionReady = null;
     this.callbacks = callbacks;
     this.buffers = new Map();
     this.rendered = new Map();
@@ -28,17 +29,22 @@ export class NativeAudioTransport {
     this.config = { plan: { notes: [] }, loop: true, tempo: 100, noteRate: 'quarter', notesEnabled: true, accompaniment: 'off', countIn: true };
   }
 
+  async preload(entries, config = this.config) {
+    await Promise.all(entries.map(async ([key, source]) => {
+      if (!this.buffers.has(key)) this.buffers.set(key, await this.context.decodeAudioData(source));
+    }));
+    this.prepare(config);
+  }
+
   async load(entries, config = this.config) {
     this.cancelIdleSuspension();
+    this.sessionReady ??= this.audioManager.setAudioSessionActivity(true);
     await this.sessionReady;
     // If a previous Stop is already suspending the driver, finish that first
     // so its completion cannot suspend the next playback run.
     await this.idleSuspension;
     await this.context.resume();
-    await Promise.all(entries.map(async ([key, source]) => {
-      if (!this.buffers.has(key)) this.buffers.set(key, await this.context.decodeAudioData(source));
-    }));
-    this.prepare(config);
+    await this.preload(entries, config);
   }
 
   prepared(key, volume, duration, rate = 1) {
