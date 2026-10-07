@@ -1,11 +1,12 @@
-import { millisecondsPerBeat, millisecondsPerNote } from "./audioSequence.mjs";
-import { playbackNoteAt } from "./positionPlayback.mjs";
+import { millisecondsPerNote } from './audioSequence.mjs';
+import { PracticeTimeline } from './practiceTimeline.mjs';
+import { renderNotePcm } from './notePcm.mjs';
 
 const LEAD = 0.1;
 const STOP_FADE = 0.012;
-const VOLUMES = { hat: 0.08, kick: 0.48, snare: 0.45 };
+const VOLUMES = { hat: 0.08, kick: 0.48, snare: 0.45, click: 0.3 };
+const renderedKey = (key, rate, duration, volume) => `${key}:${rate}:${duration === undefined ? 'full' : Math.round(duration * 1e6)}:${volume}`;
 
-// The audio clock owns timing; timers only mirror the audible note in the UI.
 export class NativeAudioTransport {
   constructor(AudioContext, AudioManager, callbacks) {
     this.context = new AudioContext();
@@ -15,63 +16,73 @@ export class NativeAudioTransport {
     this.sessionReady = AudioManager.setAudioSessionActivity(true);
     this.callbacks = callbacks;
     this.buffers = new Map();
+    this.rendered = new Map();
     this.sources = new Map();
     this.timers = new Set();
-    this.scheduler = null;
+    this.timeline = new PracticeTimeline();
     this.active = false;
     this.audibleIndex = 0;
-    this.config = { plan: { notes: [] }, loop: true, tempo: 100, noteRate: "quarter", notesEnabled: true, accompaniment: "off", countIn: true };
+    this.config = { plan: { notes: [] }, loop: true, tempo: 100, noteRate: 'quarter', notesEnabled: true, accompaniment: 'off', countIn: true };
   }
 
-  async load(entries) {
+  async load(entries, config = this.config) {
     await this.sessionReady;
     await this.context.resume();
     await Promise.all(entries.map(async ([key, source]) => {
       if (!this.buffers.has(key)) this.buffers.set(key, await this.context.decodeAudioData(source));
     }));
+    this.prepare(config);
+  }
+
+  prepared(key, volume, duration, rate = 1) {
+    const original = this.buffers.get(key);
+    if (!original) return null;
+    const id = renderedKey(key, rate, duration, volume);
+    if (!this.rendered.has(id)) {
+      this.rendered.set(id, renderNotePcm(this.context, original, rate, duration, volume));
+      if (this.rendered.size > 100) this.rendered.delete(this.rendered.keys().next().value);
+    }
+    return this.rendered.get(id);
+  }
+
+  prepare(config) {
+    for (const [key, volume] of Object.entries(VOLUMES)) this.prepared(`drum:${key}`, volume);
+    if (config.notesEnabled) {
+      const duration = millisecondsPerNote(config.tempo, config.noteRate) / 1000;
+      const volume = config.accompaniment === 'drums' ? 0.64 : 0.92;
+      for (const note of config.plan.notes) this.prepared(`guitar:${note.sample}`, volume, duration, note.playbackRate);
+    }
   }
 
   configure(config, resetPosition = false) {
-    const previous = this.config;
+    this.prepare(config);
     this.config = config;
-    if (resetPosition) this.audibleIndex = 0;
-    if (this.active && (resetPosition || previous.accompaniment !== config.accompaniment || previous.notesEnabled !== config.notesEnabled)) {
-      this.cancel();
-      this.start(false, true);
-    }
-    // Tempo, subdivision and loop changes apply to the next unscheduled
-    // event. Keep the current note and already queued events intact.
+    if (this.active) this.timeline.configure(config, this.context.currentTime, resetPosition);
+    else if (resetPosition) this.audibleIndex = 0;
   }
 
+  get nextBeat() { return this.timeline.nextBeat; }
+  get nextNote() { return this.timeline.nextNote; }
+  get countBeats() { return this.timeline.countBeats; }
+  get origin() { return this.timeline.anchorTime; }
+
   buffer(key, when, volume, duration, rate = 1) {
-    const buffer = this.buffers.get(key);
+    const buffer = this.prepared(key, volume, duration, rate);
     if (!buffer) return;
     const source = this.context.createBufferSource();
-    const gain = this.context.createGain();
     const release = this.context.createGain();
     release.gain.value = 1;
     source.buffer = buffer;
-    if (rate !== 1) source.playbackRate.value = rate;
-    const length = Math.min(duration ?? buffer.duration / rate, buffer.duration / rate);
-    gain.gain.setValueAtTime(0, when);
-    gain.gain.linearRampToValueAtTime(volume, when + 0.004);
-    source.connect(gain);
-    gain.connect(release);
+    source.connect(release);
     release.connect(this.masterGain);
-    // Use the previous sample-rendering path: only gate sustained guitar
-    // notes. Percussion already has its own fade and ends naturally.
-    if (duration !== undefined) {
-      gain.gain.setValueAtTime(volume, Math.max(when + 0.004, when + length - 0.035));
-      gain.gain.linearRampToValueAtTime(0, when + length);
-      source.start(when);
-      source.stop(when + length + 0.005);
-    } else {
-      source.start(when);
-    }
-    this.sources.set(source, { release, when });
-    // Let the native engine retire finished nodes. Disconnecting them on a
-    // JS timer mutates the live audio graph independently of the audio clock.
-    this.visual(() => { this.sources.delete(source); }, when + length + 0.1);
+    source.onEnded = () => {
+      this.sources.delete(source);
+      source.onEnded = null;
+      source.disconnect();
+      release.disconnect();
+    };
+    source.start(when);
+    this.sources.set(source, { release, when, end: when + buffer.duration, key });
   }
 
   visual(task, when) {
@@ -79,96 +90,67 @@ export class NativeAudioTransport {
     this.timers.add(timer);
   }
 
-  start(count = true, preserveClock = false) {
+  start(count = true) {
+    if (this.active) return;
     this.active = true;
-    this.ending = false;
-    this.index = this.audibleIndex;
-    this.beat = 0;
-    const now = this.context.currentTime + LEAD;
-    const beatSeconds = millisecondsPerBeat(this.config.tempo) / 1000;
-    const previousOrigin = this.origin;
-    this.origin = preserveClock && previousOrigin !== undefined ? previousOrigin : now;
-    this.countBeats = count && this.config.countIn ? 4 : 0;
-    if (preserveClock) this.beat = Math.max(0, Math.ceil((now - this.origin) / beatSeconds));
-    this.nextBeat = this.origin + this.beat * beatSeconds;
-    this.nextNote = this.nextBeat + this.countBeats * beatSeconds;
+    this.timeline.start(this.context.currentTime + LEAD, this.config, count, this.audibleIndex);
     this.callbacks.onNote(null);
     this.tick();
-    if (!this.scheduler) this.scheduler = setInterval(() => this.tick(), 40);
+    this.scheduler = setInterval(() => this.tick(), 40);
+  }
+
+  fadeVoices(when, predicate = () => true) {
+    this.sources.forEach((voice, source) => {
+      const { release, when: start, end, key, fadeAt = Infinity } = voice;
+      if (!predicate(key) || end <= when || fadeAt <= when) return;
+      voice.fadeAt = when;
+      if (start <= when) {
+        // An earlier stop can replace a future release, but an ongoing release
+        // must never jump back to full volume when Stop follows Pause.
+        release.gain.cancelScheduledValues(when);
+        release.gain.setValueAtTime(1, when);
+        release.gain.linearRampToValueAtTime(0, when + STOP_FADE);
+        source.stop(when + STOP_FADE + 0.005);
+      } else source.stop(when);
+    });
   }
 
   tick() {
-    if (!this.active || this.ending) return;
-    const horizon = this.context.currentTime + 0.25;
-    const { plan, tempo, noteRate, loop, notesEnabled, accompaniment } = this.config;
-    const beatSeconds = millisecondsPerBeat(tempo) / 1000;
-    const noteSeconds = millisecondsPerNote(tempo, noteRate) / 1000;
+    if (!this.active) return;
     const now = this.context.currentTime;
-    if (this.nextBeat < now - 0.03) {
-      const missed = Math.ceil((now - this.nextBeat) / beatSeconds);
-      this.beat += missed;
-      this.nextBeat += missed * beatSeconds;
-    }
-    if (this.nextNote < now - 0.03) {
-      const missed = Math.ceil((now - this.nextNote) / noteSeconds);
-      this.index += missed;
-      this.nextNote += missed * noteSeconds;
-    }
-    while (this.nextBeat < horizon) {
-      const counting = this.beat < this.countBeats;
-      if (counting || accompaniment === "metronome") this.buffer("drum:click", this.nextBeat, 0.3);
-      else if (accompaniment === "drums") {
-        this.buffer("drum:hat", this.nextBeat, VOLUMES.hat);
-        if ((this.beat - this.countBeats) % 4 === 0) this.buffer("drum:kick", this.nextBeat, VOLUMES.kick);
-        if ((this.beat - this.countBeats) % 4 === 2) this.buffer("drum:snare", this.nextBeat, VOLUMES.snare);
+    for (const event of this.timeline.events(now, now + 0.25)) {
+      const { time, config } = event;
+      if (event.kind === 'change') {
+        this.fadeVoices(time, key => key.startsWith('guitar:') ? event.fadeNotes : config.accompaniment !== 'drums');
+        this.visual(() => { if (!config.notesEnabled) this.callbacks.onNote(null); }, time);
+      } else if (event.kind === 'beat') {
+        if (event.count || config.accompaniment === 'metronome') this.buffer('drum:click', time, VOLUMES.click);
+        else if (config.accompaniment === 'drums') {
+          this.buffer('drum:hat', time, VOLUMES.hat);
+          if ((event.beat - this.timeline.countBeats) % 4 === 0) this.buffer('drum:kick', time, VOLUMES.kick);
+          if ((event.beat - this.timeline.countBeats) % 4 === 2) this.buffer('drum:snare', time, VOLUMES.snare);
+        }
+        this.visual(() => this.callbacks.onCount?.(event.count), time);
+      } else if (event.kind === 'note') {
+        this.buffer(`guitar:${event.note.sample}`, time, config.accompaniment === 'drums' ? 0.64 : 0.92, event.duration, event.note.playbackRate);
+        this.visual(() => { this.audibleIndex = event.index + 1; this.callbacks.onNote(event.note); }, time);
+      } else if (event.kind === 'end') {
+        this.visual(() => { this.stop(); this.callbacks.onEnded(); }, time);
       }
-      const remaining = counting ? this.countBeats - this.beat : 0;
-      this.visual(() => this.callbacks.onCount?.(remaining), this.nextBeat);
-      this.beat += 1;
-      this.nextBeat += beatSeconds;
-    }
-    if (!notesEnabled) return;
-    while (this.nextNote < horizon) {
-      const note = playbackNoteAt(plan, this.index, loop);
-      if (!note) {
-        this.ending = true;
-        this.visual(() => { this.stop(); this.callbacks.onEnded(); }, this.nextNote);
-        break;
-      }
-      // Bound the sum of guitar, kick/snare and hat below full scale.
-      this.buffer(`guitar:${note.sample}`, this.nextNote, accompaniment === "drums" ? 0.64 : 0.92, noteSeconds, note.playbackRate);
-      const index = this.index;
-      this.visual(() => { this.audibleIndex = index + 1; this.callbacks.onNote(note); }, this.nextNote);
-      this.index += 1;
-      this.nextNote += noteSeconds;
     }
   }
 
   cancel() {
-    if (this.scheduler) clearInterval(this.scheduler);
+    clearInterval(this.scheduler);
     this.scheduler = null;
-    const now = this.context.currentTime;
-    this.sources.forEach(({ release, when }, source) => {
-      try {
-        if (when <= now) {
-          // This gain has no attack/release automation to cancel. Native
-          // cancelAndHoldAtTime on the envelope caused an abrupt level drop.
-          release.gain.setValueAtTime(1, now);
-          release.gain.linearRampToValueAtTime(0, now + STOP_FADE);
-          source.stop(now + STOP_FADE + 0.005);
-        } else {
-          source.stop(now);
-        }
-      } catch (_) {}
-    });
-    this.sources.clear();
+    this.fadeVoices(this.context.currentTime);
     this.timers.forEach(clearTimeout);
     this.timers.clear();
     this.callbacks.onNote(null);
     this.callbacks.onCount?.(0);
   }
 
-  pause() { this.active = false; this.cancel(); }
-  stop() { this.pause(); this.audibleIndex = 0; this.origin = undefined; }
-  async close() { this.stop(); await this.context.close(); }
+  pause() { this.active = false; this.timeline.active = false; this.cancel(); }
+  stop() { this.pause(); this.audibleIndex = 0; }
+  async close() { this.stop(); await this.context.close(); this.sources.clear(); this.rendered.clear(); }
 }

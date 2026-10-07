@@ -7,9 +7,10 @@ import { PositionStore, PositionVisibilityStore, Store } from "../../Store";
 import coordinates from "../../data/positionCoordinates.json";
 import { guitarSources, drumSources } from "../utils/audioSources";
 import { monotonicNow } from "../utils/audioClock.mjs";
+import { PracticeTimeline } from "../utils/practiceTimeline.mjs";
 import { createNativeAudioTransport } from "../utils/nativeAudioTransport";
-import { buildPositionSequence, getPositionNotes, playbackNoteAt, practiceAudioMode } from "../utils/positionPlayback.mjs";
-import { clampTempo, DEFAULT_NOTE_RATE, DEFAULT_TEMPO, millisecondsPerBeat, millisecondsPerNote, normalizeNoteRate } from "../utils/audioSequence.mjs";
+import { buildPositionSequence, getPositionNotes, practiceAudioMode } from "../utils/positionPlayback.mjs";
+import { clampTempo, DEFAULT_NOTE_RATE, DEFAULT_TEMPO, millisecondsPerNote, normalizeNoteRate } from "../utils/audioSequence.mjs";
 
 export const AudioPlaybackStore = createContext(null);
 const DEFAULTS = { tempo: DEFAULT_TEMPO, noteRate: DEFAULT_NOTE_RATE, loop: true, notesEnabled: true, accompaniment: "off", countIn: true, startOnRoot: true };
@@ -44,6 +45,9 @@ export const AudioPlaybackProvider = ({ children }) => {
   const voiceRuns = useRef(new WeakMap());
   const preparationQueue = useRef(Promise.resolve());
   const previousGuitar = useRef(null);
+  const notesRequested = useRef(false);
+  const accompanimentStartRequested = useRef(false);
+  const fallbackTimeline = useRef(new PracticeTimeline());
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const overview = !isTablet && showPositionOverview;
   const positionNotes = useMemo(() => getPositionNotes(coordinates, globalState.scale?.degrees, globalState.key?.key_offset,
@@ -69,6 +73,8 @@ export const AudioPlaybackProvider = ({ children }) => {
   const pause = useCallback(() => {
     command.current += 1;
     running.current = false;
+    notesRequested.current = false;
+    accompanimentStartRequested.current = false;
     pauseAudio();
     setIsPlaying(false);
     setIsLoading(false);
@@ -117,7 +123,7 @@ export const AudioPlaybackProvider = ({ children }) => {
         if (Date.now() > deadline) throw new Error("Audio took too long to load.");
         await new Promise((resolve) => setTimeout(resolve, 25));
       }
-      await player.seekTo(0, 0, 0);
+      if (!running.current) await player.seekTo(0, 0, 0);
     }));
   }, []);
 
@@ -131,15 +137,16 @@ export const AudioPlaybackProvider = ({ children }) => {
       native.current = createNativeAudioTransport({
         onNote: (note) => startTransition(() => setActiveNote(note)),
         onCount: (count) => startTransition(() => setCountRemaining(count)),
-        onEnded: () => { running.current = false; fallbackIndex.current = 0; setIsPlaying(false); },
+        onEnded: () => { running.current = false; notesRequested.current = false; fallbackIndex.current = 0; setIsPlaying(false); },
       });
     }
     if (native.current) {
-      try { await withTimeout(native.current.load(entries), 5000); return; }
+      const transport = native.current;
+      try { await withTimeout(transport.load(entries, next), 15000); return; }
       catch (_) {
-        const failed = native.current;
+        if (native.current !== transport) return;
         native.current = null;
-        void failed.close().catch(() => {});
+        void transport.close().catch(() => {});
       }
     }
     await Promise.all(entries.map(([key, source]) => ensurePlayer(key, source)));
@@ -176,39 +183,29 @@ export const AudioPlaybackProvider = ({ children }) => {
   const begin = useCallback((next, count) => {
     if (native.current) {
       native.current.configure(next);
-      native.current.start(count, !count);
+      native.current.start(count);
       return;
     }
-    const origin = monotonicNow();
-    const countBeats = count && next.countIn ? 4 : 0;
-    const beatMs = millisecondsPerBeat(next.tempo);
-    const noteMs = millisecondsPerNote(next.tempo, next.noteRate);
-    let beat = 0;
-    let noteTime = origin + countBeats * beatMs;
+    const timeline = fallbackTimeline.current;
+    timeline.start(monotonicNow() / 1000 + 0.1, next, count, fallbackIndex.current);
     const tick = () => {
       if (!running.current) return;
       try {
-        const now = monotonicNow();
-        if (now >= origin + beat * beatMs) {
-          beat = Math.max(beat, Math.floor((now - origin) / beatMs));
-          if (beat < countBeats || next.accompaniment === "metronome") trigger("drum:click", 0.3);
-          else if (next.accompaniment === "drums") {
-            trigger("drum:hat", 0.12);
-            if ((beat - countBeats) % 4 === 0) trigger("drum:kick", 0.58);
-            if ((beat - countBeats) % 4 === 2) trigger("drum:snare", 0.52);
-          }
-          setCountRemaining(beat < countBeats ? countBeats - beat : 0);
-          beat += 1;
-        }
-        if (next.notesEnabled && now >= noteTime) {
-          const missed = Math.max(0, Math.floor((now - noteTime) / noteMs));
-          fallbackIndex.current += missed;
-          const note = playbackNoteAt(next.plan, fallbackIndex.current, next.loop);
-          if (!note) return stop();
-          trigger(`guitar:${note.sample}`, 0.92, note.playbackRate);
-          setActiveNote(note);
-          fallbackIndex.current += 1;
-          noteTime += (missed + 1) * noteMs;
+        const now = monotonicNow() / 1000;
+        for (const event of timeline.events(now, now + 0.000001)) {
+          if (event.kind === "beat") {
+            if (event.count || event.config.accompaniment === "metronome") trigger("drum:click", 0.3);
+            else if (event.config.accompaniment === "drums") {
+              trigger("drum:hat", 0.08);
+              if ((event.beat - timeline.countBeats) % 4 === 0) trigger("drum:kick", 0.48);
+              if ((event.beat - timeline.countBeats) % 4 === 2) trigger("drum:snare", 0.45);
+            }
+            setCountRemaining(event.count);
+          } else if (event.kind === "note") {
+            trigger(`guitar:${event.note.sample}`, event.config.accompaniment === "drums" ? 0.64 : 0.92, event.note.playbackRate);
+            setActiveNote(event.note);
+            fallbackIndex.current = event.index + 1;
+          } else if (event.kind === "end") return stop();
         }
       } catch (failure) { setError(failure.message || "Unable to play audio."); stop(); }
     };
@@ -218,59 +215,82 @@ export const AudioPlaybackProvider = ({ children }) => {
 
   const start = useCallback(async (count = true, resetPosition = false) => {
     const id = ++command.current;
-    const preservingNativeClock = running.current && native.current && !count;
-    if (!preservingNativeClock) pauseAudio();
+    const preservingClock = running.current && !count;
+    if (!preservingClock) pauseAudio();
     if (resetPosition) { fallbackIndex.current = 0; if (native.current) native.current.audibleIndex = 0; }
     setError("");
     setIsLoading(true);
     try {
       const next = configRef.current;
-      if ((!next.notesEnabled || !next.plan.notes.length) && next.accompaniment === "off") {
+      const playable = { ...next, notesEnabled: notesRequested.current && next.notesEnabled && next.plan.notes.length > 0 };
+      if (!playable.notesEnabled && playable.accompaniment === "off") {
         pause(); return;
       }
       // Empty note selections can still use the selected accompaniment.
-      const playable = { ...next, notesEnabled: next.notesEnabled && next.plan.notes.length > 0 };
       // Serialize loads/seeks so a superseded settings update cannot rewind
       // voices after the newest command has begun playing.
       const preparation = preparationQueue.current.catch(() => {}).then(() => prepare(playable));
       preparationQueue.current = preparation;
       await preparation;
       if (!mounted.current || command.current !== id) return;
-      if (next !== configRef.current) { void start(count, true); return; }
-      if (preservingNativeClock && native.current) {
-        native.current.configure(playable, resetPosition);
-        setIsPlaying(true);
+      if (next !== configRef.current) { void start(count, resetPosition); return; }
+      if (preservingClock) {
+        if (native.current) native.current.configure(playable, resetPosition);
+        else fallbackTimeline.current.configure(playable, monotonicNow() / 1000, resetPosition);
+        setIsPlaying(notesRequested.current);
         return;
       }
       if (resetPosition && native.current) native.current.audibleIndex = 0;
       running.current = true;
-      setIsPlaying(true);
+      setIsPlaying(notesRequested.current);
       begin(playable, count);
     } catch (failure) {
       if (mounted.current && command.current === id) { setError(failure.message || "Unable to load audio."); pause(); }
     } finally { if (mounted.current && command.current === id) setIsLoading(false); }
   }, [begin, pause, pauseAudio, prepare]);
-  const play = useCallback(() => { if (running.current || isLoading) pause(); else void start(); }, [isLoading, pause, start]);
+  const play = useCallback(() => {
+    if ((running.current && notesRequested.current) || isLoading) pause();
+    else { notesRequested.current = true; void start(!running.current); }
+  }, [isLoading, pause, start]);
   const lastConfig = useRef(config);
   useEffect(() => {
     const previous = lastConfig.current;
     lastConfig.current = config;
-    if (running.current) void start(false, previous.plan !== config.plan || previous.notesEnabled !== config.notesEnabled);
+    if (running.current || accompanimentStartRequested.current) {
+      accompanimentStartRequested.current = false;
+      void start(false, previous.plan !== config.plan || previous.notesEnabled !== config.notesEnabled);
+    }
   }, [config, start]);
   useEffect(() => {
     if (!globalState.options?.audioPlayer) { setPopoverOpen(false); stop(); }
   }, [globalState.options?.audioPlayer, stop]);
-  useEffect(() => () => {
-    mounted.current = false;
-    command.current += 1;
-    running.current = false;
-    if (fallbackTimer.current) clearInterval(fallbackTimer.current);
-    timers.current.forEach(clearTimeout);
-    players.current.forEach((pool) => pool.forEach(dispose));
-    void native.current?.close().catch(() => {});
+  useEffect(() => {
+    mounted.current = true;
+    setIsPlaying(false);
+    setIsLoading(false);
+    return () => {
+      mounted.current = false;
+      command.current += 1;
+      running.current = false;
+      notesRequested.current = false;
+      accompanimentStartRequested.current = false;
+      if (fallbackTimer.current) clearInterval(fallbackTimer.current);
+      fallbackTimer.current = null;
+      timers.current.forEach(clearTimeout);
+      timers.current.clear();
+      players.current.forEach((pool) => pool.forEach(dispose));
+      players.current.clear();
+      void native.current?.close().catch(() => {});
+      native.current = undefined;
+      preparationQueue.current = Promise.resolve();
+    };
   }, []);
 
   const update = useCallback((key, value) => setSettings((previous) => ({ ...previous, [key]: value })), []);
+  const setAccompaniment = useCallback((mode) => {
+    if (!running.current && mode !== "off") accompanimentStartRequested.current = true;
+    setSettings(previous => ({ ...previous, accompaniment: running.current && previous.accompaniment === mode ? "off" : mode }));
+  }, []);
   const value = {
     activeNote, countRemaining, error, isLoading, isPlaying, popoverOpen, overview, ...settings,
     loopEnabled: settings.loop, sequenceEmpty: plan.notes.length === 0,
@@ -280,7 +300,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     setNoteRate: (rate) => update("noteRate", normalizeNoteRate(rate)),
     setLoopEnabled: (enabled) => update("loop", enabled),
     setNotesEnabled: (enabled) => update("notesEnabled", enabled),
-    setAccompaniment: (mode) => update("accompaniment", mode),
+    setAccompaniment,
     setCountIn: (enabled) => update("countIn", enabled),
     setStartOnRoot: (enabled) => update("startOnRoot", enabled),
   };
