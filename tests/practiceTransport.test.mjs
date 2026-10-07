@@ -19,8 +19,11 @@ class Context {
     const context = this;
     return { playbackRate:{value:1}, connect(){}, disconnect(){}, stop(when){context.stops.push({when,key:this.key});}, start(when){ this.key=context.currentKey;context.starts.push({when, rate:this.playbackRate.value, key:this.key}); } };
   }
-  async resume() {}
-  async close() {}
+  state = 'suspended';
+  suspends = 0;
+  async resume() { this.state = 'running'; }
+  async suspend() { this.suspends++; this.state = 'suspended'; }
+  async close() { this.state = 'closed'; }
   async decodeAudioData(key) { const b=this.createBuffer(1,3000,1000);b.key=key;return b; }
 }
 const make = async (t, overrides={}) => {
@@ -151,4 +154,56 @@ test('Stop after Pause leaves the existing fade intact',async t=>{
   transport.stop();
   assert.equal(transport.context.ramps.length,ramps);
   assert.equal(transport.context.stops.length,stops);
+});
+
+test('Stop retires the output only after the fade; loading resumes it',async t=>{
+  const {transport}=await make(t,{countIn:false});
+  transport.start();
+  transport.stop();
+  t.mock.timers.tick(20);
+  assert.equal(transport.context.state,'running');
+  t.mock.timers.tick(30);
+  assert.equal(transport.context.state,'suspended');
+  await transport.load([]);
+  assert.equal(transport.context.state,'running');
+  transport.start(false);
+  t.mock.timers.tick(100);
+  assert.equal(transport.context.state,'running');
+  transport.stop();
+});
+
+test('a quick restart cancels the pending idle suspension',async t=>{
+  const {transport}=await make(t,{countIn:false});
+  transport.start();
+  transport.stop();
+  t.mock.timers.tick(10);
+  await transport.load([]);
+  transport.start(false);
+  t.mock.timers.tick(100);
+  assert.equal(transport.context.suspends,0);
+  transport.stop();
+});
+
+test('closing cancels delayed suspension of a closed context',async t=>{
+  const {transport}=await make(t,{countIn:false});
+  await transport.close();
+  t.mock.timers.tick(100);
+  assert.equal(transport.context.state,'closed');
+  assert.equal(transport.context.suspends,0);
+});
+
+test('resume waits for an idle suspension already in progress',async t=>{
+  const {transport}=await make(t,{countIn:false});
+  let finishSuspending,resumes=0;
+  transport.context.suspend=()=>new Promise(resolve=>{finishSuspending=resolve;});
+  transport.context.resume=async()=>{resumes++;};
+  transport.stop();
+  t.mock.timers.tick(50);
+  const loading=transport.load([]);
+  await Promise.resolve();
+  assert.equal(resumes,0);
+  finishSuspending();
+  await loading;
+  assert.equal(resumes,1);
+  await transport.close();
 });

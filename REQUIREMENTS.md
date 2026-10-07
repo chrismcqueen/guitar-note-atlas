@@ -63,7 +63,7 @@ Lane requested implementation after reviewing the combined requirements. The fol
 | Starting note | Root start by default, with a Lowest note option. After the initial pass, loops traverse the full range without repeating endpoint notes. |
 | Missing root / duplicate pitches | When the root is excluded, start at the lowest selected note. Play each distinct pitch once per traversal, choosing a deterministic location on the lower string when there is a unison. |
 | Key, position, or note selection changes | Restart the new position's sequence. Native accompaniment retains its beat grid; no new count-in. Notes-off remains respected. Handedness and upside-down options transform the drawing without changing the sounding pitch/location. |
-| Sounds | Reuse the existing guitar and drum assets. Prepare pitch shifts and attack/release envelopes as PCM before native playback. Native notes play at unity rate and end naturally, with no scheduled note truncation. Additional recordings remain optional. |
+| Sounds | Reuse the existing guitar and drum assets. Prepare pitch shifts and attack/release envelopes as PCM before native playback. Native notes play at unity rate and end naturally, with no scheduled note truncation. Stop suspends the native output after its fade; the next Play resumes it before scheduling. Additional recordings remain optional. |
 
 Native device timing, pitch shifting, and layout still require device listening/visual checks before release. Browser verification and simulated native-clock tests do not replace those checks.
 

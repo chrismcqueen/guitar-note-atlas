@@ -4,6 +4,7 @@ import { renderNotePcm } from './notePcm.mjs';
 
 const LEAD = 0.1;
 const STOP_FADE = 0.012;
+const IDLE_DELAY_MS = 50;
 const VOLUMES = { hat: 0.08, kick: 0.48, snare: 0.45, click: 0.3 };
 const renderedKey = (key, rate, duration, volume) => `${key}:${rate}:${duration === undefined ? 'full' : Math.round(duration * 1e6)}:${volume}`;
 
@@ -20,13 +21,19 @@ export class NativeAudioTransport {
     this.sources = new Map();
     this.timers = new Set();
     this.timeline = new PracticeTimeline();
+    this.idleTimer = null;
+    this.idleSuspension = Promise.resolve();
     this.active = false;
     this.audibleIndex = 0;
     this.config = { plan: { notes: [] }, loop: true, tempo: 100, noteRate: 'quarter', notesEnabled: true, accompaniment: 'off', countIn: true };
   }
 
   async load(entries, config = this.config) {
+    this.cancelIdleSuspension();
     await this.sessionReady;
+    // If a previous Stop is already suspending the driver, finish that first
+    // so its completion cannot suspend the next playback run.
+    await this.idleSuspension;
     await this.context.resume();
     await Promise.all(entries.map(async ([key, source]) => {
       if (!this.buffers.has(key)) this.buffers.set(key, await this.context.decodeAudioData(source));
@@ -92,6 +99,7 @@ export class NativeAudioTransport {
 
   start(count = true) {
     if (this.active) return;
+    this.cancelIdleSuspension();
     this.active = true;
     this.timeline.start(this.context.currentTime + LEAD, this.config, count, this.audibleIndex);
     this.callbacks.onNote(null);
@@ -150,7 +158,30 @@ export class NativeAudioTransport {
     this.callbacks.onCount?.(0);
   }
 
-  pause() { this.active = false; this.timeline.active = false; this.cancel(); this.audibleIndex = 0; }
+  cancelIdleSuspension() {
+    clearTimeout(this.idleTimer);
+    this.idleTimer = null;
+  }
+
+  pause() {
+    this.active = false;
+    this.timeline.active = false;
+    this.cancel();
+    this.audibleIndex = 0;
+    this.cancelIdleSuspension();
+    // Let the release reach silence before retiring the real-time output.
+    this.idleTimer = setTimeout(() => {
+      this.idleTimer = null;
+      if (!this.active) this.idleSuspension = this.context.suspend().catch(() => {});
+    }, IDLE_DELAY_MS);
+  }
   stop() { this.pause(); }
-  async close() { this.stop(); await this.context.close(); this.sources.clear(); this.rendered.clear(); }
+  async close() {
+    this.stop();
+    this.cancelIdleSuspension();
+    await this.idleSuspension;
+    await this.context.close();
+    this.sources.clear();
+    this.rendered.clear();
+  }
 }

@@ -68,3 +68,12 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Main Stop now resets both native and fallback sequence progress, matching Stop / Reset. The next Play starts at the configured first note and includes the count-in when enabled. The main button label/icon now show Stop while playing.
 - All 80 automated tests and iOS/Android/web exports pass. The cancellation regression now requires restarting at the first note after stopping.
 - Actual iPad Pro and Pixel Tablet control checks progressed through several notes, pressed the main Stop button, verified index zero and stopped transport, then pressed Play and verified that the first scheduled guitar note matched the position's starting note. Both passed with no reported app error.
+
+
+### Intermittent output investigation and idle driver — October 6, 2026
+
+- Lane heard scratchy crackle through held scale notes. Removing extra simulators did not eliminate it. Only iPad Pro remains booted, with both Android emulator jobs stopped, at Lane's request.
+- A native-decoded guitar sample exactly matches 1,052 points from its WAV on disk. Sampled real-time scale windows on iOS and Android match the scheduled prepared PCM within 0.00000004, including held notes. This verifies those captured windows, not the hardware output or every playback interval.
+- A fixed scale WAV played through the iPad's standard file player with the audio-api context suspended. Lane initially heard two artifacts, then reported the same reference playing cleanly on its second and third replay. Intermittent host output trouble is a likely contributor; the specific cause remains unconfirmed. Mac output uses built-in speakers at 48 kHz, and the inspected host logs showed no explicit underrun/overload report.
+- The app previously left its real-time output running after Stop. It now suspends the driver 50 ms after Stop so the short release can complete. Preparing playback cancels a pending suspension, waits for one already in progress, and resumes the context before scheduling. Live settings changes retain the running shared clock.
+- All 84 tests and iOS/Android/web production exports pass. Actual iPad control checks verified running output during playback, suspended output and frozen clock after Stop, and running output after both normal and rapid restarts, with no app error.
