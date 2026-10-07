@@ -2,14 +2,15 @@ import { millisecondsPerBeat, millisecondsPerNote } from "./audioSequence.mjs";
 import { playbackNoteAt } from "./positionPlayback.mjs";
 
 const LEAD = 0.1;
-const VOLUMES = { hat: 0.12, kick: 0.58, snare: 0.52 };
+const STOP_FADE = 0.012;
+const VOLUMES = { hat: 0.08, kick: 0.48, snare: 0.45 };
 
 // The audio clock owns timing; timers only mirror the audible note in the UI.
 export class NativeAudioTransport {
   constructor(AudioContext, AudioManager, callbacks) {
     this.context = new AudioContext();
     this.masterGain = this.context.createGain();
-    this.masterGain.gain.value = 1;
+    this.masterGain.gain.value = 0.8;
     this.masterGain.connect(this.context.destination);
     this.sessionReady = AudioManager.setAudioSessionActivity(true);
     this.callbacks = callbacks;
@@ -31,15 +32,15 @@ export class NativeAudioTransport {
   }
 
   configure(config, resetPosition = false) {
+    const previous = this.config;
     this.config = config;
-    // Reserve shared headroom only when voices can overlap. A solo guitar
-    // should not inherit the attenuation needed by the full drum mix.
-    this.masterGain.gain.value = config.accompaniment === "drums" ? 0.58 : config.accompaniment === "metronome" ? 0.8 : 1;
     if (resetPosition) this.audibleIndex = 0;
-    if (this.active) {
+    if (this.active && (resetPosition || previous.accompaniment !== config.accompaniment || previous.notesEnabled !== config.notesEnabled)) {
       this.cancel();
       this.start(false, true);
     }
+    // Tempo, subdivision and loop changes apply to the next unscheduled
+    // event. Keep the current note and already queued events intact.
   }
 
   buffer(key, when, volume, duration, rate = 1) {
@@ -47,13 +48,16 @@ export class NativeAudioTransport {
     if (!buffer) return;
     const source = this.context.createBufferSource();
     const gain = this.context.createGain();
+    const release = this.context.createGain();
+    release.gain.value = 1;
     source.buffer = buffer;
     if (rate !== 1) source.playbackRate.value = rate;
     const length = Math.min(duration ?? buffer.duration / rate, buffer.duration / rate);
     gain.gain.setValueAtTime(0, when);
     gain.gain.linearRampToValueAtTime(volume, when + 0.004);
     source.connect(gain);
-    gain.connect(this.masterGain);
+    gain.connect(release);
+    release.connect(this.masterGain);
     // Use the previous sample-rendering path: only gate sustained guitar
     // notes. Percussion already has its own fade and ends naturally.
     if (duration !== undefined) {
@@ -64,7 +68,7 @@ export class NativeAudioTransport {
     } else {
       source.start(when);
     }
-    this.sources.set(source, gain);
+    this.sources.set(source, { release, when });
     // Let the native engine retire finished nodes. Disconnecting them on a
     // JS timer mutates the live audio graph independently of the audio clock.
     this.visual(() => { this.sources.delete(source); }, when + length + 0.1);
@@ -131,7 +135,8 @@ export class NativeAudioTransport {
         this.visual(() => { this.stop(); this.callbacks.onEnded(); }, this.nextNote);
         break;
       }
-      this.buffer(`guitar:${note.sample}`, this.nextNote, 0.92, noteSeconds, note.playbackRate);
+      // Bound the sum of guitar, kick/snare and hat below full scale.
+      this.buffer(`guitar:${note.sample}`, this.nextNote, accompaniment === "drums" ? 0.64 : 0.92, noteSeconds, note.playbackRate);
       const index = this.index;
       this.visual(() => { this.audibleIndex = index + 1; this.callbacks.onNote(note); }, this.nextNote);
       this.index += 1;
@@ -142,7 +147,20 @@ export class NativeAudioTransport {
   cancel() {
     if (this.scheduler) clearInterval(this.scheduler);
     this.scheduler = null;
-    this.sources.forEach((_gain, source) => { try { source.stop(this.context.currentTime); } catch (_) {} });
+    const now = this.context.currentTime;
+    this.sources.forEach(({ release, when }, source) => {
+      try {
+        if (when <= now) {
+          // This gain has no attack/release automation to cancel. Native
+          // cancelAndHoldAtTime on the envelope caused an abrupt level drop.
+          release.gain.setValueAtTime(1, now);
+          release.gain.linearRampToValueAtTime(0, now + STOP_FADE);
+          source.stop(now + STOP_FADE + 0.005);
+        } else {
+          source.stop(now);
+        }
+      } catch (_) {}
+    });
     this.sources.clear();
     this.timers.forEach(clearTimeout);
     this.timers.clear();

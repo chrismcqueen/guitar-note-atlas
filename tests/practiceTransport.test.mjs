@@ -7,10 +7,12 @@ class Context {
   currentTime = 0;
   destination = {};
   starts = [];
-  createGain() { return { gain:{ value:0, setValueAtTime(){}, linearRampToValueAtTime(){} }, connect(){}, disconnect(){} }; }
+  stops = [];
+  ramps = [];
+  createGain() { const context=this; return { gain:{ value:0, setValueAtTime(){}, cancelAndHoldAtTime(){throw new Error('Native envelope cancellation causes a level discontinuity');}, linearRampToValueAtTime(value,when){context.ramps.push({value,when});} }, connect(){}, disconnect(){} }; }
   createBufferSource() {
     const context = this;
-    return { playbackRate:{value:1}, connect(){}, disconnect(){}, stop(){}, start(when){ context.starts.push({when, rate:this.playbackRate.value, key:this.buffer.key}); } };
+    return { playbackRate:{value:1}, connect(){}, disconnect(){}, stop(when){context.stops.push({when,key:this.buffer.key});}, start(when){ context.starts.push({when, rate:this.playbackRate.value, key:this.buffer.key}); } };
   }
   async resume() {}
   async close() {}
@@ -90,4 +92,31 @@ test('position changes preserve the accompaniment beat grid without a second cou
   const root=transport.context.starts.find(s=>s.key==='root');
   assert.ok(Math.abs(root.when-0.6)<1e-9);
   transport.stop();
+});
+
+test('live tempo and subdivision changes keep the sounding note and queued events',async t=>{
+  const {transport}=await make(t,{countIn:false});
+  transport.start();
+  transport.context.currentTime=0.2;
+  const starts=transport.context.starts.length, stops=transport.context.stops.length;
+  const next=transport.nextNote;
+  transport.configure({...transport.config,tempo:90,noteRate:'eighth'});
+  assert.equal(transport.context.starts.length,starts);
+  assert.equal(transport.context.stops.length,stops);
+  assert.equal(transport.nextNote,next);
+  transport.context.currentTime=0.4;transport.tick();
+  assert.equal(transport.context.starts.at(-1).key,'high');
+  assert.ok(Math.abs(transport.nextNote-(next+1/3))<1e-9);
+  transport.stop();
+});
+
+test('pause fades sounding voices and cancels future voices before their attack',async t=>{
+  const {transport}=await make(t,{countIn:false});
+  transport.start();
+  transport.buffer('drum:hat',0.8,0.2);
+  transport.context.currentTime=0.2;
+  transport.pause();
+  assert.ok(transport.context.ramps.some(r=>r.value===0&&Math.abs(r.when-0.212)<1e-9));
+  assert.ok(transport.context.stops.some(s=>s.key==='root'&&Math.abs(s.when-0.217)<1e-9));
+  assert.ok(transport.context.stops.some(s=>s.key==='hat'&&s.when===0.2));
 });
