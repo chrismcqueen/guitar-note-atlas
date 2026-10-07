@@ -29,14 +29,14 @@ export const AudioTrigger = () => {
     <View style={[styles.triggerGroup, { left, top }]}>
       <Pressable
         android_disableSound
-        accessibilityLabel={isPlaying ? "Pause audio" : isLoading ? "Cancel audio loading" : "Play audio"}
+        accessibilityLabel={isPlaying ? "Stop audio" : isLoading ? "Cancel audio loading" : "Play audio"}
         accessibilityRole="button"
         accessibilityState={{ busy: isLoading, disabled: !canPlay && !isPlaying }}
         disabled={!canPlay && !isPlaying}
         onPress={play}
         style={withPressedOpacity([styles.trigger, !isPlaying && styles.triggerIdle])}
       >
-        <Text style={[styles.transportIcon, { color: isPlaying ? theme.colors.white : theme.colors.blue }]}>{isLoading ? "…" : isPlaying ? "Ⅱ" : "▶"}</Text>
+        <Text style={[styles.transportIcon, { color: isPlaying ? theme.colors.white : theme.colors.blue }]}>{isLoading ? "…" : isPlaying ? "■" : "▶"}</Text>
       </Pressable>
       <Pressable android_disableSound accessibilityLabel="Expand audio settings" accessibilityRole="button" onPress={openPopover} style={withPressedOpacity([styles.trigger, styles.triggerIdle, styles.settingsTrigger])}>
         <MixerIcon filled={false} />
@@ -169,7 +169,7 @@ export const AudioPopover = () => {
             (!canPlay && !isPlaying) && styles.disabled,
           ])}
         >
-          <Text style={[styles.playText, !isPlaying && styles.playTextIdle]}>{showLoadingLabel ? "Loading sounds…" : isPlaying ? "Pause" : "Play"}</Text>
+          <Text style={[styles.playText, !isPlaying && styles.playTextIdle]}>{showLoadingLabel ? "Loading sounds…" : isPlaying ? "Stop" : "Play"}</Text>
         </Pressable>
 
         <View style={styles.tempoRow}>
@@ -231,7 +231,7 @@ export const AudioPopover = () => {
           ))}
         </View>
         <Text style={styles.message}>Accompaniment</Text>
-        <Text style={styles.message}>Click or Drums starts alone. Play adds notes; Pause stops everything.</Text>
+        <Text style={styles.message}>Click or Drums starts alone. Play adds notes; Stop resets everything.</Text>
         <View style={styles.toggleRow}>
           <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
           <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />

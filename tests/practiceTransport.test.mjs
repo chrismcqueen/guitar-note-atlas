@@ -45,7 +45,7 @@ test('four count-in clicks precede the first root on the audio clock',async t=>{
   assert.ok(Math.abs(first.when-2.1)<1e-9);
   transport.stop();
 });
-test('pause cancels future highlights and resume continues after the audible note',async t=>{
+test('stopping cancels future highlights and Play restarts at the first note',async t=>{
   const {transport,heard}=await make(t,{countIn:false});
   transport.start();
   transport.context.currentTime=0.12;t.mock.timers.tick(120);
@@ -55,7 +55,7 @@ test('pause cancels future highlights and resume continues after the audible not
   t.mock.timers.tick(2000);
   assert.equal(heard.length,count);
   transport.start(false);
-  assert.equal(transport.context.starts.at(-1).key,'high');
+  assert.equal(transport.context.starts.at(-1).key,'root');
   transport.stop();
   transport.start(false);
   assert.equal(transport.context.starts.at(-1).key,'root');

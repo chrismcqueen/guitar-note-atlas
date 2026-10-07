@@ -61,3 +61,10 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Native guitar playback reuses the original samples. Pitch shifts and 12 ms attack / 35 ms release envelopes are prepared in PCM before scheduling; sources play at unity rate and finish naturally. A repeated Stop does not reset an already-running release to full volume. Development reload cleanup resets the audio transport so stale instances cannot survive Fast Refresh.
 - Native offline renders on iPhone 16 and Android at octave rates 0.25, 0.5, 1 and 2 match prepared PCM within 0.00000004, start/end at zero, and peak at or below 0.686. These checks validate the sample data and native renderer; real-time listening remains pending for the reported artifacts.
 - iPhone 16, iPad Pro, Pixel 9 and Pixel Tablet remain available for manual testing with a persistent Metro process. Test Play/Pause/Stop, independent Click/Drums, rapid tempo/subdivision changes, position changes, and a sustained mixed note/accompaniment run. Native timestamp equality does not establish that unsupported Expo Audio fallback output is sample-accurate.
+
+
+### Restart from the beginning — October 6, 2026
+
+- Main Stop now resets both native and fallback sequence progress, matching Stop / Reset. The next Play starts at the configured first note and includes the count-in when enabled. The main button label/icon now show Stop while playing.
+- All 80 automated tests and iOS/Android/web exports pass. The cancellation regression now requires restarting at the first note after stopping.
+- Actual iPad Pro and Pixel Tablet control checks progressed through several notes, pressed the main Stop button, verified index zero and stopped transport, then pressed Play and verified that the first scheduled guitar note matched the position's starting note. Both passed with no reported app error.

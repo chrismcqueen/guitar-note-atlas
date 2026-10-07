@@ -150,7 +150,7 @@ export class NativeAudioTransport {
     this.callbacks.onCount?.(0);
   }
 
-  pause() { this.active = false; this.timeline.active = false; this.cancel(); }
-  stop() { this.pause(); this.audibleIndex = 0; }
+  pause() { this.active = false; this.timeline.active = false; this.cancel(); this.audibleIndex = 0; }
+  stop() { this.pause(); }
   async close() { this.stop(); await this.context.close(); this.sources.clear(); this.rendered.clear(); }
 }

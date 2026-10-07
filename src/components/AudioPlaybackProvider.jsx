@@ -76,14 +76,11 @@ export const AudioPlaybackProvider = ({ children }) => {
     notesRequested.current = false;
     accompanimentStartRequested.current = false;
     pauseAudio();
+    fallbackIndex.current = 0;
     setIsPlaying(false);
     setIsLoading(false);
   }, [pauseAudio]);
-  const stop = useCallback(() => {
-    pause();
-    fallbackIndex.current = 0;
-    native.current?.stop();
-  }, [pause]);
+  const stop = pause;
 
   useEffect(() => {
     let cancelled = false;

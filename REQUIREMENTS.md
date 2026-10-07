@@ -44,7 +44,7 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 - Provide a notes-on/off toggle so users can practice with only a metronome or drum groove.
 - Retain adjustable tempo, tap tempo, rhythmic subdivisions, and independent accompaniment controls from the demonstrated player.
 - Keep tight native audio scheduling on bundled iOS and Android builds.
-- Lane's testing clarification: clicking Click or Drums must start accompaniment independently while notes remain stopped. Play adds the selected position notes; Pause and Stop affect everything. Selecting a position during accompaniment-only playback must not start notes automatically.
+- Lane's testing clarification: clicking Click or Drums must start accompaniment independently while notes remain stopped. Play adds the selected position notes; Stop affects everything and resets the sequence. Selecting a position during accompaniment-only playback must not start notes automatically.
 - Notes, click and drums must share one musical grid and audio clock, retaining exact beat/subdivision alignment through tempo, subdivision, position and accompaniment changes.
 - The existing note sound is acceptable for now. Prefer readily available drum sounds rather than adding a large sample collection. Chris is willing to record guitar samples as a future refinement; recording is not a release dependency.
 
@@ -55,11 +55,11 @@ Lane requested implementation after reviewing the combined requirements. The fol
 | Topic | Implemented behavior |
 | --- | --- |
 | Mobile overview audio | Suppress position notes without changing the saved Notes toggle. Keep the selected click/drums; when accompaniment is Off, global Play uses a click in overview. Selecting a position starts its notes only if global Play requested notes. Accompaniment-only playback stays accompaniment-only. No playback highlight appears on the overview. |
-| Independent accompaniment | Clicking Click or Drums starts that accompaniment immediately, with no notes/count-in when global Play has not requested notes. Play adds notes at a shared beat boundary. Clicking the selected running accompaniment toggles it off. Pause/Stop affect notes and accompaniment together. |
+| Independent accompaniment | Clicking Click or Drums starts that accompaniment immediately, with no notes/count-in when global Play has not requested notes. Play adds notes at a shared beat boundary. Clicking the selected running accompaniment toggles it off. Stop affects notes and accompaniment together and resets the sequence. |
 | Shared clock | One 12-tick-per-beat timeline represents every supported subdivision exactly. Both lanes derive timestamps from the same anchor. Live changes take effect at a shared beat boundary without starting separate clocks. |
-| Count-in | Optional four-click count-in, enabled by default, on Play and resume. Changes to position/settings during playback do not repeat the count-in. |
-| Settings access | Dedicated visible settings button beside the compact play/pause button. Popover content scrolls on short screens. |
-| Pause versus stop | Pause preserves sequence progress; Play resumes at the next note. Stop / Reset resets to the starting note. One-time playback stops the whole player after reaching the position's lowest selected note. |
+| Count-in | Optional four-click count-in, enabled by default, when starting from stopped. Changes to position/settings during playback do not repeat the count-in. |
+| Settings access | Dedicated visible settings button beside the compact play/stop button. Popover content scrolls on short screens. |
+| Stop and restart | Both the main Stop control and Stop / Reset reset to the starting note. The next Play begins at the lowest root (or lowest selected note when Root start is off), with the optional count-in. One-time playback stops the whole player after reaching the position's lowest selected note. |
 | Starting note | Root start by default, with a Lowest note option. After the initial pass, loops traverse the full range without repeating endpoint notes. |
 | Missing root / duplicate pitches | When the root is excluded, start at the lowest selected note. Play each distinct pitch once per traversal, choosing a deterministic location on the lower string when there is a unison. |
 | Key, position, or note selection changes | Restart the new position's sequence. Native accompaniment retains its beat grid; no new count-in. Notes-off remains respected. Handedness and upside-down options transform the drawing without changing the sounding pitch/location. |
@@ -74,7 +74,7 @@ Native device timing, pitch shifting, and layout still require device listening/
 - Disabling note playback leaves the selected accompaniment usable independently.
 - Collapsing settings leaves a usable playback control and restores the normal screen space on phone and tablet.
 - Preserve the approved navigation and selection gestures while adding playback controls.
-- Verify overview transitions, count-in, pause/resume, and Stop / Reset against the implementation decisions above on native devices before release.
+- Verify overview transitions, count-in, stop/restart, and Stop / Reset against the implementation decisions above on native devices before release.
 
 ## Source references
 
