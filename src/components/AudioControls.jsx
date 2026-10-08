@@ -207,9 +207,12 @@ export const AudioPopover = () => {
               <Text style={styles.stepText}>‹</Text>
             </Pressable>
             <View accessible accessibilityLabel={`Subdivision: ${selectedNoteRate.name}`} style={styles.rateValue}>
-              <Svg accessible={false} pointerEvents="none" width={74} height={38} viewBox="0 0 74 38">
-                <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={30} textAnchor="middle" x={selectedNoteRate.triplet ? 32 : 37} y={34}>{selectedNoteRate.notation}</SvgText>
-                {selectedNoteRate.triplet && <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={14} textAnchor="middle" x={50} y={13}>3</SvgText>}
+              <Text accessible={false} style={styles.rateLabel}>{selectedNoteRate.label}</Text>
+              <Svg accessible={false} pointerEvents="none" width={28} height={38} viewBox="0 0 28 38">
+                {/* Fixed note origin/baseline: flags, dots and triplets never recenter the note. */}
+                <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={18} x={3} y={28}>{selectedNoteRate.notation[0]}</SvgText>
+                {selectedNoteRate.notation.endsWith(".") && <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={18} x={16} y={28}>.</SvgText>}
+                {selectedNoteRate.triplet && <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={9} textAnchor="middle" x={18} y={15}>3</SvgText>}
               </Svg>
             </View>
             <Pressable android_disableSound accessibilityLabel="Select shorter subdivision" accessibilityRole="button" accessibilityState={{ disabled: !canSelectShorterRate }} disabled={!canSelectShorterRate} hitSlop={CONTROL_HIT_SLOP} onPress={() => setNoteRate(NOTE_RATES[noteRateIndex - 1].id)} style={withPressedOpacity([styles.stepButton, !canSelectShorterRate && styles.disabled])}>
@@ -279,7 +282,8 @@ const styles = StyleSheet.create({
   mixerTrackIdle: { backgroundColor: theme.colors.blue },
   noteRateRow: { alignItems: "center", flexDirection: "row", marginTop: 10 },
   popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent", zIndex: 4500 },
-  rateValue: { alignItems: "center", justifyContent: "center", position: "relative", width: 74 },
+  rateValue: { alignItems: "center", flexDirection: "row", paddingHorizontal: 2, width: 74 },
+  rateLabel: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 15, lineHeight: 22, textAlign: "left", width: 42 },
   // Only the body shrinks when the card reaches its screen-height limit.
   settingsScroll: { flexGrow: 0, flexShrink: 1, minHeight: 0 },
   settingsContent: { paddingBottom: 2 },

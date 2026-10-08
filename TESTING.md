@@ -146,3 +146,9 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Keep the title/close row outside the ScrollView, non-shrinking and opaque. Allow only the settings body to shrink inside the screen-constrained card; preserve its natural content height when space is available. The body clips its scrolling contents below the header and accepts control taps while the tempo keyboard is open.
 - At 667 × 320 in the browser, the body has 270 points of content in a 190-point viewport. Scrolling reaches Root start/Lowest note, while the close button stays exactly at x=16/y=54 before and after scrolling. At 1200 × 800 the body fits naturally at 270 points with no overflow.
 - All 108 tests pass; web export and bundled Android/iOS Release builds pass. Installed/launched the iPad build and checked that its compact settings layout remains intact. The physical Pixel was disconnected during installation; its APK is built but device update/native short-phone verification remains pending.
+
+### Fixed subdivision fractions and smaller glyphs — October 7, 2026
+
+- Restore 1/16, 1/8T, 1/8, 1/8., 1/4, 1/4., 1/2, and 1/2. beside their notation symbols. Text occupies a fixed 42-point slot; the glyph canvas occupies a fixed 28-point slot. Reduce the note font from 30 to 18 points and keep its origin/baseline fixed at x=3/y=28. Place dots/triplet numerals separately so they never recenter the note.
+- Browser checks cycle all eight values at 844 × 390. Every fraction slot stays at x=166/y=170 (42 × 22), and every glyph canvas stays at x=208/y=162 (28 × 38), with unchanged note origin/baseline. Bundled native iPad check confirms the smaller symbol and fraction pair; a clean relaunch was needed before the new display appeared.
+- All 108 tests pass; web export and bundled Android/iOS Release builds pass. Installed and reopened the latest build on both the reconnected Pixel 4a and iPad simulator. Android subdivision visual confirmation remains manual.
