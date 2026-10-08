@@ -162,7 +162,12 @@ export const AudioPopover = () => {
           <View accessible={false} style={styles.closeButton} />
         </View>
 
-        <ScrollView showsVerticalScrollIndicator contentContainerStyle={{ paddingBottom: 2 }}>
+        <ScrollView
+          showsVerticalScrollIndicator
+          keyboardShouldPersistTaps="handled"
+          style={styles.settingsScroll}
+          contentContainerStyle={styles.settingsContent}
+        >
         <View style={styles.tempoRow}>
           <View style={styles.controlLead}>
             <Text style={styles.label}>Tempo</Text>
@@ -275,6 +280,9 @@ const styles = StyleSheet.create({
   noteRateRow: { alignItems: "center", flexDirection: "row", marginTop: 10 },
   popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent", zIndex: 4500 },
   rateValue: { alignItems: "center", justifyContent: "center", position: "relative", width: 74 },
+  // Only the body shrinks when the card reaches its screen-height limit.
+  settingsScroll: { flexGrow: 0, flexShrink: 1, minHeight: 0 },
+  settingsContent: { paddingBottom: 2 },
   stepButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", width: 38 },
   stepText: { color: theme.colors.blue, fontSize: 24, lineHeight: Platform.OS === "android" ? 28 : 25 },
   tapTempoButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", marginRight: 6, width: 42 },
@@ -283,7 +291,7 @@ const styles = StyleSheet.create({
   tempoRow: { alignItems: "center", flexDirection: "row", marginTop: 12 },
   tempoValue: { alignItems: "center", flexDirection: "row", justifyContent: "center", width: 74 },
   title: { color: theme.colors.black, flex: 1, fontFamily: "blackout", fontSize: 20, textAlign: "center" },
-  titleRow: { alignItems: "center", flexDirection: "row", marginBottom: 10 },
+  titleRow: { alignItems: "center", backgroundColor: theme.colors.white, flexDirection: "row", flexShrink: 0, marginBottom: 10, zIndex: 1 },
   toggle: { alignItems: "center", borderColor: theme.colors.lightBlue, borderRadius: 5, borderWidth: 1.5, flex: 1, justifyContent: "center", minHeight: 38 },
   toggleIcon: { height: 27, resizeMode: "contain", tintColor: theme.colors.blue, width: 41 },
   toggleIconSelected: { tintColor: theme.colors.white },

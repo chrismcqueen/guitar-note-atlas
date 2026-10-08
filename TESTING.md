@@ -140,3 +140,9 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Replace custom stroked numeral paths with the same DegreeLabel component and bundled Basic Manual font used inside neck note circles. Render at natural font proportions in the existing square icon canvas; per-digit positions center the actual ink bounds measured from the bundled font at size 24.
 - Native iPad playback check shows the new count-in numeral centered in the circular button, matching neck digits. Stop resets the control to Play. Existing audio-clock count timing is unchanged.
 - All 108 tests pass. Web export and Android/iOS bundled Release builds pass; updated builds installed and launched on the connected Pixel 4a and iPad simulator. Android count-in visual confirmation remains manual.
+
+### Fixed Audio Settings header and body scrolling — October 7, 2026
+
+- Keep the title/close row outside the ScrollView, non-shrinking and opaque. Allow only the settings body to shrink inside the screen-constrained card; preserve its natural content height when space is available. The body clips its scrolling contents below the header and accepts control taps while the tempo keyboard is open.
+- At 667 × 320 in the browser, the body has 270 points of content in a 190-point viewport. Scrolling reaches Root start/Lowest note, while the close button stays exactly at x=16/y=54 before and after scrolling. At 1200 × 800 the body fits naturally at 270 points with no overflow.
+- All 108 tests pass; web export and bundled Android/iOS Release builds pass. Installed/launched the iPad build and checked that its compact settings layout remains intact. The physical Pixel was disconnected during installation; its APK is built but device update/native short-phone verification remains pending.
