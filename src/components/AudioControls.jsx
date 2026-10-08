@@ -155,10 +155,10 @@ export const AudioPopover = () => {
   const cardLeft = Math.max(0, triggerLeft - 14);
   const viewportHeight = Math.min(dimensions.height, Platform.OS === "web" ? window.height : Math.min(window.width, window.height));
   const cardMaxHeight = Math.max(0, viewportHeight - cardTop - 12);
-  // Reserve padding/borders (32) and the fixed header plus gap (48). Native
+  // Reserve padding/borders (32) and the fixed header plus gap (38). Native
   // ScrollView needs a bounded height; maxHeight/flex shrink alone can leave
   // its viewport as tall as the content inside the rotated Android shell.
-  const scrollHeight = Math.min(settingsContentHeight ?? 300, Math.max(0, cardMaxHeight - 80));
+  const scrollHeight = Math.min(settingsContentHeight ?? 300, Math.max(0, cardMaxHeight - 70));
   const commitTempo = () => {
     setTempo(tempoText);
     setTempoText(String(Math.max(MIN_TEMPO, Math.min(MAX_TEMPO, Math.round(Number(tempoText) || tempo)))));
@@ -195,7 +195,7 @@ export const AudioPopover = () => {
             Select a position to play notes.{"\n"}Full neck view plays accompaniment only.
           </Text>
         )}
-        <View style={styles.tempoRow}>
+        <View style={[styles.tempoRow, isTablet && styles.tabletTempoRow]}>
           <View style={styles.controlLead}>
             <Text style={styles.label}>Tempo</Text>
             <Pressable android_disableSound accessibilityLabel="Tap tempo" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} onPressIn={tapTempo} style={withPressedOpacity(styles.tapTempoButton)}>
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     zIndex: 1,
   },
-  closeButton: { alignItems: "center", height: 38, justifyContent: "center", width: 38 },
+  closeButton: { alignItems: "center", height: 32, justifyContent: "center", width: 32 },
   closeText: { color: theme.colors.blue, fontSize: 29, lineHeight: 30 },
   controlCluster: { alignItems: "center", flexDirection: "row", width: 150 },
   controlLead: { alignItems: "center", flex: 1, flexDirection: "row" },
@@ -318,10 +318,11 @@ const styles = StyleSheet.create({
   tapTempoButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", marginRight: 6, width: 42 },
   tapTempoText: { color: theme.colors.blue, fontFamily: "proletarsk", fontSize: 13 },
   tempoInput: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 19, minHeight: 38, padding: 0, textAlign: "right", width: 30 },
+  tabletTempoRow: { marginTop: 0 },
   tempoRow: { alignItems: "center", flexDirection: "row", marginTop: 12 },
   tempoValue: { alignItems: "center", flexDirection: "row", justifyContent: "center", width: 74 },
   title: { color: theme.colors.black, flex: 1, fontFamily: "blackout", fontSize: 20, textAlign: "center" },
-  titleRow: { alignItems: "center", backgroundColor: theme.colors.white, flexDirection: "row", flexShrink: 0, height: 38, marginBottom: 10, zIndex: 1 },
+  titleRow: { alignItems: "center", backgroundColor: theme.colors.white, flexDirection: "row", flexShrink: 0, height: 32, marginBottom: 6, zIndex: 1 },
   toggle: { alignItems: "center", borderColor: theme.colors.lightBlue, borderRadius: 5, borderWidth: 1.5, flex: 1, justifyContent: "center", minHeight: 38 },
   toggleIcon: { height: 27, resizeMode: "contain", tintColor: theme.colors.blue, width: 41 },
   toggleIconSelected: { tintColor: theme.colors.white },

@@ -52,18 +52,22 @@ const KeySelector = ({ compact = false }) => {
     );
   }
 
-  const audioSpace = globalState.options?.audioPlayer ? 96 : 0;
-  const availableTitleWidth = Math.max(140, dimensions.width - Math.max(insets.left, insets.right) * 2 - audioSpace - 162);
+  // Reserve matching side lanes regardless of Audio mode so the heading
+  // stays centered. Audio controls occupy 96 points; each key arrow uses 69.
+  const safeWidth = dimensions.width - Math.max(insets.left, insets.right) * 2;
+  const titleWidth = Math.min(430, Math.max(0, safeWidth - 330));
+  const arrowInset = (safeWidth - titleWidth) / 2 - 69;
+  const titleScale = titleWidth / 430;
 
   return (
-    <View style={[styles.titleContainer, { marginLeft: audioSpace }]}>
-      <Pressable android_disableSound accessibilityLabel="Previous key" {...previousKeyPress} style={withPressedOpacity(styles.arrowContainer)}>
+    <View style={styles.titleContainer}>
+      <Pressable android_disableSound accessibilityLabel="Previous key" {...previousKeyPress} style={withPressedOpacity([styles.arrowContainer, styles.phoneArrow, { left: arrowInset }])}>
         <View style={[styles.arrow, styles.arrowLeft]}></View>
       </Pressable>
-      <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={[styles.title, { width: Math.min(430, availableTitleWidth) }]}>
+      <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={[styles.title, { width: titleWidth, fontSize: 31 * titleScale, letterSpacing: 7 * titleScale }]}>
         KEY CENTER - {globalState?.key.title}
       </Text>
-      <Pressable android_disableSound accessibilityLabel="Next key" {...nextKeyPress} style={withPressedOpacity(styles.arrowContainer)}>
+      <Pressable android_disableSound accessibilityLabel="Next key" {...nextKeyPress} style={withPressedOpacity([styles.arrowContainer, styles.phoneArrow, { right: arrowInset }])}>
         <View style={[styles.arrow, styles.arrowRight]}></View>
       </Pressable>
     </View>
@@ -103,8 +107,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     width: 430,
   },
+  phoneArrow: { position: "absolute" },
   titleContainer: {
-    flexDirection: "row",
+    height: 88,
+    width: "100%",
+    justifyContent: "center",
     alignItems: "center",
     transform: [{ translateY: 16 }],
   },
