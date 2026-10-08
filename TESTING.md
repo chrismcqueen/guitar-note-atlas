@@ -134,3 +134,9 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Replace fraction labels with the already loaded Opus Text font's stemmed sixteenth, eighth, quarter, and half notes. Dotted values use its augmentation dot; the eighth-note triplet pairs the eighth note with its notation numeral 3. Keep readable note names in accessibility labels and all existing durations/order unchanged.
 - Inspected the bundled font's actual glyphs with Core Text and verified half, dotted-half, eighth-triplet, and sixteenth rendering in the bundled native iPad settings card. Restored the previous half-note setting and left playback stopped.
 - All 108 tests pass; web export and bundled Android/iOS Release builds pass. Installed and opened the updated builds on the physical Pixel 4a and iPad simulator. Android subdivision visual checks remain manual.
+
+### Neck-style count-in digits — October 7, 2026
+
+- Replace custom stroked numeral paths with the same DegreeLabel component and bundled Basic Manual font used inside neck note circles. Render at natural font proportions in the existing square icon canvas; per-digit positions center the actual ink bounds measured from the bundled font at size 24.
+- Native iPad playback check shows the new count-in numeral centered in the circular button, matching neck digits. Stop resets the control to Play. Existing audio-clock count timing is unchanged.
+- All 108 tests pass. Web export and Android/iOS bundled Release builds pass; updated builds installed and launched on the connected Pixel 4a and iPad simulator. Android count-in visual confirmation remains manual.

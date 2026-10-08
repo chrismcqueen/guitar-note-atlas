@@ -10,6 +10,7 @@ import { withPressedOpacity } from "../utils/pressable";
 import { useRepeatPress } from "../utils/useRepeatPress";
 import { getMenuVisualCenterX, phoneHeaderHeight, tabletHeaderHeight } from "./Header";
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
+import DegreeLabel from "./Neck/DegreeLabel";
 
 const CONTROL_HIT_SLOP = 3;
 const TAP_TEMPO_RESET_MS = 2000;
@@ -54,17 +55,17 @@ export const AudioTrigger = () => {
   );
 };
 
-// Numbers and transport symbols use fixed vector bounds, independent of font
-// baselines. The triangle's filled-area center is the center of the viewBox.
-const COUNT_PATHS = {
-  1: "M8 8 L12 4 V20 M8 20 H16",
-  2: "M5 8 Q5 4 12 4 Q19 4 19 8 Q19 12 12 15 L5 20 H19",
-  3: "M5 4 H19 L12 11 Q19 11 19 15 Q19 20 12 20 Q5 20 5 16",
-  4: "M16 20 V4 L4 15 H20",
+// Center the actual ink bounds of Basic Manual's digits at (12, 12), using
+// the bundled font's metrics at size 24. Keep their natural proportions.
+const COUNT_CENTERS = {
+  1: { x: 12.983, y: 19.783 },
+  2: { x: 12.633, y: 19.783 },
+  3: { x: 12.65, y: 19.783 },
+  4: { x: 12.25, y: 19.667 },
 };
 const TransportIcon = ({ count, loading, playing, color }) => (
   <Svg accessible={false} pointerEvents="none" width={24} height={24} viewBox="0 0 24 24">
-    {count > 0 ? <Path d={COUNT_PATHS[count]} fill="none" stroke={color} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
+    {count > 0 ? <DegreeLabel label={count} fill={color} fontSize={24} {...COUNT_CENTERS[count]} />
       : loading ? [6, 12, 18].map(cx => <Circle key={cx} cx={cx} cy={12} r={1.5} fill={color} />)
         : playing ? <Rect x={5} y={5} width={14} height={14} fill={color} />
           : <Path d="M7 4 L22 12 L7 20 Z" fill={color} />}
