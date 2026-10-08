@@ -124,7 +124,7 @@ export class NativeAudioTransport {
         note = event.note;
         this.visualNoteEnd = event.end;
         this.audibleIndex = event.index + 1;
-      } else if (event.kind === 'beat') count = event.count;
+      } else if (event.kind === 'beat') count = event.count > 0 ? 5 - event.count : 0;
       else if (event.kind === 'change' && event.fadeNotes) note = null;
       else if (event.kind === 'end') {
         this.stop();

@@ -27,7 +27,7 @@ export const AudioPlaybackProvider = ({ children }) => {
   const { showPositionOverview } = useContext(PositionVisibilityStore);
   const [settings, setSettings] = useState(DEFAULTS);
   const [activeNote, setActiveNote] = useState(null);
-  const [countRemaining, setCountRemaining] = useState(0);
+  const [countInBeat, setCountInBeat] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -71,7 +71,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     players.current.forEach((pool) => pool.forEach((player) => { try { player.pause(); } catch (_) {} }));
     previousGuitar.current = null;
     setActiveNote(null);
-    setCountRemaining(0);
+    setCountInBeat(0);
   }, []);
   const pause = useCallback(() => {
     command.current += 1;
@@ -138,7 +138,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     if (native.current === undefined) {
       native.current = createNativeAudioTransport({
         onNote: setActiveNote,
-        onCount: setCountRemaining,
+        onCount: setCountInBeat,
         onEnded: () => { running.current = false; notesRequested.current = false; fallbackIndex.current = 0; setIsPlaying(false); },
       });
     }
@@ -226,7 +226,7 @@ export const AudioPlaybackProvider = ({ children }) => {
               if ((event.beat - timeline.countBeats) % 4 === 0) trigger("drum:kick", 0.48);
               if ((event.beat - timeline.countBeats) % 4 === 2) trigger("drum:snare", 0.45);
             }
-            setCountRemaining(event.count);
+            setCountInBeat(event.count > 0 ? 5 - event.count : 0);
           } else if (event.kind === "note") {
             trigger(`guitar:${event.note.sample}`, event.config.accompaniment === "drums" ? 0.64 : 0.92, event.note.playbackRate);
             setActiveNote(event.note);
@@ -318,7 +318,7 @@ export const AudioPlaybackProvider = ({ children }) => {
   }, []);
   const value = {
     audioReady, startupError, retryAudioLoad,
-    activeNote, countRemaining, error, isLoading, isPlaying, popoverOpen, overview, ...settings,
+    activeNote, countInBeat, error, isLoading, isPlaying, popoverOpen, overview, ...settings,
     loopEnabled: settings.loop, sequenceEmpty: plan.notes.length === 0,
     canPlay: (config.notesEnabled && plan.notes.length > 0) || config.accompaniment !== "off",
     play, stop, setPopoverOpen, openPopover: () => setPopoverOpen(true),

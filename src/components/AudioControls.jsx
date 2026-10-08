@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import Svg, { Circle, Path, Rect } from "react-native-svg";
 
 import { OverlayStore, Store } from "../../Store";
 import { monotonicNow } from "../utils/audioClock.mjs";
@@ -12,19 +13,20 @@ import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 
 const CONTROL_HIT_SLOP = 3;
 const TAP_TEMPO_RESET_MS = 2000;
+const AUDIO_BUTTON_SIZE = 44;
 
 const audioControlPlacement = (dimensions, insets) => {
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const phoneTopInset = Platform.OS === "android" ? 0 : insets.top;
   const top = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + phoneTopInset) + 12;
-  const left = isTablet ? getMenuVisualCenterX(insets, true) - 22 : Math.max(insets.left, insets.right) + 8;
+  const left = isTablet ? getMenuVisualCenterX(insets, true) - AUDIO_BUTTON_SIZE / 2 : Math.max(insets.left, insets.right) + 8;
   return { isTablet, left, top };
 };
 
 export const AudioTrigger = () => {
   const { dimensions, insets } = useContext(Store);
   const { showMenu } = useContext(OverlayStore);
-  const { canPlay, isLoading, isPlaying, openPopover, play, popoverOpen, error } = useContext(AudioPlaybackStore);
+  const { canPlay, countInBeat, isLoading, isPlaying, openPopover, play, popoverOpen, error } = useContext(AudioPlaybackStore);
   const { left, top } = audioControlPlacement(dimensions, insets);
 
   // The settings card replaces both controls until it is dismissed.
@@ -36,12 +38,13 @@ export const AudioTrigger = () => {
         android_disableSound
         accessibilityLabel={isPlaying ? "Stop audio" : isLoading ? "Cancel audio loading" : "Play audio"}
         accessibilityRole="button"
+        accessibilityValue={countInBeat > 0 ? { text: `Count in ${countInBeat} of 4` } : undefined}
         accessibilityState={{ busy: isLoading, disabled: !canPlay && !isPlaying }}
         disabled={!canPlay && !isPlaying}
         onPress={play}
         style={withPressedOpacity([styles.trigger, !isPlaying && styles.triggerIdle])}
       >
-        <Text style={[styles.transportIcon, { color: isPlaying ? theme.colors.white : theme.colors.blue }]}>{isLoading ? "…" : isPlaying ? "■" : "▶"}</Text>
+        <TransportIcon count={countInBeat} loading={isLoading} playing={isPlaying} color={isPlaying ? theme.colors.white : theme.colors.blue} />
       </Pressable>
       <Pressable android_disableSound accessibilityLabel="Expand audio settings" accessibilityRole="button" onPress={openPopover} style={withPressedOpacity([styles.trigger, styles.triggerIdle, styles.settingsTrigger])}>
         <MixerIcon filled={false} />
@@ -50,6 +53,23 @@ export const AudioTrigger = () => {
     </View>
   );
 };
+
+// Numbers and transport symbols use fixed vector bounds, independent of font
+// baselines. The triangle's filled-area center is the center of the viewBox.
+const COUNT_PATHS = {
+  1: "M8 8 L12 4 V20 M8 20 H16",
+  2: "M5 8 Q5 4 12 4 Q19 4 19 8 Q19 12 12 15 L5 20 H19",
+  3: "M5 4 H19 L12 11 Q19 11 19 15 Q19 20 12 20 Q5 20 5 16",
+  4: "M16 20 V4 L4 15 H20",
+};
+const TransportIcon = ({ count, loading, playing, color }) => (
+  <Svg accessible={false} pointerEvents="none" width={24} height={24} viewBox="0 0 24 24">
+    {count > 0 ? <Path d={COUNT_PATHS[count]} fill="none" stroke={color} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" />
+      : loading ? [6, 12, 18].map(cx => <Circle key={cx} cx={cx} cy={12} r={1.5} fill={color} />)
+        : playing ? <Rect x={5} y={5} width={14} height={14} fill={color} />
+          : <Path d="M7 4 L22 12 L7 20 Z" fill={color} />}
+  </Svg>
+);
 
 const MixerIcon = ({ filled }) => (
   <View accessible={false} style={styles.mixerIcon}>
@@ -64,7 +84,6 @@ export const AudioPopover = () => {
   const {
     accompaniment,
     countIn,
-    countRemaining,
     notesEnabled,
     overview,
     startOnRoot,
@@ -209,7 +228,6 @@ export const AudioPopover = () => {
           <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
           <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />
         </View>
-        {countRemaining > 0 && <Text accessibilityLiveRegion="polite" style={styles.message}>Count in: {countRemaining}</Text>}
         {overview && <Text style={styles.message}>Select a position to hear notes. The pulse continues in overview.</Text>}
         {!overview && notesEnabled && sequenceEmpty && <Text style={styles.message}>Select at least one note to play.</Text>}
         {!notesEnabled && accompaniment === "off" && !overview && <Text style={styles.message}>Choose Click or Drums to practice without notes.</Text>}
@@ -275,28 +293,27 @@ const styles = StyleSheet.create({
   toggleIconSelected: { tintColor: theme.colors.white },
   toggleRow: { flexDirection: "row", gap: 8, marginTop: 12 },
   toggleSelected: { backgroundColor: theme.colors.blue, borderColor: theme.colors.blue },
-  triggerGroup: { position: "absolute", flexDirection: "row", gap: 6, zIndex: 300 },
-  settingsTrigger: { width: 38, height: 44, borderRadius: 8 },
+  triggerGroup: { position: "absolute", alignItems: "center", flexDirection: "row", gap: 6, zIndex: 300 },
+  settingsTrigger: { width: 38, borderRadius: 8 },
   errorDot: { position: "absolute", right: 0, top: 0, width: 8, height: 8, borderRadius: 4, backgroundColor: "#A12622" },
-  transportIcon: { fontSize: 22 },
   toggleLabel: { fontSize: 14, color: theme.colors.blue, fontFamily: "proletarsk" },
   trigger: {
     alignItems: "center",
     backgroundColor: theme.colors.blue,
-    borderRadius: 22,
+    borderColor: theme.colors.blue,
+    borderWidth: 2,
+    borderRadius: AUDIO_BUTTON_SIZE / 2,
     elevation: 7,
-    height: 44,
+    height: AUDIO_BUTTON_SIZE,
     justifyContent: "center",
     shadowColor: "#000",
     shadowOffset: { height: 3, width: 0 },
     shadowOpacity: 0.25,
     shadowRadius: 5,
-    width: 44,
+    width: AUDIO_BUTTON_SIZE,
     zIndex: 300,
   },
   triggerIdle: {
     backgroundColor: theme.colors.white,
-    borderColor: theme.colors.blue,
-    borderWidth: 2,
   },
 });

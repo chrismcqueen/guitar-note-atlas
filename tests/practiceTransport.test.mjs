@@ -94,10 +94,43 @@ test('count-in does not light a note before its source starts',async t=>{
   const {transport,heard,counts}=await make(t,{},frames);
   transport.start();
   for(let time=0;time<2.1;time+=0.016){transport.context.currentTime=time;transport.tick();frames.frame();assert.equal(heard.at(-1),null);}
-  assert.deepEqual(counts,[4,3,2,1]);
+  assert.deepEqual(counts,[1,2,3,4]);
   transport.context.currentTime=2.1;transport.tick();frames.frame();
   assert.equal(heard.at(-1).location,'root');
   assert.equal(counts.at(-1),0);
+  transport.stop();
+});
+
+for (const tempo of [40,120,240]) test(`count-in displays 1–4 at the scheduled click onset at ${tempo} BPM`,async t=>{
+  const frames=display();
+  const {transport,counts}=await make(t,{tempo},frames);
+  transport.start();
+  t.mock.timers.tick(500);frames.frame();
+  assert.deepEqual(counts,[],'wall time cannot start the count while audio is frozen');
+  for(let beat=0;beat<4;beat++) {
+    const onset=0.1+beat*60/tempo;
+    transport.context.currentTime=onset-0.001;transport.tick();frames.frame();
+    assert.equal(counts.at(-1)??0,beat);
+    transport.context.currentTime=onset;frames.frame();
+    assert.equal(counts.at(-1),beat+1);
+    assert.ok(transport.context.starts.some(source=>source.key==='click'&&Math.abs(source.when-onset)<1e-9));
+  }
+  transport.context.currentTime=0.1+4*60/tempo;transport.tick();frames.frame();
+  assert.deepEqual(counts,[1,2,3,4,0]);
+  transport.stop();
+});
+
+test('delayed count-in frames skip old numbers and Stop clears the count before restart',async t=>{
+  const frames=display();
+  const {transport,counts}=await make(t,{},frames);
+  transport.start();
+  for(const time of [0.4,0.9,1.4]) {transport.context.currentTime=time;transport.tick();}
+  transport.context.currentTime=1.65;frames.frame();
+  assert.deepEqual(counts,[4]);
+  const oldFrame=[...frames.pending.values()][0];
+  transport.stop();assert.equal(counts.at(-1),0);
+  transport.start();oldFrame();assert.equal(counts.at(-1),0);
+  transport.context.currentTime=1.751;frames.frame();assert.equal(counts.at(-1),1);
   transport.stop();
 });
 
