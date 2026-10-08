@@ -7,9 +7,15 @@ const STOP_FADE = 0.012;
 const IDLE_DELAY_MS = 50;
 const VOLUMES = { hat: 0.08, kick: 0.48, snare: 0.45, click: 0.3 };
 const renderedKey = (key, rate, duration, volume) => `${key}:${rate}:${duration === undefined ? 'full' : Math.round(duration * 1e6)}:${volume}`;
+const displayFrames = {
+  request: callback => typeof globalThis.requestAnimationFrame === 'function'
+    ? globalThis.requestAnimationFrame(callback) : setTimeout(callback, 16),
+  cancel: id => typeof globalThis.cancelAnimationFrame === 'function'
+    ? globalThis.cancelAnimationFrame(id) : clearTimeout(id),
+};
 
 export class NativeAudioTransport {
-  constructor(AudioContext, AudioManager, callbacks) {
+  constructor(AudioContext, AudioManager, callbacks, frames = displayFrames) {
     this.context = new AudioContext();
     this.masterGain = this.context.createGain();
     this.masterGain.gain.value = 0.8;
@@ -20,7 +26,13 @@ export class NativeAudioTransport {
     this.buffers = new Map();
     this.rendered = new Map();
     this.sources = new Map();
-    this.timers = new Set();
+    this.frames = frames;
+    this.visualEvents = [];
+    this.visualNote = null;
+    this.visualNoteEnd = -Infinity;
+    this.visualCount = 0;
+    this.visualRun = 0;
+    this.visualFrame = null;
     this.timeline = new PracticeTimeline();
     this.idleTimer = null;
     this.idleSuspension = Promise.resolve();
@@ -81,7 +93,7 @@ export class NativeAudioTransport {
 
   buffer(key, when, volume, duration, rate = 1) {
     const buffer = this.prepared(key, volume, duration, rate);
-    if (!buffer) return;
+    if (!buffer) return null;
     const source = this.context.createBufferSource();
     const release = this.context.createGain();
     release.gain.value = 1;
@@ -96,11 +108,43 @@ export class NativeAudioTransport {
     };
     source.start(when);
     this.sources.set(source, { release, when, end: when + buffer.duration, key });
+    return buffer.duration;
   }
 
-  visual(task, when) {
-    const timer = setTimeout(() => { this.timers.delete(timer); task(); }, Math.max(0, (when - this.context.currentTime) * 1000));
-    this.timers.add(timer);
+  syncVisuals() {
+    if (!this.active) return;
+    const now = this.context.currentTime;
+    let note = this.visualNote;
+    let count = this.visualCount;
+    // A delayed frame catches up directly to the sounding note. Never replay
+    // obsolete highlights, or let a JS timer advance ahead of the audio clock.
+    while (this.visualEvents.length && this.visualEvents[0].time <= now) {
+      const event = this.visualEvents.shift();
+      if (event.kind === 'note') {
+        note = event.note;
+        this.visualNoteEnd = event.end;
+        this.audibleIndex = event.index + 1;
+      } else if (event.kind === 'beat') count = event.count;
+      else if (event.kind === 'change' && event.fadeNotes) note = null;
+      else if (event.kind === 'end') {
+        this.stop();
+        this.callbacks.onEnded();
+        return;
+      }
+    }
+    if (now >= this.visualNoteEnd) note = null;
+    if (note !== this.visualNote) { this.visualNote = note; this.callbacks.onNote(note); }
+    if (count !== this.visualCount) { this.visualCount = count; this.callbacks.onCount?.(count); }
+  }
+
+  startVisuals() {
+    const run = ++this.visualRun;
+    const frame = () => {
+      if (!this.active || run !== this.visualRun) return;
+      this.syncVisuals();
+      if (this.active && run === this.visualRun) this.visualFrame = this.frames.request(frame);
+    };
+    this.visualFrame = this.frames.request(frame);
   }
 
   start(count = true) {
@@ -110,6 +154,7 @@ export class NativeAudioTransport {
     this.timeline.start(this.context.currentTime + LEAD, this.config, count, this.audibleIndex);
     this.callbacks.onNote(null);
     this.tick();
+    this.startVisuals();
     this.scheduler = setInterval(() => this.tick(), 40);
   }
 
@@ -136,7 +181,7 @@ export class NativeAudioTransport {
       const { time, config } = event;
       if (event.kind === 'change') {
         this.fadeVoices(time, key => key.startsWith('guitar:') ? event.fadeNotes : config.accompaniment !== 'drums');
-        this.visual(() => { if (!config.notesEnabled) this.callbacks.onNote(null); }, time);
+        this.visualEvents.push(event);
       } else if (event.kind === 'beat') {
         if (event.count || config.accompaniment === 'metronome') this.buffer('drum:click', time, VOLUMES.click);
         else if (config.accompaniment === 'drums') {
@@ -144,12 +189,12 @@ export class NativeAudioTransport {
           if ((event.beat - this.timeline.countBeats) % 4 === 0) this.buffer('drum:kick', time, VOLUMES.kick);
           if ((event.beat - this.timeline.countBeats) % 4 === 2) this.buffer('drum:snare', time, VOLUMES.snare);
         }
-        this.visual(() => this.callbacks.onCount?.(event.count), time);
+        this.visualEvents.push(event);
       } else if (event.kind === 'note') {
-        this.buffer(`guitar:${event.note.sample}`, time, config.accompaniment === 'drums' ? 0.64 : 0.92, event.duration, event.note.playbackRate);
-        this.visual(() => { this.audibleIndex = event.index + 1; this.callbacks.onNote(event.note); }, time);
+        const duration = this.buffer(`guitar:${event.note.sample}`, time, config.accompaniment === 'drums' ? 0.64 : 0.92, event.duration, event.note.playbackRate);
+        if (duration !== null) this.visualEvents.push({ ...event, end: time + duration });
       } else if (event.kind === 'end') {
-        this.visual(() => { this.stop(); this.callbacks.onEnded(); }, time);
+        this.visualEvents.push(event);
       }
     }
   }
@@ -158,8 +203,13 @@ export class NativeAudioTransport {
     clearInterval(this.scheduler);
     this.scheduler = null;
     this.fadeVoices(this.context.currentTime);
-    this.timers.forEach(clearTimeout);
-    this.timers.clear();
+    this.visualRun++;
+    if (this.visualFrame !== null) this.frames.cancel(this.visualFrame);
+    this.visualFrame = null;
+    this.visualEvents.length = 0;
+    this.visualNote = null;
+    this.visualNoteEnd = -Infinity;
+    this.visualCount = 0;
     this.callbacks.onNote(null);
     this.callbacks.onCount?.(0);
   }

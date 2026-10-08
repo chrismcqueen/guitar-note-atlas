@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
-import React, { createContext, startTransition, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { AppState } from "react-native";
 
 import { PositionStore, PositionVisibilityStore, Store } from "../../Store";
@@ -137,8 +137,8 @@ export const AudioPlaybackProvider = ({ children }) => {
     ];
     if (native.current === undefined) {
       native.current = createNativeAudioTransport({
-        onNote: (note) => startTransition(() => setActiveNote(note)),
-        onCount: (count) => startTransition(() => setCountRemaining(count)),
+        onNote: setActiveNote,
+        onCount: setCountRemaining,
         onEnded: () => { running.current = false; notesRequested.current = false; fallbackIndex.current = 0; setIsPlaying(false); },
       });
     }

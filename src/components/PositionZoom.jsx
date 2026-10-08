@@ -143,7 +143,7 @@ const PositionZoom = ({ compact = false }) => {
         const y = verticalOffset + tabletGridOffset + note.string * renderedStringGap;
         const gray = note.color === "gray";
         const white = note.color === "white";
-        const highlighted = activeNote?.location === note.location;
+        const highlighted = activeNote?.location === note.location && activeNote.midi === note.midi;
         const fill = highlighted ? "#FFD84D" : gray ? theme.colors.neckLightGray : white ? theme.colors.white : theme.colors.black;
         const stroke = highlighted ? "#FFD84D" : gray ? theme.colors.neckDarkGray : theme.colors.black;
         const text = highlighted ? theme.colors.black : gray ? theme.colors.neckDarkGray : white ? theme.colors.black : theme.colors.white;

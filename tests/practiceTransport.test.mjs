@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { NativeAudioTransport } from '../src/utils/practiceTransport.mjs';
 import { buildPositionSequence } from '../src/utils/positionPlayback.mjs';
+import { NOTE_RATES } from '../src/utils/audioSequence.mjs';
 
 class Context {
   currentTime = 0;
@@ -27,19 +28,120 @@ class Context {
   async close() { this.state = 'closed'; }
   async decodeAudioData(key) { const b=this.createBuffer(1,3000,1000);b.key=key;return b; }
 }
-const make = async (t, overrides={}) => {
+const make = async (t, overrides={}, frames) => {
   t.mock.timers.enable({apis:['setTimeout','setInterval']});
   const notes = [{midi:47,pitchClass:11,sample:19,playbackRate:0.5,location:'low'}, {midi:48,pitchClass:0,sample:8,playbackRate:1,location:'root'}, {midi:52,pitchClass:4,sample:12,playbackRate:1,location:'high'}];
   const heard = [];
   const counts = [];
   let ended = 0;
-  const transport = new NativeAudioTransport(Context, {setAudioSessionActivity:async()=>{}}, {onNote:n=>heard.push(n), onCount:n=>counts.push(n),onEnded:()=>ended++});
+  const transport = new NativeAudioTransport(Context, {setAudioSessionActivity:async()=>{}}, {onNote:n=>heard.push(n), onCount:n=>counts.push(n),onEnded:()=>ended++}, frames);
   const schedule=transport.buffer;
   transport.buffer=function(key,...args){this.context.currentKey=key.startsWith('drum:')?key.slice(5):{'guitar:19':'low','guitar:8':'root','guitar:12':'high'}[key];return schedule.call(this,key,...args);};
   await transport.load([['drum:click','click'],['drum:hat','hat'],['drum:kick','kick'],['drum:snare','snare'],...notes.map(n=>[`guitar:${n.sample}`,n.location])]);
   transport.configure({plan:buildPositionSequence(notes,0), tempo:120,noteRate:'quarter',loop:true,notesEnabled:true,accompaniment:'off',countIn:true,...overrides});
   return {transport,heard,counts,ended:()=>ended};
 };
+const display = () => {
+  let id=0;
+  const pending=new Map();
+  return {
+    pending,
+    request(callback) { pending.set(++id,callback);return id; },
+    cancel(id) { pending.delete(id); },
+    frame() { const ready=[...pending.values()];pending.clear();ready.forEach(callback=>callback()); },
+  };
+};
+
+test('highlights follow the audio clock even when wall time advances while audio is frozen',async t=>{
+  const frames=display();
+  const {transport,heard}=await make(t,{countIn:false},frames);
+  transport.start();
+  t.mock.timers.tick(300);
+  frames.frame();
+  assert.equal(heard.at(-1),null);
+  transport.context.currentTime=0.099;frames.frame();
+  assert.equal(heard.at(-1),null);
+  transport.context.currentTime=0.1;frames.frame();
+  assert.equal(heard.at(-1).location,'root');
+  transport.stop();
+});
+
+test('a delayed display frame skips stale highlights and shows only the currently sounding note',async t=>{
+  const frames=display();
+  const {transport,heard}=await make(t,{countIn:false},frames);
+  transport.start();
+  for(const time of [0.4,0.9,1.4]){transport.context.currentTime=time;transport.tick();}
+  transport.context.currentTime=1.65;frames.frame();
+  assert.deepEqual(heard.filter(Boolean).map(note=>note.location),['low']);
+  assert.equal(transport.audibleIndex,4);
+  transport.stop();
+});
+
+for (const {id:noteRate} of NOTE_RATES) test(`${noteRate} highlights use the scheduled pitch and audio-clock onset`,async t=>{
+  const frames=display();
+  const {transport,heard}=await make(t,{countIn:false,tempo:240,noteRate,accompaniment:'drums'},frames);
+  transport.start();
+  for(let time=0;time<4;time+=0.016){
+    transport.context.currentTime=time;transport.tick();frames.frame();
+    const sounding=transport.context.starts.filter(source=>['root','high','low'].includes(source.key)&&source.when<=time).at(-1);
+    assert.equal(heard.at(-1)?.location,sounding?.key);
+  }
+  transport.stop();
+});
+
+test('count-in does not light a note before its source starts',async t=>{
+  const frames=display();
+  const {transport,heard,counts}=await make(t,{},frames);
+  transport.start();
+  for(let time=0;time<2.1;time+=0.016){transport.context.currentTime=time;transport.tick();frames.frame();assert.equal(heard.at(-1),null);}
+  assert.deepEqual(counts,[4,3,2,1]);
+  transport.context.currentTime=2.1;transport.tick();frames.frame();
+  assert.equal(heard.at(-1).location,'root');
+  assert.equal(counts.at(-1),0);
+  transport.stop();
+});
+
+test('a highlight clears when its sample ends before the next musical subdivision',async t=>{
+  const frames=display();
+  const {transport,heard}=await make(t,{countIn:false},frames);
+  transport.buffers.set('guitar:8',transport.context.createBuffer(1,200,1000));
+  transport.rendered.clear();transport.prepare(transport.config);
+  transport.start();
+  transport.context.currentTime=0.15;frames.frame();assert.equal(heard.at(-1).location,'root');
+  transport.context.currentTime=0.31;frames.frame();assert.equal(heard.at(-1),null);
+  transport.stop();
+});
+
+test('Stop cancels the display loop and an old frame cannot leak into a restarted run',async t=>{
+  const frames=display();
+  const {transport,heard}=await make(t,{countIn:false},frames);
+  transport.start();
+  const oldFrame=[...frames.pending.values()][0];
+  transport.context.currentTime=0.2;frames.frame();assert.equal(heard.at(-1).location,'root');
+  transport.stop();assert.equal(frames.pending.size,0);assert.equal(heard.at(-1),null);
+  transport.start(false);
+  const count=heard.length;oldFrame();
+  assert.equal(heard.length,count);assert.equal(frames.pending.size,1);
+  transport.context.currentTime=0.301;frames.frame();assert.equal(heard.at(-1).location,'root');
+  transport.stop();
+});
+
+test('position/tempo changes and muting update highlights on the same boundary as audio',async t=>{
+  const frames=display();
+  const {transport,heard}=await make(t,{countIn:false},frames);
+  transport.start();transport.context.currentTime=0.2;frames.frame();
+  const plan={...transport.config.plan,notes:transport.config.plan.notes.map(note=>({...note,location:`new-${note.location}`}))};
+  transport.configure({...transport.config,plan,tempo:90,noteRate:'eighth'},true);
+  transport.context.currentTime=0.4;transport.tick();
+  transport.context.currentTime=0.599;frames.frame();assert.equal(heard.at(-1).location,'root');
+  transport.context.currentTime=0.601;frames.frame();assert.equal(heard.at(-1).location,'new-root');
+  transport.context.currentTime=0.75;transport.tick();
+  transport.configure({...transport.config,notesEnabled:false,accompaniment:'drums'},true);
+  transport.context.currentTime=1.1;transport.tick();
+  transport.context.currentTime=1.266;frames.frame();assert.ok(heard.at(-1));
+  transport.context.currentTime=1.268;frames.frame();assert.equal(heard.at(-1),null);
+  transport.stop();
+});
 test('four count-in clicks precede the first root on the audio clock',async t=>{
   const {transport}=await make(t);
   transport.start();

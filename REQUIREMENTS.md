@@ -34,6 +34,7 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 ### Show the exact note being practiced
 
 - Highlight only the single fretboard location currently being played, rather than every occurrence of its pitch class or every octave.
+- Keep the highlight synchronized with the exact sounding pitch/location. Derive the current highlight from the native audio clock on each available display frame, skip stale visual events after a delayed frame, and clear highlights when notes end or playback stops. Treat note/count updates as urgent.
 - Make the highlight conspicuous enough to follow while practicing. Chris suggested turning the entire note yellow; that is a proposed visual treatment, not a fixed color requirement.
 - Overview playback visuals are undecided. The voice memo explicitly allows no playback highlight on the zoomed-out neck; avoid a visualization that makes the intended practice target ambiguous.
 
@@ -57,6 +58,7 @@ Lane requested implementation after reviewing the combined requirements. The fol
 | --- | --- |
 | Mobile overview audio | Suppress position notes without changing the saved Notes toggle. Keep the selected click/drums; when accompaniment is Off, global Play uses a click in overview. Selecting a position starts its notes only if global Play requested notes. Accompaniment-only playback stays accompaniment-only. No playback highlight appears on the overview. |
 | Accompaniment selection | Click and Drums select the accompaniment without starting playback. Selecting the current mode again keeps it selected; Off disables accompaniment. Play starts the selected Notes/accompaniment combination. While playing, mode changes apply on the shared beat grid. Stop affects everything and resets the sequence. |
+| Playback highlight timing | Display frames read the native audio clock against the actual scheduled notes and prepared sample endings. A delayed frame shows the current sounding note directly, without replaying stale highlights. Notes/count updates use normal React priority. The displayed MIDI pitch and fretboard location must both match the playing note, including guitar/bass changes. Screen refresh and output-route latency limit absolute speaker-to-display precision. |
 | Shared clock | One 12-tick-per-beat timeline represents every supported subdivision exactly. Both lanes derive timestamps from the same anchor. Live changes take effect at a shared beat boundary without starting separate clocks. |
 | Count-in | Optional four-click count-in, enabled by default, when starting from stopped. Changes to position/settings during playback do not repeat the count-in. |
 | Settings access | Dedicated visible settings button beside the compact play/stop button. Popover content scrolls on short screens. |
