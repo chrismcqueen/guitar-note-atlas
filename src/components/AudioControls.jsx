@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import Svg, { Circle, Path, Rect, Text as SvgText } from "react-native-svg";
 
 import { OverlayStore, Store } from "../../Store";
@@ -82,6 +82,7 @@ const MixerIcon = ({ filled }) => (
 
 export const AudioPopover = () => {
   const { dimensions, insets } = useContext(Store);
+  const window = useWindowDimensions();
   const {
     accompaniment,
     countIn,
@@ -103,6 +104,7 @@ export const AudioPopover = () => {
     tempo,
   } = useContext(AudioPlaybackStore);
   const [tempoText, setTempoText] = useState(String(tempo));
+  const [settingsContentHeight, setSettingsContentHeight] = useState(null);
   const tempoTapTimes = useRef([]);
   const { isTablet, left: triggerLeft, top: triggerTop } = audioControlPlacement(dimensions, insets);
   const slowerTempoPress = useRepeatPress(() => setTempo(tempo - 1), { accelerate: true });
@@ -136,6 +138,12 @@ export const AudioPopover = () => {
   // to cover both buttons inside the card's rounded border.
   const cardTop = triggerTop - 12;
   const cardLeft = Math.max(0, triggerLeft - 14);
+  const viewportHeight = Math.min(dimensions.height, Platform.OS === "web" ? window.height : Math.min(window.width, window.height));
+  const cardMaxHeight = Math.max(0, viewportHeight - cardTop - 12);
+  // Reserve padding/borders (32) and the fixed header plus gap (48). Native
+  // ScrollView needs a bounded height; maxHeight/flex shrink alone can leave
+  // its viewport as tall as the content inside the rotated Android shell.
+  const scrollHeight = Math.min(settingsContentHeight ?? 300, Math.max(0, cardMaxHeight - 80));
   const commitTempo = () => {
     setTempo(tempoText);
     setTempoText(String(Math.max(MIN_TEMPO, Math.min(MAX_TEMPO, Math.round(Number(tempoText) || tempo)))));
@@ -153,7 +161,7 @@ export const AudioPopover = () => {
         onPress={() => setPopoverOpen(false)}
         style={[styles.dismissLayer, { height: dimensions.height, width: dimensions.width }]}
       />
-      <View style={[styles.card, { left: cardLeft, top: cardTop, width: cardWidth, maxHeight: dimensions.height - cardTop - 12 }]}>
+      <View style={[styles.card, { left: cardLeft, top: cardTop, width: cardWidth, maxHeight: cardMaxHeight }]}>
         <View style={styles.titleRow}>
           <Pressable android_disableSound accessibilityLabel="Close audio settings" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
             <Text style={styles.closeText}>×</Text>
@@ -165,7 +173,9 @@ export const AudioPopover = () => {
         <ScrollView
           showsVerticalScrollIndicator
           keyboardShouldPersistTaps="handled"
-          style={styles.settingsScroll}
+          nestedScrollEnabled={Platform.OS === "android"}
+          onContentSizeChange={(_, height) => setSettingsContentHeight(height)}
+          style={[styles.settingsScroll, { height: scrollHeight }]}
           contentContainerStyle={styles.settingsContent}
         >
         <View style={styles.tempoRow}>
@@ -208,11 +218,11 @@ export const AudioPopover = () => {
             </Pressable>
             <View accessible accessibilityLabel={`Subdivision: ${selectedNoteRate.name}`} style={styles.rateValue}>
               <Text accessible={false} style={styles.rateLabel}>{selectedNoteRate.label}</Text>
-              <Svg accessible={false} pointerEvents="none" width={28} height={38} viewBox="0 0 28 38">
+              <Svg accessible={false} pointerEvents="none" width={30} height={24} viewBox="0 0 30 24">
                 {/* Fixed note origin/baseline: flags, dots and triplets never recenter the note. */}
-                <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={18} x={3} y={28}>{selectedNoteRate.notation[0]}</SvgText>
-                {selectedNoteRate.notation.endsWith(".") && <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={18} x={16} y={28}>.</SvgText>}
-                {selectedNoteRate.triplet && <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={9} textAnchor="middle" x={18} y={15}>3</SvgText>}
+                <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={16} x={12} y={21}>{selectedNoteRate.notation[0]}</SvgText>
+                {selectedNoteRate.notation.endsWith(".") && <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={16} x={24} y={21}>.</SvgText>}
+                {selectedNoteRate.triplet && <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={8} textAnchor="middle" x={27} y={9}>3</SvgText>}
               </Svg>
             </View>
             <Pressable android_disableSound accessibilityLabel="Select shorter subdivision" accessibilityRole="button" accessibilityState={{ disabled: !canSelectShorterRate }} disabled={!canSelectShorterRate} hitSlop={CONTROL_HIT_SLOP} onPress={() => setNoteRate(NOTE_RATES[noteRateIndex - 1].id)} style={withPressedOpacity([styles.stepButton, !canSelectShorterRate && styles.disabled])}>
@@ -226,15 +236,15 @@ export const AudioPopover = () => {
           <Toggle accessibilityLabel="Loop" icon={require("../../assets/audio/icons/loop.png")} onPress={() => setLoopEnabled(!loopEnabled)} selected={loopEnabled} />
           <Toggle accessibilityLabel="Four-click count-in" label="Count in" onPress={() => setCountIn(!countIn)} selected={countIn} />
         </View>
+        <View style={styles.toggleRow}>
+          <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
+          <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />
+        </View>
         <Text style={styles.accompanimentLabel}>Accompaniment</Text>
         <View style={[styles.toggleRow, styles.accompanimentRow]}>
           {[['off', 'Off'], ['metronome', 'Click'], ['drums', 'Drums']].map(([mode, label]) => (
             <Toggle key={mode} accessibilityLabel={`Accompaniment ${label}`} label={label} selected={accompaniment === mode} onPress={() => setAccompaniment(mode)} />
           ))}
-        </View>
-        <View style={styles.toggleRow}>
-          <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
-          <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />
         </View>
         {!!error && <Text style={styles.error}>{error}</Text>}
         </ScrollView>
@@ -282,11 +292,10 @@ const styles = StyleSheet.create({
   mixerTrackIdle: { backgroundColor: theme.colors.blue },
   noteRateRow: { alignItems: "center", flexDirection: "row", marginTop: 10 },
   popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent", zIndex: 4500 },
-  rateValue: { alignItems: "center", flexDirection: "row", paddingHorizontal: 2, width: 74 },
-  rateLabel: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 15, lineHeight: 22, textAlign: "left", width: 42 },
-  // Only the body shrinks when the card reaches its screen-height limit.
-  settingsScroll: { flexGrow: 0, flexShrink: 1, minHeight: 0 },
-  settingsContent: { paddingBottom: 2 },
+  rateValue: { alignItems: "center", height: 42, width: 74 },
+  rateLabel: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 15, height: 18, lineHeight: 18, padding: 0, includeFontPadding: false, textAlign: "center", width: 74 },
+  settingsScroll: { flexGrow: 0, flexShrink: 0 },
+  settingsContent: { paddingBottom: 8 },
   stepButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", width: 38 },
   stepText: { color: theme.colors.blue, fontSize: 24, lineHeight: Platform.OS === "android" ? 28 : 25 },
   tapTempoButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", marginRight: 6, width: 42 },
@@ -295,7 +304,7 @@ const styles = StyleSheet.create({
   tempoRow: { alignItems: "center", flexDirection: "row", marginTop: 12 },
   tempoValue: { alignItems: "center", flexDirection: "row", justifyContent: "center", width: 74 },
   title: { color: theme.colors.black, flex: 1, fontFamily: "blackout", fontSize: 20, textAlign: "center" },
-  titleRow: { alignItems: "center", backgroundColor: theme.colors.white, flexDirection: "row", flexShrink: 0, marginBottom: 10, zIndex: 1 },
+  titleRow: { alignItems: "center", backgroundColor: theme.colors.white, flexDirection: "row", flexShrink: 0, height: 38, marginBottom: 10, zIndex: 1 },
   toggle: { alignItems: "center", borderColor: theme.colors.lightBlue, borderRadius: 5, borderWidth: 1.5, flex: 1, justifyContent: "center", minHeight: 38 },
   toggleIcon: { height: 27, resizeMode: "contain", tintColor: theme.colors.blue, width: 41 },
   toggleIconSelected: { tintColor: theme.colors.white },
