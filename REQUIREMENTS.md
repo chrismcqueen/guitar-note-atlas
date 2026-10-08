@@ -43,7 +43,7 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 
 - Keep audio settings in an expandable popover so the normal fretboard controls retain their space.
 - Label the popover “Audio Settings” and keep it limited to settings. The main-screen button is the only Play/Stop control; omit popover Play/Stop and Stop / Reset buttons.
-- Omit bottom helper/instruction text from Audio Settings. Keep “Accompaniment” as a label directly above the Off/Click/Drums row.
+- Omit bottom helper/instruction text from Audio Settings. On phones, add a small helper directly beneath the header: “Select a position to play notes. Full neck view plays accompaniment only.” Keep it at the top of the scrolling body and omit it on tablets. Keep “Accompaniment” as a label directly above the Off/Click/Drums row.
 - Keep the Audio Settings title and close button fixed. Bound the scrolling body explicitly to the usable window height, including Android’s rotated phone canvas, so all settings remain reachable without clipping at the bottom.
 - Every Tap Tempo press sounds the existing metronome click, including the first tap and while stopped. Keep touch-timestamp tempo detection and the practice clock intact; tapping must not start practice playback or advance count-in/highlights. Return idle native output to suspension after the click ends.
 - Always cover both main-screen audio buttons when the popover is open, including phone/tablet layouts and safe-area changes. Hide the underlying buttons until settings close.

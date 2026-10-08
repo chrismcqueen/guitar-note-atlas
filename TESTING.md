@@ -165,3 +165,9 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Reduce only the collapsed settings button from 44 to 40 points high, retaining its 38-point width and centered mixer icon. The trigger row vertically centers it beside the unchanged 44-point Play circle.
 - At 844 × 390 in the browser, Play measures 44 × 44 at y=50 and Settings measures 38 × 40 at y=52. Both centerlines are y=72; the settings icon center exactly matches its button center (77, 72).
 - Web export and bundled Android/iOS Release builds pass. The generated Android Studio Java 25 daemon override was moved out of the project to restore the existing Java 17 build. Updated bundled builds installed/launched on Pixel and iPad.
+
+### Phone overview playback hint — October 7, 2026
+
+- Add a small, two-line phone-only hint directly beneath Audio Settings: “Select a position to play notes. Full neck view plays accompaniment only.” Use the same phone/tablet breakpoint as playback. Keep the hint at the top of the scrolling body so the fixed header stays compact.
+- Browser check at 844 × 390 confirms both lines fit without wrapping further. At 667 × 320 the full Off/Click/Drums row remains reachable by scrolling while the close button stays at y=54. The hint is absent at the 1200 × 800 tablet breakpoint.
+- Web export and Android/iOS bundled Release builds pass; current builds installed/launched on Pixel and iPad.

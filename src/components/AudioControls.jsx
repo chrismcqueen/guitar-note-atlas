@@ -178,6 +178,11 @@ export const AudioPopover = () => {
           style={[styles.settingsScroll, { height: scrollHeight }]}
           contentContainerStyle={styles.settingsContent}
         >
+        {!isTablet && (
+          <Text style={styles.mobileHint}>
+            Select a position to play notes.{"\n"}Full neck view plays accompaniment only.
+          </Text>
+        )}
         <View style={styles.tempoRow}>
           <View style={styles.controlLead}>
             <Text style={styles.label}>Tempo</Text>
@@ -283,6 +288,7 @@ const styles = StyleSheet.create({
   dismissLayer: { backgroundColor: "rgba(0, 0, 0, 0.001)", left: 0, position: "absolute", top: 0, zIndex: 0 },
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
   label: { color: theme.colors.black, flex: 1, fontFamily: "proletarsk", fontSize: 17 },
+  mobileHint: { color: theme.colors.grey, fontSize: 12, lineHeight: 16, textAlign: "center" },
   accompanimentLabel: { color: theme.colors.grey, fontSize: 12, marginTop: 12, textAlign: "center" },
   accompanimentRow: { marginTop: 6 },
   mixerIcon: { gap: 5, width: 24 },
