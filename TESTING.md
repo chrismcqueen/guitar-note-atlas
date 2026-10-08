@@ -106,3 +106,8 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Reproduced stale dark fret/string clipping on the physical Pixel: dragging updated the white position window and notes while some dark lines remained at the previous position. Refresh the SVG clipping definition and its references whenever the window position or width changes, in both phone and tablet necks.
 - Installed the updated bundled Release build on the Pixel 4a and verified held drags to high, middle, and low positions in both directions. Dark frets, strings, and anchor dots follow the selected window; the previous region dims correctly. Released the test gesture afterward.
 - All 100 automated tests, Android/iOS bundled Release builds, and web export pass. Installed and opened the updated iPad simulator build; its overview shows the dark lines within the selected window. Android tablet visual testing remains pending.
+
+### Settings-only audio popover — October 7, 2026
+
+- Renamed the popover to “Audio Settings” and removed its Play/Stop and Stop / Reset buttons. The main-screen Play/Stop button remains the single playback control, with its existing reset behavior. Updated the instructions and removed unused popover playback styles/loading-label state.
+- All 100 tests, web export, and bundled Android/iOS Release builds pass. Installed and opened both updated builds on the Pixel and iPad simulator. Visually checked the iPad popover: the title fits, settings remain visible, and neither playback button appears.

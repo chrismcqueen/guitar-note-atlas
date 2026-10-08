@@ -11,7 +11,6 @@ import { getMenuVisualCenterX, phoneHeaderHeight, tabletHeaderHeight } from "./H
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 
 const CONTROL_HIT_SLOP = 3;
-const LOADING_LABEL_DELAY_MS = 180;
 const TAP_TEMPO_RESET_MS = 2000;
 
 export const AudioTrigger = () => {
@@ -58,25 +57,20 @@ export const AudioPopover = () => {
   const { dimensions, insets } = useContext(Store);
   const {
     accompaniment,
-    canPlay,
     countIn,
     countRemaining,
     notesEnabled,
     overview,
     startOnRoot,
     error,
-    isLoading,
-    isPlaying,
     loopEnabled,
     noteRate,
-    play,
     popoverOpen,
     sequenceEmpty,
     setAccompaniment,
     setCountIn,
     setNotesEnabled,
     setStartOnRoot,
-    stop,
     setLoopEnabled,
     setNoteRate,
     setPopoverOpen,
@@ -84,7 +78,6 @@ export const AudioPopover = () => {
     tempo,
   } = useContext(AudioPlaybackStore);
   const [tempoText, setTempoText] = useState(String(tempo));
-  const [showLoadingLabel, setShowLoadingLabel] = useState(false);
   const tempoTapTimes = useRef([]);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const slowerTempoPress = useRepeatPress(() => setTempo(tempo - 1), { accelerate: true });
@@ -112,14 +105,6 @@ export const AudioPopover = () => {
   };
 
   useEffect(() => setTempoText(String(tempo)), [tempo]);
-  useEffect(() => {
-    if (!isLoading) {
-      setShowLoadingLabel(false);
-      return undefined;
-    }
-    const timeout = setTimeout(() => setShowLoadingLabel(true), LOADING_LABEL_DELAY_MS);
-    return () => clearTimeout(timeout);
-  }, [isLoading]);
   if (!popoverOpen) return null;
 
   const cardWidth = isTablet ? 330 : 292;
@@ -148,30 +133,14 @@ export const AudioPopover = () => {
       />
       <View style={[styles.card, { left: cardLeft, top: cardTop, width: cardWidth, maxHeight: dimensions.height - cardTop - 12 }]}>
         <View style={styles.titleRow}>
-          <Pressable android_disableSound accessibilityLabel="Close audio controls" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
+          <Pressable android_disableSound accessibilityLabel="Close audio settings" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
             <Text style={styles.closeText}>×</Text>
           </Pressable>
-          <Text style={styles.title}>Audio Player</Text>
+          <Text style={styles.title}>Audio Settings</Text>
           <View accessible={false} style={styles.closeButton} />
         </View>
 
         <ScrollView showsVerticalScrollIndicator contentContainerStyle={{ paddingBottom: 2 }}>
-        <Pressable
-          android_disableSound
-          accessibilityRole="button"
-          accessibilityState={{ busy: isLoading, disabled: !canPlay && !isPlaying }}
-          disabled={!canPlay && !isPlaying}
-          hitSlop={CONTROL_HIT_SLOP}
-          onPress={play}
-          style={withPressedOpacity([
-            styles.playButton,
-            !isPlaying && styles.playButtonIdle,
-            (!canPlay && !isPlaying) && styles.disabled,
-          ])}
-        >
-          <Text style={[styles.playText, !isPlaying && styles.playTextIdle]}>{showLoadingLabel ? "Loading sounds…" : isPlaying ? "Stop" : "Play"}</Text>
-        </Pressable>
-
         <View style={styles.tempoRow}>
           <View style={styles.controlLead}>
             <Text style={styles.label}>Tempo</Text>
@@ -231,12 +200,11 @@ export const AudioPopover = () => {
           ))}
         </View>
         <Text style={styles.message}>Accompaniment</Text>
-        <Text style={styles.message}>Choose Notes and accompaniment, then press Play. Stop resets everything.</Text>
+        <Text style={styles.message}>Choose Notes and accompaniment, then close settings and press Play on the main screen. Stop resets everything.</Text>
         <View style={styles.toggleRow}>
           <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
           <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />
         </View>
-        <Pressable android_disableSound accessibilityLabel="Stop and reset audio" accessibilityRole="button" onPress={stop} style={withPressedOpacity(styles.resetButton)}><Text style={styles.tapTempoText}>Stop / Reset</Text></Pressable>
         {countRemaining > 0 && <Text accessibilityLiveRegion="polite" style={styles.message}>Count in: {countRemaining}</Text>}
         {overview && <Text style={styles.message}>Select a position to hear notes. The pulse continues in overview.</Text>}
         {!overview && notesEnabled && sequenceEmpty && <Text style={styles.message}>Select at least one note to play.</Text>}
@@ -285,10 +253,6 @@ const styles = StyleSheet.create({
   mixerTrack: { backgroundColor: theme.colors.white, height: 2, position: "relative", width: 24 },
   mixerTrackIdle: { backgroundColor: theme.colors.blue },
   noteRateRow: { alignItems: "center", flexDirection: "row", marginTop: 10 },
-  playButton: { alignItems: "center", backgroundColor: theme.colors.blue, borderRadius: 5, justifyContent: "center", minHeight: 44 },
-  playButtonIdle: { backgroundColor: theme.colors.white, borderColor: theme.colors.blue, borderWidth: 1.5 },
-  playText: { color: theme.colors.white, fontFamily: "proletarsk", fontSize: 17 },
-  playTextIdle: { color: theme.colors.blue },
   popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent", zIndex: 4500 },
   rateDot: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 17, left: 53, position: "absolute" },
   rateMainLabel: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 17, textAlign: "center", width: 48 },
@@ -312,7 +276,6 @@ const styles = StyleSheet.create({
   errorDot: { position: "absolute", right: 0, top: 0, width: 8, height: 8, borderRadius: 4, backgroundColor: "#A12622" },
   transportIcon: { fontSize: 22 },
   toggleLabel: { fontSize: 14, color: theme.colors.blue, fontFamily: "proletarsk" },
-  resetButton: { alignItems: "center", padding: 8, marginTop: 8 },
   trigger: {
     alignItems: "center",
     backgroundColor: theme.colors.blue,

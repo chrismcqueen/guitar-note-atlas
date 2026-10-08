@@ -42,6 +42,7 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 ### Controls and accompaniment
 
 - Keep audio settings in an expandable popover so the normal fretboard controls retain their space.
+- Label the popover “Audio Settings” and keep it limited to settings. The main-screen button is the only Play/Stop control; omit popover Play/Stop and Stop / Reset buttons.
 - When collapsed, provide a compact play/pause control, as requested in the voice memo.
 - Provide a notes-on/off toggle so users can practice with only a metronome or drum groove.
 - Retain adjustable tempo, tap tempo, rhythmic subdivisions, and independent accompaniment controls from the demonstrated player.
@@ -62,8 +63,8 @@ Lane requested implementation after reviewing the combined requirements. The fol
 | Playback highlight timing | Display frames read the native audio clock against the actual scheduled notes and prepared sample endings. A delayed frame shows the current sounding note directly, without replaying stale highlights. Notes/count updates use normal React priority. The displayed MIDI pitch and fretboard location must both match the playing note, including guitar/bass changes. Screen refresh and output-route latency limit absolute speaker-to-display precision. |
 | Shared clock | One 12-tick-per-beat timeline represents every supported subdivision exactly. Both lanes derive timestamps from the same anchor. Live changes take effect at a shared beat boundary without starting separate clocks. |
 | Count-in | Optional four-click count-in, enabled by default, when starting from stopped. Changes to position/settings during playback do not repeat the count-in. |
-| Settings access | Dedicated visible settings button beside the compact play/stop button. Popover content scrolls on short screens. |
-| Stop and restart | Both the main Stop control and Stop / Reset reset to the starting note. The next Play begins at the lowest root (or lowest selected note when Root start is off), with the optional count-in. One-time playback stops the whole player after reaching the position's lowest selected note. |
+| Settings access | Dedicated visible settings button beside the compact play/stop button. The “Audio Settings” popover contains settings only and scrolls on short screens. |
+| Stop and restart | The main-screen Play/Stop button is the only playback control. Stop resets to the starting note. The next Play begins at the lowest root (or lowest selected note when Root start is off), with the optional count-in. One-time playback stops the whole player after reaching the position's lowest selected note. |
 | Starting note | Root start by default, with a Lowest note option. After the initial pass, loops traverse the full range without repeating endpoint notes. |
 | Missing root / duplicate pitches | When the root is excluded, start at the lowest selected note. Play each distinct pitch once per traversal, choosing a deterministic location on the lower string when there is a unison. |
 | Key, position, or note selection changes | Restart the new position's sequence. Native accompaniment retains its beat grid; no new count-in. Notes-off remains respected. Handedness and upside-down options transform the drawing without changing the sounding pitch/location. |
@@ -80,7 +81,7 @@ Native device timing, pitch shifting, and layout still require device listening/
 - Collapsing settings leaves a usable playback control and restores the normal screen space on phone and tablet.
 - Preserve the approved navigation and selection gestures while adding playback controls.
 - On a cold launch, verify the splash stays visible until audio is ready, including with delayed loading. A failed audio load keeps the splash visible with a working Retry button. Opening audio controls and choosing Click/Drums must stay silent until Play.
-- Verify overview transitions, count-in, stop/restart, and Stop / Reset against the implementation decisions above on native devices before release.
+- Verify overview transitions, count-in, and main-screen stop/restart against the implementation decisions above on native devices before release.
 
 ## Source references
 
