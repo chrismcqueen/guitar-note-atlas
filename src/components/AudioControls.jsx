@@ -98,6 +98,7 @@ export const AudioPopover = () => {
     setNoteRate,
     setPopoverOpen,
     setTempo,
+    tapClick,
     tempo,
   } = useContext(AudioPlaybackStore);
   const [tempoText, setTempoText] = useState(String(tempo));
@@ -112,6 +113,7 @@ export const AudioPopover = () => {
   const canSelectLongerRate = noteRateIndex < NOTE_RATES.length - 1;
   const canSelectShorterRate = noteRateIndex > 0;
   const tapTempo = (event) => {
+    tapClick();
     // Use the native touch-down timestamp so JS/rendering delays do not become
     // part of the measured interval. Fall back to the monotonic clock for
     // accessibility activations or platforms that omit the timestamp.

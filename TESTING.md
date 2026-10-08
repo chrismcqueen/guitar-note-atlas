@@ -123,3 +123,8 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 
 - Removed the bottom instructions and conditional overview/empty-selection/notes-off helper messages. Kept “Accompaniment” directly above Off/Click/Drums, with a compact gap. Actual playback errors still appear when present.
 - All 104 tests, web export, and bundled Android/iOS Release builds pass. Native iPad visual check confirms the label order and shorter card without helper text.
+
+### Audible tap tempo — October 7, 2026
+
+- Tap Tempo's touch-down handler plays the existing cached metronome click on every press, including the first tap. Native playback uses an immediate one-shot on the existing audio context without starting/re-anchoring practice or changing count/highlight state. Idle output resumes for the click and suspends after it finishes; repeated taps extend that lifetime. Stop/close invalidate taps waiting for activation. The Expo Audio fallback uses the existing click player pool.
+- All 108 tests, web export, and bundled iOS/Android Release builds pass. New regressions cover immediate cached-click scheduling, idle resume/suspend, repeated taps, unchanged active clock/count-in, and Stop during activation. Native iPad UI checks exercise first/repeated taps, retain tempo detection, and show no playback error; practice remains stopped afterward. Physical-device listening confirmation remains a manual check.

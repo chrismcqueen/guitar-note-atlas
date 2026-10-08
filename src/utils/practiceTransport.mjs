@@ -37,6 +37,8 @@ export class NativeAudioTransport {
     this.idleTimer = null;
     this.idleSuspension = Promise.resolve();
     this.active = false;
+    this.tapRun = 0;
+    this.closed = false;
     this.audibleIndex = 0;
     this.config = { plan: { notes: [] }, loop: true, tempo: 100, noteRate: 'quarter', notesEnabled: true, accompaniment: 'off', countIn: true };
   }
@@ -90,6 +92,30 @@ export class NativeAudioTransport {
   get nextNote() { return this.timeline.nextNote; }
   get countBeats() { return this.timeline.countBeats; }
   get origin() { return this.timeline.anchorTime; }
+
+  async tapClick() {
+    if (this.closed || !this.buffers.has('drum:click')) return;
+    const run = this.tapRun;
+    this.cancelIdleSuspension();
+    if (!this.active) {
+      this.sessionReady ??= this.audioManager.setAudioSessionActivity(true);
+      await this.sessionReady;
+      await this.idleSuspension;
+      if (run !== this.tapRun || this.closed) return;
+      if (this.context.state !== 'running') await this.context.resume();
+    }
+    if (run !== this.tapRun || this.closed) return;
+    // An immediate one-shot uses the existing click buffer without starting
+    // or re-anchoring the practice timeline or updating its visual count.
+    const duration = this.buffer('drum:click', this.context.currentTime, VOLUMES.click);
+    if (!this.active && duration !== null) {
+      this.cancelIdleSuspension();
+      this.idleTimer = setTimeout(() => {
+        this.idleTimer = null;
+        if (!this.active) this.idleSuspension = this.context.suspend().catch(() => {});
+      }, duration * 1000 + IDLE_DELAY_MS);
+    }
+  }
 
   buffer(key, when, volume, duration, rate = 1) {
     const buffer = this.prepared(key, volume, duration, rate);
@@ -200,6 +226,7 @@ export class NativeAudioTransport {
   }
 
   cancel() {
+    this.tapRun++;
     clearInterval(this.scheduler);
     this.scheduler = null;
     this.fadeVoices(this.context.currentTime);
@@ -233,6 +260,7 @@ export class NativeAudioTransport {
   }
   stop() { this.pause(); }
   async close() {
+    this.closed = true;
     this.stop();
     this.cancelIdleSuspension();
     await this.idleSuspension;

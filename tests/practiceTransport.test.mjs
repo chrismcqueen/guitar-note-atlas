@@ -52,6 +52,62 @@ const display = () => {
   };
 };
 
+test('tap tempo click wakes idle output, sounds immediately, and returns to idle without starting practice',async t=>{
+  const {transport,heard,counts}=await make(t);
+  transport.stop();t.mock.timers.tick(50);await Promise.resolve();
+  assert.equal(transport.context.state,'suspended');
+  transport.context.currentTime=0.75;
+  const visuals={notes:heard.length,counts:counts.length};
+  await transport.tapClick();
+  assert.deepEqual(transport.context.starts,[{when:0.75,rate:1,key:'click'}]);
+  assert.equal(transport.context.state,'running');
+  assert.equal(transport.active,false);assert.equal(transport.scheduler,null);
+  assert.equal(heard.length,visuals.notes);assert.equal(counts.length,visuals.counts);
+  t.mock.timers.tick(3050);await Promise.resolve();
+  assert.equal(transport.context.state,'suspended');
+  await transport.close();
+});
+
+test('tap tempo click during practice leaves the audio grid and count-in unchanged',async t=>{
+  const frames=display();
+  const {transport,counts}=await make(t,{},frames);
+  transport.start();
+  const grid={origin:transport.origin,beat:transport.nextBeat,note:transport.nextNote,count:transport.countBeats};
+  transport.context.currentTime=0.15;frames.frame();assert.deepEqual(counts,[1]);
+  await transport.tapClick();
+  assert.equal(transport.context.starts.at(-1).key,'click');
+  assert.equal(transport.context.starts.at(-1).when,0.15);
+  assert.deepEqual({origin:transport.origin,beat:transport.nextBeat,note:transport.nextNote,count:transport.countBeats},grid);
+  assert.deepEqual(counts,[1]);assert.equal(transport.active,true);
+  t.mock.timers.tick(3050);assert.equal(transport.context.state,'running');
+  transport.stop();
+});
+
+test('repeated idle taps each sound and extend output lifetime until the final click ends',async t=>{
+  const {transport}=await make(t);
+  await transport.tapClick();
+  t.mock.timers.tick(1000);transport.context.currentTime=1;
+  await transport.tapClick();
+  assert.deepEqual(transport.context.starts.map(source=>source.when),[0,1]);
+  t.mock.timers.tick(2050);assert.equal(transport.context.state,'running');
+  t.mock.timers.tick(1000);await Promise.resolve();assert.equal(transport.context.state,'suspended');
+  await transport.close();
+});
+
+test('Stop cancels a tap waiting for output activation and closed transports ignore taps',async t=>{
+  const {transport}=await make(t);
+  transport.context.state='suspended';
+  let finishResume;
+  transport.context.resume=()=>new Promise(resolve=>{finishResume=resolve;});
+  const tap=transport.tapClick();
+  for(let n=0;n<4;n++) await Promise.resolve();
+  assert.ok(finishResume);
+  transport.stop();finishResume();await tap;
+  assert.deepEqual(transport.context.starts,[]);
+  await transport.close();await transport.tapClick();
+  assert.deepEqual(transport.context.starts,[]);
+});
+
 test('highlights follow the audio clock even when wall time advances while audio is frozen',async t=>{
   const frames=display();
   const {transport,heard}=await make(t,{countIn:false},frames);

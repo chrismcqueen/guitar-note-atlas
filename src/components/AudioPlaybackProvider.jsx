@@ -239,6 +239,16 @@ export const AudioPlaybackProvider = ({ children }) => {
     tick();
   }, [stop, trigger]);
 
+  const tapClick = useCallback(() => {
+    if (!mounted.current || !audioReady) return;
+    try {
+      if (native.current) void native.current.tapClick().catch(() => {
+        if (mounted.current) setError("Unable to play the tap tempo click.");
+      });
+      else trigger("drum:click", 0.3);
+    } catch (_) { setError("Unable to play the tap tempo click."); }
+  }, [audioReady, trigger]);
+
   const start = useCallback(async (count = true, resetPosition = false) => {
     const id = ++command.current;
     const preservingClock = running.current && !count;
@@ -321,7 +331,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     activeNote, countInBeat, error, isLoading, isPlaying, popoverOpen, overview, ...settings,
     loopEnabled: settings.loop, sequenceEmpty: plan.notes.length === 0,
     canPlay: (config.notesEnabled && plan.notes.length > 0) || config.accompaniment !== "off",
-    play, stop, setPopoverOpen, openPopover: () => setPopoverOpen(true),
+    play, stop, tapClick, setPopoverOpen, openPopover: () => setPopoverOpen(true),
     setTempo: (tempo) => update("tempo", clampTempo(tempo)),
     setNoteRate: (rate) => update("noteRate", normalizeNoteRate(rate)),
     setLoopEnabled: (enabled) => update("loop", enabled),
