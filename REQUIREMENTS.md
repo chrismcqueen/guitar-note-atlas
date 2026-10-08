@@ -43,6 +43,7 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 
 - Keep audio settings in an expandable popover so the normal fretboard controls retain their space.
 - Label the popover “Audio Settings” and keep it limited to settings. The main-screen button is the only Play/Stop control; omit popover Play/Stop and Stop / Reset buttons.
+- Omit bottom helper/instruction text from Audio Settings. Keep “Accompaniment” as a label directly above the Off/Click/Drums row.
 - Always cover both main-screen audio buttons when the popover is open, including phone/tablet layouts and safe-area changes. Hide the underlying buttons until settings close.
 - Keep both main-screen audio buttons exactly 44 points high. Play stays a 44-by-44 circle with centered vector Play/Stop symbols. Show the count-in as centered 1–2–3–4 inside this button, advancing from the same audio-clock/display-frame updates as note highlights; remove the popover countdown. Tapping the button during count-in still stops and resets playback.
 - When collapsed, provide a compact play/pause control, as requested in the voice memo.

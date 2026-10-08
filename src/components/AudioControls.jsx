@@ -85,13 +85,11 @@ export const AudioPopover = () => {
     accompaniment,
     countIn,
     notesEnabled,
-    overview,
     startOnRoot,
     error,
     loopEnabled,
     noteRate,
     popoverOpen,
-    sequenceEmpty,
     setAccompaniment,
     setCountIn,
     setNotesEnabled,
@@ -217,20 +215,16 @@ export const AudioPopover = () => {
           <Toggle accessibilityLabel="Loop" icon={require("../../assets/audio/icons/loop.png")} onPress={() => setLoopEnabled(!loopEnabled)} selected={loopEnabled} />
           <Toggle accessibilityLabel="Four-click count-in" label="Count in" onPress={() => setCountIn(!countIn)} selected={countIn} />
         </View>
-        <View style={styles.toggleRow}>
+        <Text style={styles.accompanimentLabel}>Accompaniment</Text>
+        <View style={[styles.toggleRow, styles.accompanimentRow]}>
           {[['off', 'Off'], ['metronome', 'Click'], ['drums', 'Drums']].map(([mode, label]) => (
             <Toggle key={mode} accessibilityLabel={`Accompaniment ${label}`} label={label} selected={accompaniment === mode} onPress={() => setAccompaniment(mode)} />
           ))}
         </View>
-        <Text style={styles.message}>Accompaniment</Text>
-        <Text style={styles.message}>Choose Notes and accompaniment, then close settings and press Play on the main screen. Stop resets everything.</Text>
         <View style={styles.toggleRow}>
           <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
           <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />
         </View>
-        {overview && <Text style={styles.message}>Select a position to hear notes. The pulse continues in overview.</Text>}
-        {!overview && notesEnabled && sequenceEmpty && <Text style={styles.message}>Select at least one note to play.</Text>}
-        {!notesEnabled && accompaniment === "off" && !overview && <Text style={styles.message}>Choose Click or Drums to practice without notes.</Text>}
         {!!error && <Text style={styles.error}>{error}</Text>}
         </ScrollView>
       </View>
@@ -268,7 +262,8 @@ const styles = StyleSheet.create({
   dismissLayer: { backgroundColor: "rgba(0, 0, 0, 0.001)", left: 0, position: "absolute", top: 0, zIndex: 0 },
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
   label: { color: theme.colors.black, flex: 1, fontFamily: "proletarsk", fontSize: 17 },
-  message: { color: theme.colors.grey, fontSize: 12, marginTop: 8, textAlign: "center" },
+  accompanimentLabel: { color: theme.colors.grey, fontSize: 12, marginTop: 12, textAlign: "center" },
+  accompanimentRow: { marginTop: 6 },
   mixerIcon: { gap: 5, width: 24 },
   mixerKnob: { backgroundColor: theme.colors.white, borderRadius: 3, height: 6, position: "absolute", top: -2, width: 6 },
   mixerKnobIdle: { backgroundColor: theme.colors.blue },

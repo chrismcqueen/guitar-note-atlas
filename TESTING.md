@@ -118,3 +118,8 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Replace font-glyph Play/Stop/loading symbols with centered vectors; use vector 1–4 numerals inside the same button during count-in. Both buttons inherit a shared 44-point height; Play is 44 × 44 with radius 22. Remove the settings countdown. Native count updates continue through the existing display-frame audio-clock loop, with upward beat numbering; the fallback applies the same numbering at its click dispatch.
 - All 104 tests pass. Count-in regressions verify 1–4 at scheduled click onsets at 40/120/240 BPM, frozen audio clocks, delayed frames skipping stale numbers, clearing at the first note, and Stop/restart invalidating old count frames.
 - Web export and bundled iOS/Android Release builds pass; installed both on iPad and Pixel. Phone browser measurements report both button heights as 44, Play width 44/radius 22, and zero horizontal/vertical offset between its vector canvas and button center. Browser and native iPad checks show the number in the button, followed by Stop; stopping restores Play. The settings countdown is absent. Display refresh and hardware output latency still bound absolute audible/visual synchronization.
+
+### Compact Audio Settings labels — October 7, 2026
+
+- Removed the bottom instructions and conditional overview/empty-selection/notes-off helper messages. Kept “Accompaniment” directly above Off/Click/Drums, with a compact gap. Actual playback errors still appear when present.
+- All 104 tests, web export, and bundled Android/iOS Release builds pass. Native iPad visual check confirms the label order and shorter card without helper text.
