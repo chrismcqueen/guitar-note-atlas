@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { Image, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import Svg, { Circle, Path, Rect, Text as SvgText } from "react-native-svg";
 
 import { OverlayStore, Store } from "../../Store";
@@ -11,6 +11,7 @@ import { useRepeatPress } from "../utils/useRepeatPress";
 import { getMenuVisualCenterX, phoneHeaderHeight, tabletHeaderHeight } from "./Header";
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 import DegreeLabel from "./Neck/DegreeLabel";
+import AudioSettingsScroll from "./AudioSettingsScroll";
 
 const CONTROL_HIT_SLOP = 3;
 const TAP_TEMPO_RESET_MS = 2000;
@@ -184,12 +185,9 @@ export const AudioPopover = () => {
           <View accessible={false} style={styles.closeButton} />
         </View>
 
-        <ScrollView
-          showsVerticalScrollIndicator
-          keyboardShouldPersistTaps="handled"
-          nestedScrollEnabled={Platform.OS === "android"}
+        <AudioSettingsScroll
+          height={scrollHeight}
           onContentSizeChange={(_, height) => setSettingsContentHeight(height)}
-          style={[styles.settingsScroll, { height: scrollHeight }]}
           contentContainerStyle={styles.settingsContent}
         >
         {!isTablet && (
@@ -266,7 +264,7 @@ export const AudioPopover = () => {
           ))}
         </View>
         {!!error && <Text style={styles.error}>{error}</Text>}
-        </ScrollView>
+        </AudioSettingsScroll>
       </View>
     </View>
   );
@@ -314,7 +312,6 @@ const styles = StyleSheet.create({
   popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent", zIndex: 4500 },
   rateValue: { alignItems: "center", height: 42, width: 74 },
   rateLabel: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 15, height: 18, lineHeight: 18, padding: 0, includeFontPadding: false, textAlign: "center", width: 74 },
-  settingsScroll: { flexGrow: 0, flexShrink: 0 },
   settingsContent: { paddingBottom: 8 },
   stepButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", width: 38 },
   stepText: { color: theme.colors.blue, fontSize: 24, lineHeight: Platform.OS === "android" ? 28 : 25 },
