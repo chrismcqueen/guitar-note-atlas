@@ -16,6 +16,7 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 - Press-and-hold navigation arrows for faster movement through positions.
 - Stronger active-position highlighting on the tablet overview.
 - Press feedback and position scrubbing on the full neck on phone and tablet.
+- While scrubbing, dark frets, strings, and anchor dots must follow the highlighted position window consistently on iOS and Android.
 - Footer swiping to select or deselect multiple scale degrees.
 - Optional Circle of Fourths/Fifths key navigation.
 - Tutorial Back button and appropriate pressed-state feedback.

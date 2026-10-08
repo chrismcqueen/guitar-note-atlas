@@ -36,6 +36,8 @@ const TabletNeck = () => {
   const activeFretRange = { start: selectedFret, end: selectedFret + selectedFretCount };
   const naturalSelectedX = NECK_LEFT + selectedFret * FRET_WIDTH;
   const selectedX = globalState.options.leftHand ? 864 - naturalSelectedX - selectedWidth : naturalSelectedX;
+  // Refresh Android's cached clipping region when the position window moves.
+  const activeClipId = `tablet-active-position-${selectedX}-${selectedWidth}`;
 
   const selectPositionAtX = (x) => {
     const fret = fretForNeckX(x, width, globalState.options.leftHand);
@@ -68,7 +70,7 @@ const TabletNeck = () => {
     >
       <Svg width="100%" height="100%" viewBox={`0 0 864 ${VIEWBOX_HEIGHT}`}>
         <Defs>
-          <ClipPath id="active-position-clip">
+          <ClipPath key={activeClipId} id={activeClipId}>
             <Rect
               x={selectedX - ACTIVE_CLIP_OVERDRAW}
               y="0"
@@ -98,7 +100,7 @@ const TabletNeck = () => {
             y1={14}
             y2={14 + STRING_SPAN}
           />
-          <G clipPath="url(#active-position-clip)">
+          <G clipPath={`url(#${activeClipId})`}>
             <Strings color={theme.colors.black} count={tuning.length} span={STRING_SPAN} startX={41} strokeWidth={LINE_WIDTH} />
             <Frets
               color={theme.colors.black}
@@ -113,7 +115,7 @@ const TabletNeck = () => {
               <G transform="translate(0 -75)">
                 <AnchorFrets color={theme.colors.neckBlackAlpha} leftHand={globalState.options.leftHand} radius={2} />
               </G>
-              <G clipPath="url(#active-position-clip)">
+              <G clipPath={`url(#${activeClipId})`}>
                 <G transform="translate(0 -75)">
                   <AnchorFrets color={theme.colors.black} leftHand={globalState.options.leftHand} radius={2} />
                 </G>

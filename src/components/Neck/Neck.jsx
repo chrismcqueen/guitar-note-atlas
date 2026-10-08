@@ -41,6 +41,9 @@ const Neck = React.memo(() => {
   const activeFretRange = pressedPosition && { start: selectedFret, end: selectedFret + selectedFretCount };
   const naturalSelectedX = NECK_LEFT + (selectedFret ?? 0) * FRET_WIDTH;
   const selectedX = globalState.options.leftHand ? 864 - naturalSelectedX - selectedWidth : naturalSelectedX;
+  // Android can retain the previous clipping region when only its Rect moves.
+  // Change both the definition and reference when the selected window changes.
+  const activeClipId = `phone-active-position-${selectedX}-${selectedWidth}`;
 
   const positionAtX = (x) => positionTargetForFret(
     fretForNeckX(x, neckDimensions.width, globalState.options.leftHand),
@@ -88,7 +91,7 @@ const Neck = React.memo(() => {
       <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 864 233">
         {pressedPosition && (
           <Defs>
-            <ClipPath id="phone-active-position-clip">
+            <ClipPath key={activeClipId} id={activeClipId}>
               <Rect
                 x={selectedX - ACTIVE_CLIP_OVERDRAW}
                 y="0"
@@ -110,7 +113,7 @@ const Neck = React.memo(() => {
         <Strings color={pressedPosition ? theme.colors.neckBlackAlpha : theme.colors.black} count={tuning.length} strokeWidth={LINE_WIDTH} />
         <Frets color={pressedPosition ? theme.colors.neckBlackAlpha : theme.colors.black} fretStrokeWidth={LINE_WIDTH} nutStrokeWidth={5} />
         {pressedPosition && (
-          <G clipPath="url(#phone-active-position-clip)">
+          <G clipPath={`url(#${activeClipId})`}>
             <Strings count={tuning.length} strokeWidth={LINE_WIDTH} />
             <Frets fretStrokeWidth={LINE_WIDTH} nutStrokeWidth={5} />
           </G>
@@ -119,7 +122,7 @@ const Neck = React.memo(() => {
           <>
             <AnchorFrets color={pressedPosition ? theme.colors.neckBlackAlpha : theme.colors.black} leftHand={globalState.options.leftHand} />
             {pressedPosition && (
-              <G clipPath="url(#phone-active-position-clip)">
+              <G clipPath={`url(#${activeClipId})`}>
                 <AnchorFrets leftHand={globalState.options.leftHand} />
               </G>
             )}
