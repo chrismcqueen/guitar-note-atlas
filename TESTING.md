@@ -159,3 +159,9 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Clamp the settings card to the usable rotated native window, rather than Android's physical screen dimensions. Give the ScrollView an explicit viewport height, with Android nested scrolling enabled and eight points of bottom padding. Keep the 38-point header outside the scrolling body.
 - At 667 × 320, the browser body contains 280 points in a 190-point viewport. Scrolling reaches the complete Off/Click/Drums row at offset 90, with the close button still at x=16/y=54. All eight fractions keep x=164/y=162 (74 × 18), and their glyph canvases keep x=186/y=180 (30 × 24).
 - All 108 tests, web export, and bundled Android/iOS Release builds pass. Updated builds installed/launched on the physical Pixel 4a and iPad simulator. Pixel screenshot confirms stacked notation and the new grouping. Native Pixel swipe confirmation remains pending: the Android Studio mirror could be observed, but desktop UI automation could not reliably target its touch surface.
+
+### Settings button optical height — October 7, 2026
+
+- Reduce only the collapsed settings button from 44 to 40 points high, retaining its 38-point width and centered mixer icon. The trigger row vertically centers it beside the unchanged 44-point Play circle.
+- At 844 × 390 in the browser, Play measures 44 × 44 at y=50 and Settings measures 38 × 40 at y=52. Both centerlines are y=72; the settings icon center exactly matches its button center (77, 72).
+- Web export and bundled Android/iOS Release builds pass. The generated Android Studio Java 25 daemon override was moved out of the project to restore the existing Java 17 build. Updated bundled builds installed/launched on Pixel and iPad.

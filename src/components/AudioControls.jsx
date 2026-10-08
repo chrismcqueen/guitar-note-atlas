@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   toggleRow: { flexDirection: "row", gap: 8, marginTop: 12 },
   toggleSelected: { backgroundColor: theme.colors.blue, borderColor: theme.colors.blue },
   triggerGroup: { position: "absolute", alignItems: "center", flexDirection: "row", gap: 6, zIndex: 300 },
-  settingsTrigger: { width: 38, borderRadius: 8 },
+  settingsTrigger: { height: 40, width: 38, borderRadius: 8 },
   errorDot: { position: "absolute", right: 0, top: 0, width: 8, height: 8, borderRadius: 4, backgroundColor: "#A12622" },
   toggleLabel: { fontSize: 14, color: theme.colors.blue, fontFamily: "proletarsk" },
   trigger: {
