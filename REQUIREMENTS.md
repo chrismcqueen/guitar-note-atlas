@@ -50,6 +50,7 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 - When collapsed, provide a compact play/pause control, as requested in the voice memo.
 - Provide a notes-on/off toggle so users can practice with only a metronome or drum groove.
 - Retain adjustable tempo, tap tempo, rhythmic subdivisions, and independent accompaniment controls from the demonstrated player.
+- Display every subdivision using the bundled Opus Text music font: sixteenth, eighth-triplet (with a 3), eighth, dotted eighth, quarter, dotted quarter, half, and dotted half. Preserve spoken note names for accessibility and existing playback durations.
 - Keep tight native audio scheduling on bundled iOS and Android builds.
 - Load audio during startup behind the splash. Keep the splash visible until fonts, saved settings, all bundled guitar/drum samples, and the initial position buffers are ready; provide Retry if audio loading fails.
 - Lane's revised control preference: choose Notes and accompaniment, then press Play to start. Click and Drums select a mode without starting playback. Stop affects everything and resets the sequence. With Notes off, Play runs only the selected accompaniment.

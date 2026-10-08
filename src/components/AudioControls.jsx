@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import Svg, { Circle, Path, Rect } from "react-native-svg";
+import Svg, { Circle, Path, Rect, Text as SvgText } from "react-native-svg";
 
 import { OverlayStore, Store } from "../../Store";
 import { monotonicNow } from "../utils/audioClock.mjs";
@@ -108,8 +108,6 @@ export const AudioPopover = () => {
   const fasterTempoPress = useRepeatPress(() => setTempo(tempo + 1), { accelerate: true });
   const noteRateIndex = Math.max(0, NOTE_RATES.findIndex(({ id }) => id === noteRate));
   const selectedNoteRate = NOTE_RATES[noteRateIndex];
-  const dottedNoteRate = selectedNoteRate.label.endsWith(".");
-  const noteRateMainLabel = dottedNoteRate ? selectedNoteRate.label.slice(0, -1) : selectedNoteRate.label;
   const canSelectLongerRate = noteRateIndex < NOTE_RATES.length - 1;
   const canSelectShorterRate = noteRateIndex > 0;
   const tapTempo = (event) => {
@@ -202,9 +200,11 @@ export const AudioPopover = () => {
             <Pressable android_disableSound accessibilityLabel="Select longer subdivision" accessibilityRole="button" accessibilityState={{ disabled: !canSelectLongerRate }} disabled={!canSelectLongerRate} hitSlop={CONTROL_HIT_SLOP} onPress={() => setNoteRate(NOTE_RATES[noteRateIndex + 1].id)} style={withPressedOpacity([styles.stepButton, !canSelectLongerRate && styles.disabled])}>
               <Text style={styles.stepText}>‹</Text>
             </Pressable>
-            <View accessible accessibilityLabel={`Subdivision ${selectedNoteRate.label}`} style={styles.rateValue}>
-              <Text style={styles.rateMainLabel}>{noteRateMainLabel}</Text>
-              {dottedNoteRate && <Text style={styles.rateDot}>.</Text>}
+            <View accessible accessibilityLabel={`Subdivision: ${selectedNoteRate.name}`} style={styles.rateValue}>
+              <Svg accessible={false} pointerEvents="none" width={74} height={38} viewBox="0 0 74 38">
+                <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={30} textAnchor="middle" x={selectedNoteRate.triplet ? 32 : 37} y={34}>{selectedNoteRate.notation}</SvgText>
+                {selectedNoteRate.triplet && <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={14} textAnchor="middle" x={50} y={13}>3</SvgText>}
+              </Svg>
             </View>
             <Pressable android_disableSound accessibilityLabel="Select shorter subdivision" accessibilityRole="button" accessibilityState={{ disabled: !canSelectShorterRate }} disabled={!canSelectShorterRate} hitSlop={CONTROL_HIT_SLOP} onPress={() => setNoteRate(NOTE_RATES[noteRateIndex - 1].id)} style={withPressedOpacity([styles.stepButton, !canSelectShorterRate && styles.disabled])}>
               <Text style={styles.stepText}>›</Text>
@@ -273,8 +273,6 @@ const styles = StyleSheet.create({
   mixerTrackIdle: { backgroundColor: theme.colors.blue },
   noteRateRow: { alignItems: "center", flexDirection: "row", marginTop: 10 },
   popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent", zIndex: 4500 },
-  rateDot: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 17, left: 53, position: "absolute" },
-  rateMainLabel: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 17, textAlign: "center", width: 48 },
   rateValue: { alignItems: "center", justifyContent: "center", position: "relative", width: 74 },
   stepButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", width: 38 },
   stepText: { color: theme.colors.blue, fontSize: 24, lineHeight: Platform.OS === "android" ? 28 : 25 },

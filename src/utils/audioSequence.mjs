@@ -5,14 +5,15 @@ export const MAX_TEMPO = 240;
 export const DEFAULT_TEMPO = 100;
 export const DEFAULT_NOTE_RATE = "quarter";
 export const NOTE_RATES = [
-  { beats: 0.25, id: "sixteenth", label: "1/16" },
-  { beats: 1 / 3, id: "eighth-triplet", label: "1/8T" },
-  { beats: 0.5, id: "eighth", label: "1/8" },
-  { beats: 0.75, id: "dotted-eighth", label: "1/8." },
-  { beats: 1, id: "quarter", label: "1/4" },
-  { beats: 1.5, id: "dotted-quarter", label: "1/4." },
-  { beats: 2, id: "half", label: "1/2" },
-  { beats: 3, id: "dotted-half", label: "1/2." },
+  // Opus Text maps these characters to stemmed notes and augmentation dots.
+  { beats: 0.25, id: "sixteenth", label: "1/16", notation: "x", name: "Sixteenth note" },
+  { beats: 1 / 3, id: "eighth-triplet", label: "1/8T", notation: "e", name: "Eighth-note triplet", triplet: true },
+  { beats: 0.5, id: "eighth", label: "1/8", notation: "e", name: "Eighth note" },
+  { beats: 0.75, id: "dotted-eighth", label: "1/8.", notation: "e.", name: "Dotted eighth note" },
+  { beats: 1, id: "quarter", label: "1/4", notation: "q", name: "Quarter note" },
+  { beats: 1.5, id: "dotted-quarter", label: "1/4.", notation: "q.", name: "Dotted quarter note" },
+  { beats: 2, id: "half", label: "1/2", notation: "h", name: "Half note" },
+  { beats: 3, id: "dotted-half", label: "1/2.", notation: "h.", name: "Dotted half note" },
 ];
 
 export const clampTempo = (tempo) => Math.max(

@@ -128,3 +128,9 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 
 - Tap Tempo's touch-down handler plays the existing cached metronome click on every press, including the first tap. Native playback uses an immediate one-shot on the existing audio context without starting/re-anchoring practice or changing count/highlight state. Idle output resumes for the click and suspends after it finishes; repeated taps extend that lifetime. Stop/close invalidate taps waiting for activation. The Expo Audio fallback uses the existing click player pool.
 - All 108 tests, web export, and bundled iOS/Android Release builds pass. New regressions cover immediate cached-click scheduling, idle resume/suspend, repeated taps, unchanged active clock/count-in, and Stop during activation. Native iPad UI checks exercise first/repeated taps, retain tempo detection, and show no playback error; practice remains stopped afterward. Physical-device listening confirmation remains a manual check.
+
+### Music-font subdivision notation — October 7, 2026
+
+- Replace fraction labels with the already loaded Opus Text font's stemmed sixteenth, eighth, quarter, and half notes. Dotted values use its augmentation dot; the eighth-note triplet pairs the eighth note with its notation numeral 3. Keep readable note names in accessibility labels and all existing durations/order unchanged.
+- Inspected the bundled font's actual glyphs with Core Text and verified half, dotted-half, eighth-triplet, and sixteenth rendering in the bundled native iPad settings card. Restored the previous half-note setting and left playback stopped.
+- All 108 tests pass; web export and bundled Android/iOS Release builds pass. Installed and opened the updated builds on the physical Pixel 4a and iPad simulator. Android subdivision visual checks remain manual.
