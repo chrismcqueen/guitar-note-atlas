@@ -43,6 +43,7 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 
 - Keep audio settings in an expandable popover so the normal fretboard controls retain their space.
 - Label the popover “Audio Settings” and keep it limited to settings. The main-screen button is the only Play/Stop control; omit popover Play/Stop and Stop / Reset buttons.
+- Always cover both main-screen audio buttons when the popover is open, including phone/tablet layouts and safe-area changes. Hide the underlying buttons until settings close.
 - When collapsed, provide a compact play/pause control, as requested in the voice memo.
 - Provide a notes-on/off toggle so users can practice with only a metronome or drum groove.
 - Retain adjustable tempo, tap tempo, rhythmic subdivisions, and independent accompaniment controls from the demonstrated player.

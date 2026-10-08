@@ -13,16 +13,22 @@ import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 const CONTROL_HIT_SLOP = 3;
 const TAP_TEMPO_RESET_MS = 2000;
 
-export const AudioTrigger = () => {
-  const { dimensions, insets } = useContext(Store);
-  const { showMenu } = useContext(OverlayStore);
-  const { canPlay, isLoading, isPlaying, openPopover, play, error } = useContext(AudioPlaybackStore);
+const audioControlPlacement = (dimensions, insets) => {
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const phoneTopInset = Platform.OS === "android" ? 0 : insets.top;
   const top = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + phoneTopInset) + 12;
   const left = isTablet ? getMenuVisualCenterX(insets, true) - 22 : Math.max(insets.left, insets.right) + 8;
+  return { isTablet, left, top };
+};
 
-  if (showMenu) return null;
+export const AudioTrigger = () => {
+  const { dimensions, insets } = useContext(Store);
+  const { showMenu } = useContext(OverlayStore);
+  const { canPlay, isLoading, isPlaying, openPopover, play, popoverOpen, error } = useContext(AudioPlaybackStore);
+  const { left, top } = audioControlPlacement(dimensions, insets);
+
+  // The settings card replaces both controls until it is dismissed.
+  if (showMenu || popoverOpen) return null;
 
   return (
     <View style={[styles.triggerGroup, { left, top }]}>
@@ -79,7 +85,7 @@ export const AudioPopover = () => {
   } = useContext(AudioPlaybackStore);
   const [tempoText, setTempoText] = useState(String(tempo));
   const tempoTapTimes = useRef([]);
-  const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const { isTablet, left: triggerLeft, top: triggerTop } = audioControlPlacement(dimensions, insets);
   const slowerTempoPress = useRepeatPress(() => setTempo(tempo - 1), { accelerate: true });
   const fasterTempoPress = useRepeatPress(() => setTempo(tempo + 1), { accelerate: true });
   const noteRateIndex = Math.max(0, NOTE_RATES.findIndex(({ id }) => id === noteRate));
@@ -108,12 +114,10 @@ export const AudioPopover = () => {
   if (!popoverOpen) return null;
 
   const cardWidth = isTablet ? 330 : 292;
-  const phoneTopInset = Platform.OS === "android" ? 0 : insets.top;
-  const cardTop = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + phoneTopInset) + 10;
-  // On tablets, align the close control with the trigger's visual center. The
-  // extra card area to its left also keeps the trigger behind the opaque card,
-  // including beneath the rounded top-left corner.
-  const cardLeft = isTablet ? Math.max(insets.left + 20, 20) : Math.max(insets.left + 24, 72);
+  // Anchor to the same button group on every platform, with enough overhang
+  // to cover both buttons inside the card's rounded border.
+  const cardTop = triggerTop - 12;
+  const cardLeft = Math.max(0, triggerLeft - 14);
   const commitTempo = () => {
     setTempo(tempoText);
     setTempoText(String(Math.max(MIN_TEMPO, Math.min(MAX_TEMPO, Math.round(Number(tempoText) || tempo)))));
