@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { Image, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import Svg, { Circle, Path, Rect, Text as SvgText } from "react-native-svg";
 
-import { OverlayStore, Store } from "../../Store";
+import { OverlayStore, PositionVisibilityStore, Store } from "../../Store";
 import { monotonicNow } from "../utils/audioClock.mjs";
 import { MAX_TEMPO, MIN_TEMPO, NOTE_RATES, tempoFromTapTimes } from "../utils/audioSequence.mjs";
 import { theme } from "../utils/theme";
@@ -12,6 +12,7 @@ import { getMenuVisualCenterX, phoneHeaderHeight, tabletHeaderHeight } from "./H
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 import DegreeLabel from "./Neck/DegreeLabel";
 import AudioSettingsScroll from "./AudioSettingsScroll";
+import VerticalStepButtons from "./VerticalStepButtons";
 
 const CONTROL_HIT_SLOP = 3;
 const TAP_TEMPO_RESET_MS = 2000;
@@ -83,6 +84,7 @@ const MixerIcon = ({ filled }) => (
 
 export const AudioPopover = () => {
   const { dimensions, insets } = useContext(Store);
+  const { showPositionOverview } = useContext(PositionVisibilityStore);
   const window = useWindowDimensions();
   const {
     accompaniment,
@@ -108,6 +110,7 @@ export const AudioPopover = () => {
   const [settingsContentHeight, setSettingsContentHeight] = useState(null);
   const tempoTapTimes = useRef([]);
   const { isTablet, left: triggerLeft, top: triggerTop } = audioControlPlacement(dimensions, insets);
+  const showOverviewHint = !isTablet && showPositionOverview;
   const slowerTempoPress = useRepeatPress(() => {
     if (tempo <= MIN_TEMPO) return false;
     setTempo(tempo - 1);
@@ -190,12 +193,12 @@ export const AudioPopover = () => {
           onContentSizeChange={(_, height) => setSettingsContentHeight(height)}
           contentContainerStyle={styles.settingsContent}
         >
-        {!isTablet && (
+        {showOverviewHint && (
           <Text style={styles.mobileHint}>
             Select a position to play notes.{"\n"}Full neck view plays accompaniment only.
           </Text>
         )}
-        <View style={[styles.tempoRow, isTablet && styles.tabletTempoRow]}>
+        <View style={[styles.tempoRow, !showOverviewHint && styles.tempoWithoutHint]}>
           <View style={styles.controlLead}>
             <Text style={styles.label}>Tempo</Text>
             <Pressable android_disableSound accessibilityLabel="Tap tempo" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} onPressIn={tapTempo} style={withPressedOpacity(styles.tapTempoButton)}>
@@ -203,9 +206,7 @@ export const AudioPopover = () => {
             </Pressable>
           </View>
           <View style={styles.controlCluster}>
-            <Pressable android_disableSound accessibilityLabel="Decrease tempo" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} {...slowerTempoPress} style={withPressedOpacity(styles.stepButton)}>
-              <Text style={styles.stepText}>−</Text>
-            </Pressable>
+            <VerticalStepButtons upLabel="Increase tempo" downLabel="Decrease tempo" upHandlers={fasterTempoPress} downHandlers={slowerTempoPress} upDisabled={tempo >= MAX_TEMPO} downDisabled={tempo <= MIN_TEMPO} />
             <View style={styles.tempoValue}>
               <TextInput
                 accessibilityLabel="Tempo in beats per minute"
@@ -221,18 +222,13 @@ export const AudioPopover = () => {
               />
               <Text style={styles.bpm}>BPM</Text>
             </View>
-            <Pressable android_disableSound accessibilityLabel="Increase tempo" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} {...fasterTempoPress} style={withPressedOpacity(styles.stepButton)}>
-              <Text style={styles.stepText}>+</Text>
-            </Pressable>
           </View>
         </View>
 
         <View style={styles.noteRateRow}>
           <Text style={styles.label}>Subdivision</Text>
           <View style={styles.controlCluster}>
-            <Pressable android_disableSound accessibilityLabel="Select longer subdivision" accessibilityRole="button" accessibilityState={{ disabled: !canSelectLongerRate }} disabled={!canSelectLongerRate} hitSlop={CONTROL_HIT_SLOP} {...longerSubdivisionPress} style={withPressedOpacity([styles.stepButton, !canSelectLongerRate && styles.disabled])}>
-              <Text style={styles.stepText}>‹</Text>
-            </Pressable>
+            <VerticalStepButtons upLabel="Select shorter subdivision" downLabel="Select longer subdivision" upHandlers={shorterSubdivisionPress} downHandlers={longerSubdivisionPress} upDisabled={!canSelectShorterRate} downDisabled={!canSelectLongerRate} />
             <View accessible accessibilityLabel={`Subdivision: ${selectedNoteRate.name}`} style={styles.rateValue}>
               <Text accessible={false} style={styles.rateLabel}>{selectedNoteRate.label}</Text>
               <Svg accessible={false} pointerEvents="none" width={30} height={24} viewBox="0 0 30 24">
@@ -242,9 +238,6 @@ export const AudioPopover = () => {
                 {selectedNoteRate.triplet && <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={8} textAnchor="middle" x={27} y={9}>3</SvgText>}
               </Svg>
             </View>
-            <Pressable android_disableSound accessibilityLabel="Select shorter subdivision" accessibilityRole="button" accessibilityState={{ disabled: !canSelectShorterRate }} disabled={!canSelectShorterRate} hitSlop={CONTROL_HIT_SLOP} {...shorterSubdivisionPress} style={withPressedOpacity([styles.stepButton, !canSelectShorterRate && styles.disabled])}>
-              <Text style={styles.stepText}>›</Text>
-            </Pressable>
           </View>
         </View>
 
@@ -294,9 +287,8 @@ const styles = StyleSheet.create({
   },
   closeButton: { alignItems: "center", height: 32, justifyContent: "center", width: 32 },
   closeText: { color: theme.colors.blue, fontSize: 29, lineHeight: 30 },
-  controlCluster: { alignItems: "center", flexDirection: "row", width: 150 },
+  controlCluster: { alignItems: "center", flexDirection: "row", gap: 12, justifyContent: "flex-end", width: 136 },
   controlLead: { alignItems: "center", flex: 1, flexDirection: "row" },
-  disabled: { opacity: 0.45 },
   dismissLayer: { backgroundColor: "rgba(0, 0, 0, 0.001)", left: 0, position: "absolute", top: 0, zIndex: 0 },
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
   label: { color: theme.colors.black, flex: 1, fontFamily: "proletarsk", fontSize: 17 },
@@ -313,12 +305,10 @@ const styles = StyleSheet.create({
   rateValue: { alignItems: "center", height: 42, width: 74 },
   rateLabel: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 15, height: 18, lineHeight: 18, padding: 0, includeFontPadding: false, textAlign: "center", width: 74 },
   settingsContent: { paddingBottom: 8 },
-  stepButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", width: 38 },
-  stepText: { color: theme.colors.blue, fontSize: 24, lineHeight: Platform.OS === "android" ? 28 : 25 },
   tapTempoButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", marginRight: 6, width: 42 },
   tapTempoText: { color: theme.colors.blue, fontFamily: "proletarsk", fontSize: 13 },
   tempoInput: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 19, minHeight: 38, padding: 0, textAlign: "right", width: 30 },
-  tabletTempoRow: { marginTop: 0 },
+  tempoWithoutHint: { marginTop: 0 },
   tempoRow: { alignItems: "center", flexDirection: "row", marginTop: 12 },
   tempoValue: { alignItems: "center", flexDirection: "row", justifyContent: "center", width: 74 },
   title: { color: theme.colors.black, flex: 1, fontFamily: "blackout", fontSize: 20, textAlign: "center" },

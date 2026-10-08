@@ -8,6 +8,7 @@ import { data } from "../../data";
 import { withPressedOpacity } from "../utils/pressable";
 import { nextKeyOffset } from "../utils/keyNavigation.mjs";
 import { useRepeatPress } from "../utils/useRepeatPress";
+import VerticalStepButtons from "./VerticalStepButtons";
 
 const TabletKeyTitle = ({ title }) => (
   <Text adjustsFontSizeToFit minimumFontScale={0.7} numberOfLines={1} style={styles.compactTitle}>
@@ -39,14 +40,7 @@ const KeySelector = ({ compact = false }) => {
   if (compact) {
     return (
       <View style={styles.compactContainer}>
-        <View>
-          <Pressable android_disableSound accessibilityLabel="Next key" {...nextKeyPress} style={withPressedOpacity(styles.compactArrowButton)}>
-            <View style={[styles.compactArrow, styles.arrowUp]} />
-          </Pressable>
-          <Pressable android_disableSound accessibilityLabel="Previous key" {...previousKeyPress} style={withPressedOpacity(styles.compactArrowButton)}>
-            <View style={[styles.compactArrow, styles.arrowDown]} />
-          </Pressable>
-        </View>
+        <VerticalStepButtons upLabel="Next key" downLabel="Previous key" upHandlers={nextKeyPress} downHandlers={previousKeyPress} />
         <TabletKeyTitle title={globalState?.key.title} />
       </View>
     );
@@ -131,25 +125,5 @@ const styles = StyleSheet.create({
   },
   compactAccidental: {
     fontFamily: "opusChords",
-  },
-  compactArrowButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  compactArrow: {
-    borderLeftColor: "transparent",
-    borderLeftWidth: 14,
-    borderRightColor: "transparent",
-    borderRightWidth: 14,
-    height: 0,
-    width: 0,
-  },
-  arrowUp: {
-    borderBottomColor: theme.colors.black,
-    borderBottomWidth: 24,
-  },
-  arrowDown: {
-    borderTopColor: theme.colors.black,
-    borderTopWidth: 24,
   },
 });
