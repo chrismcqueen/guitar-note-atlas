@@ -1,55 +1,17 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
-const REPEAT_DELAY = 420;
-const REPEAT_INTERVAL = 110;
-const repeatInterval = (elapsed, accelerate) => {
-  if (!accelerate || elapsed < 1200) return REPEAT_INTERVAL;
-  if (elapsed < 2500) return 75;
-  return 50;
-};
+import { createRepeatPress } from "./repeatPress.mjs";
 
-export const useRepeatPress = (action, { accelerate = false } = {}) => {
+export const useRepeatPress = (action, { disabled = false } = {}) => {
   const actionRef = useRef(action);
-  const holdingRef = useRef(false);
-  const timerRef = useRef(null);
-  const repeatedRef = useRef(false);
-  const repeatStartedAtRef = useRef(0);
-
+  const repeatRef = useRef(null);
   actionRef.current = action;
+  if (!repeatRef.current) repeatRef.current = createRepeatPress(() => actionRef.current());
 
-  const stopRepeating = useCallback(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = null;
-  }, []);
+  useEffect(() => {
+    if (disabled) repeatRef.current.cancel();
+  }, [disabled]);
+  useEffect(() => () => repeatRef.current.cancel(), []);
 
-  const scheduleRepeat = useCallback(() => {
-    const elapsed = Date.now() - repeatStartedAtRef.current;
-    timerRef.current = setTimeout(() => {
-      if (!holdingRef.current) return;
-      actionRef.current();
-      scheduleRepeat();
-    }, repeatInterval(elapsed, accelerate));
-  }, [accelerate]);
-
-  const onLongPress = useCallback(() => {
-    repeatedRef.current = true;
-    holdingRef.current = true;
-    repeatStartedAtRef.current = Date.now();
-    actionRef.current();
-    scheduleRepeat();
-  }, [scheduleRepeat]);
-
-  const onPress = useCallback(() => {
-    if (!repeatedRef.current) actionRef.current();
-    repeatedRef.current = false;
-  }, []);
-
-  const onPressOut = useCallback(() => {
-    holdingRef.current = false;
-    stopRepeating();
-  }, [stopRepeating]);
-
-  useEffect(() => stopRepeating, [stopRepeating]);
-
-  return { delayLongPress: REPEAT_DELAY, onLongPress, onPress, onPressOut };
+  return repeatRef.current.handlers;
 };

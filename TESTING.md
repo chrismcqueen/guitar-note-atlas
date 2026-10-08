@@ -171,3 +171,10 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Add a small, two-line phone-only hint directly beneath Audio Settings: “Select a position to play notes. Full neck view plays accompaniment only.” Use the same phone/tablet breakpoint as playback. Keep the hint at the top of the scrolling body so the fixed header stays compact.
 - Browser check at 844 × 390 confirms both lines fit without wrapping further. At 667 × 320 the full Off/Click/Drums row remains reachable by scrolling while the close button stays at y=54. The hint is absent at the 1200 × 800 tablet breakpoint.
 - Web export and Android/iOS bundled Release builds pass; current builds installed/launched on Pixel and iPad.
+
+### Accelerating hold controls — October 7, 2026
+
+- Add hold-to-repeat to both subdivision arrows and share gradual acceleration with key, position and tempo buttons. Repeat begins after a 420 ms hold, then uses 150 ms intervals, 100 ms after one second of repeating, and 80 ms after 2.2 seconds. Every new hold starts slowly.
+- Extract the repeat gesture/timer state into a shared controller. Release/cancellation cancels its timer; cancelled holds cannot suppress the next tap or respond to late long-press events. Disabled controls, closing audio settings and hook unmount cancel pending repeats. Tempo and subdivision actions stop at their limits.
+- All 113 automated tests pass. New regressions cover a single short tap, progressive acceleration and speed cap, no extra step on release, reset cadence for a new hold, cancellation followed by a working tap, late long-press cancellation, and holding toward both subdivision endpoints.
+- Browser UI checks confirm one-step subdivision taps, disabled shortest/longest arrows, and selecting back away from an endpoint. Web export and bundled Android/iOS Release builds pass; updated builds installed/launched on Pixel and iPad for manual hold-feel testing.

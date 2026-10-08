@@ -13,7 +13,7 @@ Updated October 6, 2026 from Chris McQueen's October 5 voice memo (transcript su
 Chris's October 5 email and voice memo approve the demonstrated changes, with particular enthusiasm for touching and dragging across the overview neck to select a position. Preserve:
 
 - Phone orientation improvements that reduce interference from system navigation.
-- Press-and-hold navigation arrows for faster movement through positions.
+- Press-and-hold key, position, tempo and subdivision arrows to repeat. Start after 420 ms; repeat every 150 ms initially, every 100 ms after another second, and every 80 ms after 2.2 seconds of repeating. Reset acceleration for every new hold, stop immediately on release/cancellation, and stop bounded tempo/subdivision selectors at their endpoints without wrapping or an extra release step.
 - Stronger active-position highlighting on the tablet overview.
 - Press feedback and position scrubbing on the full neck on phone and tablet.
 - While scrubbing, dark frets, strings, and anchor dots must follow the highlighted position window consistently on iOS and Android.

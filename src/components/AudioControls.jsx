@@ -107,12 +107,26 @@ export const AudioPopover = () => {
   const [settingsContentHeight, setSettingsContentHeight] = useState(null);
   const tempoTapTimes = useRef([]);
   const { isTablet, left: triggerLeft, top: triggerTop } = audioControlPlacement(dimensions, insets);
-  const slowerTempoPress = useRepeatPress(() => setTempo(tempo - 1), { accelerate: true });
-  const fasterTempoPress = useRepeatPress(() => setTempo(tempo + 1), { accelerate: true });
+  const slowerTempoPress = useRepeatPress(() => {
+    if (tempo <= MIN_TEMPO) return false;
+    setTempo(tempo - 1);
+  }, { disabled: !popoverOpen });
+  const fasterTempoPress = useRepeatPress(() => {
+    if (tempo >= MAX_TEMPO) return false;
+    setTempo(tempo + 1);
+  }, { disabled: !popoverOpen });
   const noteRateIndex = Math.max(0, NOTE_RATES.findIndex(({ id }) => id === noteRate));
   const selectedNoteRate = NOTE_RATES[noteRateIndex];
   const canSelectLongerRate = noteRateIndex < NOTE_RATES.length - 1;
   const canSelectShorterRate = noteRateIndex > 0;
+  const longerSubdivisionPress = useRepeatPress(() => {
+    if (!canSelectLongerRate) return false;
+    setNoteRate(NOTE_RATES[noteRateIndex + 1].id);
+  }, { disabled: !popoverOpen || !canSelectLongerRate });
+  const shorterSubdivisionPress = useRepeatPress(() => {
+    if (!canSelectShorterRate) return false;
+    setNoteRate(NOTE_RATES[noteRateIndex - 1].id);
+  }, { disabled: !popoverOpen || !canSelectShorterRate });
   const tapTempo = (event) => {
     tapClick();
     // Use the native touch-down timestamp so JS/rendering delays do not become
@@ -218,7 +232,7 @@ export const AudioPopover = () => {
         <View style={styles.noteRateRow}>
           <Text style={styles.label}>Subdivision</Text>
           <View style={styles.controlCluster}>
-            <Pressable android_disableSound accessibilityLabel="Select longer subdivision" accessibilityRole="button" accessibilityState={{ disabled: !canSelectLongerRate }} disabled={!canSelectLongerRate} hitSlop={CONTROL_HIT_SLOP} onPress={() => setNoteRate(NOTE_RATES[noteRateIndex + 1].id)} style={withPressedOpacity([styles.stepButton, !canSelectLongerRate && styles.disabled])}>
+            <Pressable android_disableSound accessibilityLabel="Select longer subdivision" accessibilityRole="button" accessibilityState={{ disabled: !canSelectLongerRate }} disabled={!canSelectLongerRate} hitSlop={CONTROL_HIT_SLOP} {...longerSubdivisionPress} style={withPressedOpacity([styles.stepButton, !canSelectLongerRate && styles.disabled])}>
               <Text style={styles.stepText}>‹</Text>
             </Pressable>
             <View accessible accessibilityLabel={`Subdivision: ${selectedNoteRate.name}`} style={styles.rateValue}>
@@ -230,7 +244,7 @@ export const AudioPopover = () => {
                 {selectedNoteRate.triplet && <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={8} textAnchor="middle" x={27} y={9}>3</SvgText>}
               </Svg>
             </View>
-            <Pressable android_disableSound accessibilityLabel="Select shorter subdivision" accessibilityRole="button" accessibilityState={{ disabled: !canSelectShorterRate }} disabled={!canSelectShorterRate} hitSlop={CONTROL_HIT_SLOP} onPress={() => setNoteRate(NOTE_RATES[noteRateIndex - 1].id)} style={withPressedOpacity([styles.stepButton, !canSelectShorterRate && styles.disabled])}>
+            <Pressable android_disableSound accessibilityLabel="Select shorter subdivision" accessibilityRole="button" accessibilityState={{ disabled: !canSelectShorterRate }} disabled={!canSelectShorterRate} hitSlop={CONTROL_HIT_SLOP} {...shorterSubdivisionPress} style={withPressedOpacity([styles.stepButton, !canSelectShorterRate && styles.disabled])}>
               <Text style={styles.stepText}>›</Text>
             </Pressable>
           </View>
