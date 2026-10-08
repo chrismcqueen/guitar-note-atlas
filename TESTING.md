@@ -194,3 +194,10 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Remove the Audio-mode left margin from the phone key heading. Center it in a full-width 88-point row with absolute key arrows and symmetric reserved side lanes. Fit font size/letter spacing to available width. At 667 × 320 its center stays x=333.5 with Audio both enabled and disabled; at 568 × 320 its center is x=284. The settings button ends at x=96 and the previous-key target starts at x=96, with no overlap.
 - At 667 × 320, the 260-point-wide body holds 312 points of content in a 200-point viewport. It reaches Off/Click/Drums at offset 112 while the close button remains at y=54. The body ends at x=276 and the thumb occupies x=283–286, entirely outside the content.
 - All 117 tests, web export, and final bundled Android/iOS Release builds pass. Updated iPad build installed and launched. Pixel installation currently waits for the device’s Play Protect security-check prompt; manual native swipe confirmation remains pending.
+
+### Matching phone heading centerlines — October 8, 2026
+
+- Replace the top scale title’s unequal left/right control margins with a symmetric inset based on the wider Menu/Options region plus its 12-point hit slop. Apply this on both Android and iOS, including uneven safe-area edges. Retain the existing font fitting and title clipping.
+- Anchor the phone key-center text absolutely at 50% of the full-width row, offset by half its own width. Keep key arrows independent and preserve the existing symmetric safe-area treatment and Audio-mode-independent layout.
+- At 844 × 390, both MAJOR SCALE and KEY CENTER - C text boxes measure at x=422 with Audio enabled and disabled. Browser screenshot confirms visible matching centerlines and clear navigation controls.
+- All 117 tests, web export, and Android/iOS bundled Release builds pass. Refreshed iPad bundled build installed/launched. Latest Android APK is built; the physical Pixel continues to show the Play Protect security-check dialog blocking installation, so updated native phone alignment remains a manual check once dismissed.

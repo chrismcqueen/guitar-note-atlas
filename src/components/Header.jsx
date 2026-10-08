@@ -38,10 +38,12 @@ const Header = () => {
   const tabletMenuSize = 24;
   const menuTextWidth = isTablet ? tabletMenuTextWidth : phoneMenuTextWidth;
   const title = isTablet ? globalState?.scale.long_title : globalState?.scale.title;
-  const titleLeft = isTablet ? 0 : menuInset + 120;
-  const titleRight = isTablet
-    ? 0
-    : optionsInset + (Platform.OS === "android" ? 120 : 75);
+  // Center the title on the screen, with matching space on both sides for
+  // the wider navigation control and its hit slop, even with uneven insets.
+  const titleSideInset = isTablet ? 0 : Math.max(
+    menuInset + 120,
+    optionsInset + (Platform.OS === "android" ? 120 : 75),
+  ) + 12;
 
   return (
     <View style={[styles.container, { height: activeHeaderHeight + headerInset }]}>
@@ -79,13 +81,15 @@ const Header = () => {
             styles.headingClip,
             {
               height: activeHeaderHeight,
-              left: titleLeft,
-              right: titleRight,
+              left: titleSideInset,
+              right: titleSideInset,
               top: controlTop,
             },
           ]}
         >
           <Text
+            adjustsFontSizeToFit={!isTablet}
+            minimumFontScale={0.68}
             numberOfLines={1}
             style={[
               styles.heading,
@@ -156,8 +160,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 58,
     lineHeight: 64,
-    left: -200,
-    right: -200,
+    left: 0,
+    right: 0,
     top: -18,
   },
   menu: {

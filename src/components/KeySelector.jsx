@@ -64,7 +64,7 @@ const KeySelector = ({ compact = false }) => {
       <Pressable android_disableSound accessibilityLabel="Previous key" {...previousKeyPress} style={withPressedOpacity([styles.arrowContainer, styles.phoneArrow, { left: arrowInset }])}>
         <View style={[styles.arrow, styles.arrowLeft]}></View>
       </Pressable>
-      <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={[styles.title, { width: titleWidth, fontSize: 31 * titleScale, letterSpacing: 7 * titleScale }]}>
+      <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={[styles.title, styles.phoneTitle, { width: titleWidth, marginLeft: -titleWidth / 2, fontSize: 31 * titleScale, letterSpacing: 7 * titleScale }]}>
         KEY CENTER - {globalState?.key.title}
       </Text>
       <Pressable android_disableSound accessibilityLabel="Next key" {...nextKeyPress} style={withPressedOpacity([styles.arrowContainer, styles.phoneArrow, { right: arrowInset }])}>
@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
     width: 430,
   },
   phoneArrow: { position: "absolute" },
+  phoneTitle: { left: "50%", position: "absolute" },
   titleContainer: {
     height: 88,
     width: "100%",
