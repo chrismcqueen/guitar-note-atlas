@@ -226,3 +226,8 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Pass the adjusted zoom string inset. Translate overview bands with the current string origin while preserving the released 1.3 gap / 2.1 inset proportions and upper/lower overhang. Keep all horizontal fret coordinates unchanged.
 - All 124 tests pass, including coverage of green/purple/yellow across phone/tablet spans and both string orientations. Browser checks at 1200 × 800 and 844 × 390 confirm full-neck and zoom alignment; yellow covers two strings, purple three and green four. Left-handed and upside-down checks pass. Screenshots are saved in `docs/pr-51/bass-highlights-tablet.png` and `docs/pr-51/bass-highlights-phone.png`.
 - Web export and Android/iOS bundled Release builds pass. Updated builds installed/launched on physical Pixel and iPad simulator.
+
+### Flat audio buttons and lighter border — October 8, 2026
+
+- Remove all shadow properties and Android elevation from the shared main-screen audio trigger style. Change the Audio Settings card border to the existing light grey `#C8CCCF`.
+- At 844 × 390, browser visual verification confirms flat Play/Settings buttons; computed Play shadow is `none`, and the popover border is `rgb(200, 204, 207)`. Web export and Android/iOS bundled Release builds pass. Updated builds installed/launched on Pixel and iPad simulator.
