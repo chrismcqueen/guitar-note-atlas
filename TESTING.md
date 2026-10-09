@@ -2,6 +2,18 @@
 
 Run these checks before releasing changes that affect layout, navigation, music data, or Expo dependencies.
 
+## Active manual-test builds
+
+Lane requested on October 8 that each app refresh include all three targets below. Install and reopen the current bundled Release build after app changes; preserve each device's saved preferences. Both iOS simulators can use the universal app built in `/tmp/gna-bundled-ipad/Build/Products/Release-iphonesimulator/guitarnoteatlas.app`.
+
+| Target | Device identity | App |
+| --- | --- | --- |
+| iPhone 16, iOS 18.4 | `6FC22721-D615-459C-A2E9-D28CCFDE4B0A` | `dev.com.guitar-note-atlas` |
+| iPad Pro 11-inch (M4), iOS 18.4 | `497648CB-7BFE-4972-BDE7-29C43C849A7A` | `dev.com.guitar-note-atlas` |
+| Physical Pixel 4a, Android 13 | `08281JEC229228` | `dev.com.guitarnoteatlas` |
+
+The iPhone simulator is booted with the current Release build (app source `6784175`). Dismissed the first-run tutorial prompt, enabled Audio Player, and left the app stopped in full-neck overview with the simulator upright in landscape. Native UI inspection confirms the fretboard, key header and audio controls are visible. Keep this iPhone running and refresh it alongside the iPad and connected Pixel. Other project simulators are separate.
+
 ## Automated checks
 
 ```sh
