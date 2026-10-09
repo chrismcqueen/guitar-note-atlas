@@ -15,9 +15,10 @@ export const getMenuVisualCenterX = (insets, isTablet) => {
 
 // Anchor the phone practice row to the blue header, independent of neck layout.
 export const getPhonePracticeHeaderLayout = (insets) => {
-  const top = phoneHeaderHeight + (Platform.OS === "android" ? 0 : insets.top);
+  const headerBottom = phoneHeaderHeight + (Platform.OS === "android" ? 0 : insets.top);
+  const top = headerBottom + 3;
   const height = 56;
-  return { top, height, centerY: top + height / 2 };
+  return { headerBottom, top, height, centerY: top + height / 2 };
 };
 
 const Header = () => {

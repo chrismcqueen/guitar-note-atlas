@@ -25,7 +25,7 @@ export const AUDIO_CONTROL_GROUP_WIDTH = AUDIO_BUTTON_SIZE + AUDIO_BUTTON_GAP + 
 const audioControlPlacement = (dimensions, insets) => {
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const phoneRow = getPhonePracticeHeaderLayout(insets);
-  const headerBottom = isTablet ? tabletHeaderHeight : phoneRow.top;
+  const headerBottom = isTablet ? tabletHeaderHeight : phoneRow.headerBottom;
   const top = isTablet ? headerBottom + 12 : phoneRow.centerY - AUDIO_BUTTON_SIZE / 2;
   const left = getMenuVisualCenterX(insets, isTablet) - AUDIO_CONTROL_GROUP_WIDTH / 2;
   return { headerBottom, isTablet, left, top };

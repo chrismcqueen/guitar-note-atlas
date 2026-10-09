@@ -283,3 +283,8 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Use the same screen-centered, 38-point text row for Key Center and zoomed position names. Zoom names use the empty key-arrow lanes to stay readable on smaller phones without moving their center.
 - At 844 × 390, both views put Play at x=63/y=44 and the title center at x=422/y=66. At 667 × 320 the title center remains x=333.5/y=66, Play remains x=63/y=44, and the previous-key target is x=163/y=38/44×56 with eight points of clearance from Settings. At 568 × 320 both heading centers are x=284/y=66; the longest position title fits its 242-point slot (text width 237.23). At 844 × 390 that title fits its 430-point slot (text width 421.55).
 - Settings still opens six points below the blue bar, hides both audio buttons, and closing restores Play to y=44. Screenshots: `docs/pr-51/phone-header-overview.png` and `docs/pr-51/phone-header-zoom.png`. All 130 tests, web export and final Android/iOS bundled Release builds pass. Updated iPad build installed/launched.
+
+### Phone header spacing midpoint — October 8, 2026
+
+- Lower the shared phone practice row by three points, halfway back from the previous six-point rise. Title, key arrows and audio controls move together in overview and zoom; keep the popover anchored to the actual blue-header bottom independently of this row offset.
+- At 844 × 390 both titles center at x=422/y=69, and Play remains x=63/y=47 in both views. At 667 × 320 both titles center at x=333.5/y=69. The Play circle now leaves nine points below the blue bar; neck placement stays intact. Refreshed overview/zoom screenshots in `docs/pr-51/phone-header-overview.png` and `docs/pr-51/phone-header-zoom.png`. Web export and Android/iOS bundled Release builds pass.
