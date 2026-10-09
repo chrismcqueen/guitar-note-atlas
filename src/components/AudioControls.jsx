@@ -13,6 +13,7 @@ import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 import DegreeLabel from "./Neck/DegreeLabel";
 import AudioSettingsScroll from "./AudioSettingsScroll";
 import VerticalStepButtons from "./VerticalStepButtons";
+import VolumeSlider from "./VolumeSlider";
 
 const CONTROL_HIT_SLOP = 3;
 const TAP_TEMPO_RESET_MS = 2000;
@@ -263,37 +264,16 @@ export const AudioPopover = () => {
           <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
           <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />
         </View>
-        <VolumeControl label="NOTES VOLUME" name="Notes" value={notesVolume} onChange={setNotesVolume} />
+        <VolumeSlider label="NOTES VOLUME" name="Notes" value={notesVolume} onChange={setNotesVolume} />
         <Text style={styles.accompanimentLabel}>ACCOMPANIMENT</Text>
         <View style={[styles.toggleRow, styles.accompanimentRow]}>
           {[['off', 'Off'], ['metronome', 'Click'], ['drums', 'Drums']].map(([mode, label]) => (
             <Toggle key={mode} accessibilityLabel={`Accompaniment ${label}`} label={label} selected={accompaniment === mode} onPress={() => setAccompaniment(mode)} />
           ))}
         </View>
-        <VolumeControl label="VOLUME" name="Accompaniment" value={accompanimentVolume} onChange={setAccompanimentVolume} />
+        <VolumeSlider label="VOLUME" name="Accompaniment" value={accompanimentVolume} onChange={setAccompanimentVolume} />
         {!!error && <Text style={styles.error}>{error}</Text>}
         </AudioSettingsScroll>
-      </View>
-    </View>
-  );
-};
-
-const VolumeControl = ({ label, name, value, onChange }) => {
-  const percent = Math.round(value * 100);
-  const louder = useRepeatPress(() => {
-    if (percent >= 100) return false;
-    onChange(Math.min(100, percent + 5) / 100);
-  }, { disabled: percent >= 100 });
-  const quieter = useRepeatPress(() => {
-    if (percent <= 0) return false;
-    onChange(Math.max(0, percent - 5) / 100);
-  }, { disabled: percent <= 0 });
-  return (
-    <View style={styles.volumeRow}>
-      <Text style={[styles.label, styles.volumeLabel]}>{label}</Text>
-      <View style={styles.controlCluster}>
-        <VerticalStepButtons upLabel={`Increase ${name.toLowerCase()} volume`} downLabel={`Decrease ${name.toLowerCase()} volume`} upHandlers={louder} downHandlers={quieter} upDisabled={percent >= 100} downDisabled={percent <= 0} />
-        <Text accessibilityLabel={`${name} volume`} accessibilityValue={{ min: 0, max: 100, now: percent, text: `${percent} percent` }} style={styles.volumeValue}>{percent}%</Text>
       </View>
     </View>
   );
@@ -346,9 +326,6 @@ const styles = StyleSheet.create({
   tempoInput: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 19, height: 24, lineHeight: 24, includeFontPadding: false, padding: 0, textAlign: "right", width: 30 },
   tempoWithoutHint: { marginTop: 0 },
   tempoRow: { alignItems: "center", flexDirection: "row", marginTop: 12 },
-  volumeRow: { alignItems: "center", flexDirection: "row", marginTop: 10 },
-  volumeLabel: { fontSize: 14 },
-  volumeValue: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 17, height: 24, lineHeight: 24, includeFontPadding: false, textAlign: "center", width: 74 },
   tempoValue: { alignItems: "center", flexDirection: "row", justifyContent: "center", width: 74 },
   title: { color: theme.colors.black, flex: 1, fontFamily: "blackout", fontSize: 20, textAlign: "center" },
   titleRow: { alignItems: "center", backgroundColor: theme.colors.white, flexDirection: "row", flexShrink: 0, height: 32, marginBottom: 6, zIndex: 1 },

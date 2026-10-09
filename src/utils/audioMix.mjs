@@ -6,6 +6,16 @@ export const clampVolume = (value) => {
   return Number.isFinite(number) ? Math.max(0, Math.min(1, number)) : 1;
 };
 
+// A continuous audio taper: half travel is -20 dB (one tenth amplitude).
+// Keep persisted mixer values as linear gains, so existing levels don't move.
+const AUDIO_TAPER_EXPONENT = Math.log(0.1) / Math.log(0.5);
+export const volumeFromSlider = (position) => clampVolume(position) ** AUDIO_TAPER_EXPONENT;
+export const sliderFromVolume = (gain) => clampVolume(gain) ** (1 / AUDIO_TAPER_EXPONENT);
+export const volumeDecibels = (gain) => {
+  const level = clampVolume(gain);
+  return level === 0 ? 'Mute' : `${Math.round(20 * Math.log10(level)) || 0} dB`;
+};
+
 export const sourceMixVolume = (key, config, base = 1) => base * clampVolume(
   key.startsWith('guitar:') ? config.notesVolume : config.accompanimentVolume,
 );

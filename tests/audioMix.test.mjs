@@ -1,6 +1,30 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { clampVolume, fallbackSourceVolume, hasPlaybackChanges, sourceMixVolume } from '../src/utils/audioMix.mjs';
+import { clampVolume, fallbackSourceVolume, hasPlaybackChanges, sliderFromVolume, sourceMixVolume, volumeDecibels, volumeFromSlider } from '../src/utils/audioMix.mjs';
+
+test('audio taper has exact mute/full endpoints and a -20 dB midpoint', () => {
+  assert.equal(volumeFromSlider(0), 0);
+  assert.equal(volumeFromSlider(1), 1);
+  assert.ok(Math.abs(volumeFromSlider(0.5) - 0.1) < 1e-12);
+  assert.equal(volumeDecibels(volumeFromSlider(0.5)), '-20 dB');
+  assert.equal(volumeDecibels(volumeFromSlider(0.25)), '-40 dB');
+  assert.equal(volumeDecibels(0), 'Mute');
+  assert.equal(volumeDecibels(1), '0 dB');
+  assert.equal(volumeFromSlider(-1), 0);
+  assert.equal(volumeFromSlider(2), 1);
+});
+
+test('taper is continuous, increases steadily, and preserves saved linear mixer levels', () => {
+  let previous = -1;
+  for (let i = 0; i <= 1000; i++) {
+    const gain = i / 1000;
+    const position = sliderFromVolume(gain);
+    assert.ok(position > previous);
+    assert.ok(Math.abs(volumeFromSlider(position) - gain) < 1e-12);
+    previous = position;
+  }
+  assert.ok(volumeFromSlider(0.05) < 0.001, 'fine low-level control without an audible mute jump');
+});
 
 test('volume defaults preserve existing saved settings and clamp independently to silence/full level', () => {
   for (const value of [undefined, null, '', NaN, 'bad']) assert.equal(clampVolume(value), 1);
