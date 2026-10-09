@@ -3,6 +3,7 @@ import test from 'node:test';
 import { NativeAudioTransport } from '../src/utils/practiceTransport.mjs';
 import { buildPositionSequence } from '../src/utils/positionPlayback.mjs';
 import { NOTE_RATES } from '../src/utils/audioSequence.mjs';
+import { NOTE_LEVEL } from '../src/utils/audioMix.mjs';
 
 class Context {
   currentTime = 0;
@@ -406,7 +407,7 @@ test('startup preload decodes and prepares notes without activating output; Play
   const entries=[['guitar:8','root'],['drum:click','click']];
   const config={...transport.config,countIn:false,plan:{notes:[{sample:8,playbackRate:1}],loopStart:0,oneShotLength:1}};
   await transport.preload(entries,config);
-  const prepared=transport.prepared('guitar:8',0.92,0.6,1);
+  const prepared=transport.prepared('guitar:8',NOTE_LEVEL,0.6,1);
   assert.equal(activations,0);
   assert.equal(transport.context.resumes,0);
   assert.equal(transport.context.state,'suspended');
@@ -416,7 +417,7 @@ test('startup preload decodes and prepares notes without activating output; Play
   await transport.load(entries,config);
   assert.equal(activations,1);
   assert.equal(transport.context.resumes,1);
-  assert.equal(transport.prepared('guitar:8',0.92,0.6,1),prepared);
+  assert.equal(transport.prepared('guitar:8',NOTE_LEVEL,0.6,1),prepared);
   await transport.close();
 });
 

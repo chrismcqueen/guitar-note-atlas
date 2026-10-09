@@ -12,7 +12,7 @@ import { createNativeAudioTransport } from "../utils/nativeAudioTransport";
 import { buildPositionSequence, getPositionNotes, practiceAudioMode } from "../utils/positionPlayback.mjs";
 import { clampTempo, DEFAULT_NOTE_RATE, DEFAULT_TEMPO, millisecondsPerNote, normalizeNoteRate } from "../utils/audioSequence.mjs";
 
-import { clampVolume, fallbackSourceVolume, hasPlaybackChanges, sourceMixVolume } from "../utils/audioMix.mjs";
+import { clampVolume, fallbackSourceVolume, hasPlaybackChanges } from "../utils/audioMix.mjs";
 
 export const AudioPlaybackStore = createContext(null);
 const DEFAULTS = { tempo: DEFAULT_TEMPO, noteRate: DEFAULT_NOTE_RATE, loop: true, notesEnabled: true, accompaniment: "off", countIn: true, startOnRoot: true, notesVolume: 1, accompanimentVolume: 1 };
@@ -182,13 +182,13 @@ export const AudioPlaybackProvider = ({ children }) => {
     setPreloadAttempt(attempt => attempt + 1);
   }, []);
 
-  const trigger = useCallback((key, volume, rate = 1) => {
+  const trigger = useCallback((key, rate = 1) => {
     const pool = players.current.get(key);
     if (!pool) return;
     const index = voices.current.get(key) ?? 0;
     const player = pool[index % pool.length];
     voices.current.set(key, index + 1);
-    player.volume = sourceMixVolume(key, configRef.current, volume);
+    player.volume = fallbackSourceVolume(key, configRef.current);
     player.shouldCorrectPitch = false;
     player.setPlaybackRate(rate);
     player.play();
@@ -224,15 +224,15 @@ export const AudioPlaybackProvider = ({ children }) => {
         const now = monotonicNow() / 1000;
         for (const event of timeline.events(now, now + 0.000001)) {
           if (event.kind === "beat") {
-            if (event.count || event.config.accompaniment === "metronome") trigger("drum:click", 0.3);
+            if (event.count || event.config.accompaniment === "metronome") trigger("drum:click");
             else if (event.config.accompaniment === "drums") {
-              trigger("drum:hat", 0.08);
-              if ((event.beat - timeline.countBeats) % 4 === 0) trigger("drum:kick", 0.48);
-              if ((event.beat - timeline.countBeats) % 4 === 2) trigger("drum:snare", 0.45);
+              trigger("drum:hat");
+              if ((event.beat - timeline.countBeats) % 4 === 0) trigger("drum:kick");
+              if ((event.beat - timeline.countBeats) % 4 === 2) trigger("drum:snare");
             }
             setCountInBeat(event.count > 0 ? 5 - event.count : 0);
           } else if (event.kind === "note") {
-            trigger(`guitar:${event.note.sample}`, event.config.accompaniment === "drums" ? 0.64 : 0.92, event.note.playbackRate);
+            trigger(`guitar:${event.note.sample}`, event.note.playbackRate);
             setActiveNote(event.note);
             fallbackIndex.current = event.index + 1;
           } else if (event.kind === "end") return stop();
@@ -249,7 +249,7 @@ export const AudioPlaybackProvider = ({ children }) => {
       if (native.current) void native.current.tapClick().catch(() => {
         if (mounted.current) setError("Unable to play the tap tempo click.");
       });
-      else trigger("drum:click", 0.3);
+      else trigger("drum:click");
     } catch (_) { setError("Unable to play the tap tempo click."); }
   }, [audioReady, trigger]);
 

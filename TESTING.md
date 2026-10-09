@@ -263,3 +263,10 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 
 - Give TEMPO, SUBDIVISION, NOTES, ACCOMPANIMENT and both VOLUME labels one shared style: 14-point system font, weight 700, black, left aligned and a 24-point line height. Keep row sizing and section margins separate from typography.
 - Tablet browser checks confirm identical computed font family, size, weight, color and alignment for all six labels. Compact-phone SUBDIVISION fits its 124-point slot without overflow. Web export and Android/iOS bundled Release builds pass; updated iPad installed/launched. Pixel update awaits its security-check prompt.
+
+### Balanced accompaniment and numeric volumes — October 8, 2026
+
+- Calibrate notes to 0.75, click to 0.85, kick to 0.8, snare to 0.75 and hi-hat to 0.16, with a shared 0.6 master gain. Apply the same constants to native PCM playback and fallback players. Note level stays consistent across accompaniment modes. No sample assets or clock scheduling changed.
+- Actual bundled PCM regression checks place click/kick/snare peaks within 4 dB of every guitar sample. A conservative absolute-sample sum, including hi-hat tails from the previous beat and the maximum guitar amplitude, stays below 0.92 at every supported integer tempo (40–240 BPM). This verifies normal scheduled mix headroom; physical-device loudness and artifact listening remain manual checks.
+- All 130 tests, web export, and Android/iOS bundled Release builds pass. Browser checks verify plain 0, 50 and 100 readouts, independent slider values, and a computed zero-width panel border. The musical taper and saved linear gains remain intact; half travel still gives −20 dB. Screenshot: `docs/pr-51/balanced-audio-settings.png`.
+- Updated bundled builds installed and launched successfully on physical Pixel 4a and iPad Pro simulator.

@@ -173,10 +173,10 @@ export const AudioPopover = () => {
   const cardLeft = Math.max(0, triggerLeft - 14);
   const viewportHeight = Math.min(dimensions.height, Platform.OS === "web" ? window.height : Math.min(window.width, window.height));
   const cardMaxHeight = Math.max(0, viewportHeight - cardTop - 12);
-  // Reserve padding/borders (32) and the fixed header plus gap (38). Native
+  // Reserve padding (28) and the fixed header plus gap (38). Native
   // ScrollView needs a bounded height; maxHeight/flex shrink alone can leave
   // its viewport as tall as the content inside the rotated Android shell.
-  const scrollHeight = Math.min(settingsContentHeight ?? 300, Math.max(0, cardMaxHeight - 70));
+  const scrollHeight = Math.min(settingsContentHeight ?? 300, Math.max(0, cardMaxHeight - 66));
   const commitTempo = () => {
     setTempo(tempoText);
     setTempoText(String(Math.max(MIN_TEMPO, Math.min(MAX_TEMPO, Math.round(Number(tempoText) || tempo)))));
@@ -291,9 +291,7 @@ const styles = StyleSheet.create({
   bpm: { color: theme.colors.grey, fontFamily: "proletarsk", fontSize: 13, height: 24, lineHeight: 24, includeFontPadding: false, marginLeft: 2 },
   card: {
     backgroundColor: theme.colors.white,
-    borderColor: theme.colors.neckLightGray,
     borderRadius: 10,
-    borderWidth: 2,
     elevation: 12,
     padding: 14,
     position: "absolute",

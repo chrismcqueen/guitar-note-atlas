@@ -1,15 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { clampVolume, fallbackSourceVolume, hasPlaybackChanges, sliderFromVolume, sourceMixVolume, volumeDecibels, volumeFromSlider } from '../src/utils/audioMix.mjs';
+import { clampVolume, fallbackSourceVolume, hasPlaybackChanges, sliderFromVolume, sourceMixVolume, volumePercent, volumeFromSlider } from '../src/utils/audioMix.mjs';
 
 test('audio taper has exact mute/full endpoints and a -20 dB midpoint', () => {
   assert.equal(volumeFromSlider(0), 0);
   assert.equal(volumeFromSlider(1), 1);
   assert.ok(Math.abs(volumeFromSlider(0.5) - 0.1) < 1e-12);
-  assert.equal(volumeDecibels(volumeFromSlider(0.5)), '-20 dB');
-  assert.equal(volumeDecibels(volumeFromSlider(0.25)), '-40 dB');
-  assert.equal(volumeDecibels(0), 'Mute');
-  assert.equal(volumeDecibels(1), '0 dB');
+  assert.ok(Math.abs(20 * Math.log10(volumeFromSlider(0.5)) + 20) < 1e-12);
+  assert.equal(volumePercent(volumeFromSlider(0.5)), 50);
+  assert.equal(volumePercent(volumeFromSlider(0.25)), 25);
+  assert.equal(volumePercent(0), 0);
+  assert.equal(volumePercent(1), 100);
   assert.equal(volumeFromSlider(-1), 0);
   assert.equal(volumeFromSlider(2), 1);
 });
@@ -37,12 +38,12 @@ test('volume defaults preserve existing saved settings and clamp independently t
 test('note and accompaniment levels apply only to their own sources, including click and tap/count sounds', () => {
   const config = { notesVolume: 0, accompanimentVolume: 0.5, accompaniment: 'drums' };
   assert.equal(sourceMixVolume('guitar:8', config, 0.92), 0);
-  assert.equal(fallbackSourceVolume('drum:click', config), 0.15);
+  assert.equal(fallbackSourceVolume('drum:click', config), 0.255);
   assert.equal(fallbackSourceVolume('drum:kick', config), 0.24);
-  assert.equal(fallbackSourceVolume('drum:snare', config), 0.225);
-  assert.equal(fallbackSourceVolume('drum:hat', config), 0.04);
-  assert.equal(fallbackSourceVolume('guitar:8', { ...config, notesVolume: 1, accompanimentVolume: 0 }), 0.64);
-  assert.equal(fallbackSourceVolume('guitar:8', { accompaniment: 'off' }), 0.92);
+  assert.equal(fallbackSourceVolume('drum:snare', config), 0.22499999999999998);
+  assert.equal(fallbackSourceVolume('drum:hat', config), 0.048);
+  assert.equal(fallbackSourceVolume('guitar:8', { ...config, notesVolume: 1, accompanimentVolume: 0 }), 0.44999999999999996);
+  assert.equal(fallbackSourceVolume('guitar:8', { accompaniment: 'off' }), 0.44999999999999996);
 });
 
 test('mixer-only updates do not require playback preparation, while musical changes still do', () => {

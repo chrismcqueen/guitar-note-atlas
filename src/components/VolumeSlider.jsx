@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { PanResponder, Platform, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
-import { sliderFromVolume, volumeDecibels, volumeFromSlider } from '../utils/audioMix.mjs';
+import { sliderFromVolume, volumePercent, volumeFromSlider } from '../utils/audioMix.mjs';
 import { isSliderDrag, SLIDER_INSET, sliderPositionAtX, sliderPositionForGesture } from '../utils/volumeSlider.mjs';
 import { theme } from '../utils/theme';
 import { audioSettingsStyles } from './audioSettingsStyles';
@@ -11,6 +11,7 @@ const VolumeSlider = ({ label, name, value, onChange }) => {
   const rotated = Platform.OS !== 'web' && window.height >= window.width;
   const [width, setWidth] = useState(0);
   const position = sliderFromVolume(value);
+  const percent = volumePercent(value);
   const latest = useRef({ width, position, onChange });
   latest.current = { width, position, onChange };
   const startX = useRef(0);
@@ -51,14 +52,14 @@ const VolumeSlider = ({ label, name, value, onChange }) => {
     <View style={styles.container}>
       <View style={styles.heading}>
         <Text style={audioSettingsStyles.label}>{label}</Text>
-        <Text accessible={false} style={styles.value}>{volumeDecibels(value)}</Text>
+        <Text accessible={false} style={styles.value}>{percent}</Text>
       </View>
       <View
         {...responder.panHandlers}
         accessible
         accessibilityLabel={`${name} volume`}
         accessibilityRole="adjustable"
-        accessibilityValue={{ min: 0, max: 100, now: Math.round(position * 100), text: volumeDecibels(value) }}
+        accessibilityValue={{ min: 0, max: 100, now: percent, text: `${percent} percent` }}
         accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
         onAccessibilityAction={({ nativeEvent }) => {
           if (nativeEvent.actionName === 'increment') step(0.05);
@@ -68,8 +69,8 @@ const VolumeSlider = ({ label, name, value, onChange }) => {
           tabIndex: 0,
           'aria-valuemin': 0,
           'aria-valuemax': 100,
-          'aria-valuenow': Math.round(position * 100),
-          'aria-valuetext': volumeDecibels(value),
+          'aria-valuenow': percent,
+          'aria-valuetext': `${percent} percent`,
           onKeyDown: (event) => {
             if (['ArrowLeft', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
               event.preventDefault();

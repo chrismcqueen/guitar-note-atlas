@@ -1,7 +1,7 @@
 import { millisecondsPerNote } from './audioSequence.mjs';
 import { PracticeTimeline } from './practiceTimeline.mjs';
 import { renderNotePcm } from './notePcm.mjs';
-import { clampVolume, DRUM_LEVELS } from './audioMix.mjs';
+import { clampVolume, DRUM_LEVELS, MASTER_VOLUME, NOTE_LEVEL } from './audioMix.mjs';
 
 const LEAD = 0.1;
 const STOP_FADE = 0.012;
@@ -19,7 +19,7 @@ export class NativeAudioTransport {
   constructor(AudioContext, AudioManager, callbacks, frames = displayFrames) {
     this.context = new AudioContext();
     this.masterGain = this.context.createGain();
-    this.masterGain.gain.value = 0.8;
+    this.masterGain.gain.value = MASTER_VOLUME;
     this.masterGain.connect(this.context.destination);
     this.notesGain = this.context.createGain();
     this.accompanimentGain = this.context.createGain();
@@ -85,7 +85,7 @@ export class NativeAudioTransport {
     for (const [key, volume] of Object.entries(VOLUMES)) this.prepared(`drum:${key}`, volume);
     if (config.notesEnabled) {
       const duration = millisecondsPerNote(config.tempo, config.noteRate) / 1000;
-      const volume = config.accompaniment === 'drums' ? 0.64 : 0.92;
+      const volume = NOTE_LEVEL;
       for (const note of config.plan.notes) this.prepared(`guitar:${note.sample}`, volume, duration, note.playbackRate);
     }
   }
@@ -248,7 +248,7 @@ export class NativeAudioTransport {
         }
         this.visualEvents.push(event);
       } else if (event.kind === 'note') {
-        const duration = this.buffer(`guitar:${event.note.sample}`, time, config.accompaniment === 'drums' ? 0.64 : 0.92, event.duration, event.note.playbackRate);
+        const duration = this.buffer(`guitar:${event.note.sample}`, time, NOTE_LEVEL, event.duration, event.note.playbackRate);
         if (duration !== null) this.visualEvents.push({ ...event, end: time + duration });
       } else if (event.kind === 'end') {
         this.visualEvents.push(event);
