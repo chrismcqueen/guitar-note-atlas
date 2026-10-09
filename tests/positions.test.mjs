@@ -137,3 +137,35 @@ test("position color bands preserve released vertical sizing", () => {
   assert.deepEqual(positionBandVerticalGeometry({ height: 3, stringGap: 36, upsideDown: true, verticalOffset: 14 }), { height: 136, y: 72 });
   assert.deepEqual(positionBandVerticalGeometry({ bassMode: true, height: 5, stringGap: 52, verticalOffset: 20 }), { height: 175, y: 22.36 });
 });
+
+test("bass overview bands surround the correct strings like released FullStringView", () => {
+  for (const span of [120, 180]) {
+    const gap = span / 3;
+    const releasedInset = gap / 1.3 / 2 * 2.1;
+    for (const height of [3, 4, 5]) {
+      for (const upsideDown of [false, true]) {
+        const band = positionBandVerticalGeometry({ bassMode: true, height, stringGap: gap, upsideDown, verticalOffset: releasedInset, stringOriginY: 14 });
+        const firstString = upsideDown ? 5 - height : 0;
+        const lastString = firstString + height - 2;
+        const topOverhang = releasedInset - gap * 0.43;
+        const bottomOverhang = gap * 0.43 - releasedInset * 0.05;
+        assert.ok(Math.abs(band.y - (14 + firstString * gap - topOverhang)) < 1e-9);
+        assert.ok(Math.abs(band.y + band.height - (14 + lastString * gap + bottomOverhang)) < 1e-9);
+      }
+    }
+  }
+});
+
+test("bass zoom bands use the adjusted string inset from released StringView", () => {
+  const bassInset = 20 * 2.1;
+  for (const height of [3, 4, 5]) {
+    for (const upsideDown of [false, true]) {
+      const band = positionBandVerticalGeometry({ bassMode: true, height, stringGap: 52, upsideDown, verticalOffset: bassInset });
+      const firstString = upsideDown ? 5 - height : 0;
+      assert.equal(band.y, firstString * 52 + 52 * 0.43);
+      assert.equal(band.height, (height - 2) * 52 + bassInset * 0.95);
+      assert.ok(band.y < bassInset + firstString * 52);
+      assert.ok(band.y + band.height > bassInset + (firstString + height - 2) * 52);
+    }
+  }
+});

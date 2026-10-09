@@ -112,7 +112,7 @@ const PositionZoom = ({ compact = false }) => {
     height: position.height,
     stringGap: renderedStringGap,
     upsideDown: globalState.options.upsideDown,
-    verticalOffset: baseVerticalOffset,
+    verticalOffset,
   });
 
   const notes = getPositionNotes(coordinates, globalState.scale.degrees, globalState.key.key_offset, positionId, positionFret, bassMode).map((note) => ({

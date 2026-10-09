@@ -15,6 +15,7 @@ Chris's October 5 email and voice memo approve the demonstrated changes, with pa
 - Phone orientation improvements that reduce interference from system navigation.
 - Press-and-hold key, position, tempo and subdivision arrows to repeat. Start after 420 ms; repeat every 150 ms initially, every 100 ms after another second, and every 80 ms after 2.2 seconds of repeating. Reset acceleration for every new hold, stop immediately on release/cancellation, and stop bounded tempo/subdivision selectors at their endpoints without wrapping or an extra release step.
 - Stronger active-position highlighting on the tablet overview.
+- Bass position color bands follow the released 2.1 string coverage and overhang in full-neck and zoom views: green covers four strings, purple three, and yellow two. Preserve alignment when flipped upside down or left handed.
 - Press feedback and position scrubbing on the full neck on phone and tablet.
 - While scrubbing, dark frets, strings, and anchor dots must follow the highlighted position window consistently on iOS and Android.
 - Footer swiping to select or deselect multiple scale degrees.

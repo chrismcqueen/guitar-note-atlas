@@ -12,13 +12,15 @@ export const positionBandFrets = (pitch, keyOffset, maxFret = 15) =>
 // The released renderer defines band height as the number of string spaces
 // covered, plus a small overhang above and below the outer strings. `height`
 // is the legacy heightForPosition value (5/4/3), not a string count.
-export const positionBandVerticalGeometry = ({ bassMode = false, height, stringGap, upsideDown = false, verticalOffset }) => {
+export const positionBandVerticalGeometry = ({ bassMode = false, height, stringGap, upsideDown = false, verticalOffset, stringOriginY = verticalOffset }) => {
   let bandHeight = height;
-  let y = 0;
+  // Translate the released drawing coordinates with the strings. Overview
+  // necks use a fixed string origin rather than the old UIKit bass inset.
+  let y = stringOriginY - verticalOffset;
 
   if (upsideDown) {
-    if (height === 3) y = stringGap * 2;
-    else if (height === 4) y = stringGap;
+    if (height === 3) y += stringGap * 2;
+    else if (height === 4) y += stringGap;
   }
 
   if (bassMode) {
