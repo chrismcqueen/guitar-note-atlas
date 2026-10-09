@@ -29,7 +29,6 @@ const initialValue = {
     upsideDown: false,
     hideAnchorFrets: false,
     keyNavigation: "chromatic",
-    audioPlayer: false,
   },
   displayedTutorial: false,
 };

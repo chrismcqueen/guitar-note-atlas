@@ -305,9 +305,6 @@ export const AudioPlaybackProvider = ({ children }) => {
     }
   }, [config, start]);
   useEffect(() => {
-    if (!globalState.options?.audioPlayer) { setPopoverOpen(false); stop(); }
-  }, [globalState.options?.audioPlayer, stop]);
-  useEffect(() => {
     mounted.current = true;
     setAudioReady(false);
     setStartupError("");

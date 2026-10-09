@@ -58,7 +58,7 @@ const AppStartup = ({ fontsLoaded }) => {
 };
 
 const AppContent = () => {
-  const { dimensions, globalState } = React.useContext(Store);
+  const { dimensions } = React.useContext(Store);
   const { showOptions } = React.useContext(OverlayStore);
   const { popoverOpen } = React.useContext(AudioPlaybackStore);
   const screenBounds = Platform.OS === "web" ? dimensions : orientScreenBounds(Dimensions.get("screen"), dimensions);
@@ -156,10 +156,10 @@ const AppContent = () => {
           animatedViewportStyle,
         ]}
       >
-        {globalState.options?.audioPlayer && <AudioTrigger />}
+        <AudioTrigger />
       </Animated.View>
       <Options interactionDisabled={popoverOpen} mounted={optionsMounted} transition={optionsTransition} viewport={viewport} />
-      {globalState.options?.audioPlayer && <AudioPopover />}
+      <AudioPopover />
       <TutorialGate />
       <TutorialPrompt />
     </View>

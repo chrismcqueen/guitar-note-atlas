@@ -26,7 +26,7 @@ const Options = ({ interactionDisabled = false, mounted, transition, viewport })
       ? Math.max(insets.bottom + 16, 44)
       : Math.max(insets.bottom, 16);
 
-  const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Enable 4ths/5ths Mode", "Enable Audio Player", "Hide Anchor Frets", "Flip Upside Down", "Rate Us", "Give Us Feedback"];
+  const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Enable 4ths/5ths Mode", "Hide Anchor Frets", "Flip Upside Down", "Rate Us", "Give Us Feedback"];
 
   const updateOption = (name) => {
     const nextState = {
@@ -64,8 +64,6 @@ const Options = ({ interactionDisabled = false, mounted, transition, viewport })
         return globalState.options.hideAnchorFrets;
       case "Enable 4ths/5ths Mode":
         return globalState.options.keyNavigation === KEY_NAVIGATION_MODES.CIRCLE;
-      case "Enable Audio Player":
-        return globalState.options.audioPlayer;
       default:
         return false;
     }
@@ -94,9 +92,6 @@ const Options = ({ interactionDisabled = false, mounted, transition, viewport })
         break;
       case "Enable 4ths/5ths Mode":
         toggleCircleNavigation();
-        break;
-      case "Enable Audio Player":
-        updateOption("audioPlayer");
         break;
       case "Rate Us":
         Linking.openURL("https://apps.apple.com/us/app/guitar-note-atlas/id971847390");

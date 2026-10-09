@@ -12,7 +12,7 @@ Lane requested on October 8 that each app refresh include all three targets belo
 | iPad Pro 11-inch (M4), iOS 18.4 | `497648CB-7BFE-4972-BDE7-29C43C849A7A` | `dev.com.guitar-note-atlas` |
 | Physical Pixel 4a, Android 13 | `08281JEC229228` | `dev.com.guitarnoteatlas` |
 
-The iPhone simulator is booted with the current Release build (app source `6784175`). Dismissed the first-run tutorial prompt, enabled Audio Player, and left the app stopped in full-neck overview with the simulator upright in landscape. Native UI inspection confirms the fretboard, key header and audio controls are visible. Keep this iPhone running and refresh it alongside the iPad and connected Pixel. Other project simulators are separate.
+The iPhone simulator is booted with the current bundled Release build. Dismissed the first-run tutorial prompt; Audio Player is always available, and left the app stopped in full-neck overview with the simulator upright in landscape. Native UI inspection confirms the fretboard, key header and audio controls are visible. Keep this iPhone running and refresh it alongside the iPad and connected Pixel. Other project simulators are separate.
 
 ## Automated checks
 
@@ -300,3 +300,9 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 
 - Lower the shared phone practice row by three points, halfway back from the previous six-point rise. Title, key arrows and audio controls move together in overview and zoom; keep the popover anchored to the actual blue-header bottom independently of this row offset.
 - At 844 × 390 both titles center at x=422/y=69, and Play remains x=63/y=47 in both views. At 667 × 320 both titles center at x=333.5/y=69. The Play circle now leaves nine points below the blue bar; neck placement stays intact. Refreshed overview/zoom screenshots in `docs/pr-51/phone-header-overview.png` and `docs/pr-51/phone-header-zoom.png`. Web export and Android/iOS bundled Release builds pass.
+
+### Always available Audio Player — October 8, 2026
+
+- Always mount AudioTrigger and AudioPopover. Remove the Enable Audio Player menu item, switch handling, disabled startup default and provider effect that stopped/closed audio when the old preference was off. Legacy saved flags no longer control visibility or transport. Preserve audio settings, manual Play/Stop, splash preloading and existing clock/mixer behavior.
+- Browser upgrade check: on the previous build, turn Audio Player off through Options and confirm both audio controls disappear. Reload the new build at the same origin; both controls return without toggling a preference. Options no longer contains an Audio Player item, and Audio Settings opens/closes normally. Screenshots: `docs/pr-51/always-audio-home.png` and `docs/pr-51/always-audio-options.png`.
+- All 130 tests, web export and Android/iOS bundled Release builds pass. Updated builds installed/launched on physical Pixel 4a, iPhone 16 simulator and iPad Pro simulator.
