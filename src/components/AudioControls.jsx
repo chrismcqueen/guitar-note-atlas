@@ -2,13 +2,13 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { Image, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import Svg, { Circle, Path, Rect, Text as SvgText } from "react-native-svg";
 
-import { AudioControlLayoutStore, OverlayStore, PositionVisibilityStore, Store } from "../../Store";
+import { OverlayStore, PositionVisibilityStore, Store } from "../../Store";
 import { monotonicNow } from "../utils/audioClock.mjs";
 import { MAX_TEMPO, MIN_TEMPO, NOTE_RATES, tempoFromTapTimes } from "../utils/audioSequence.mjs";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
 import { useRepeatPress } from "../utils/useRepeatPress";
-import { getMenuVisualCenterX, phoneHeaderHeight, tabletHeaderHeight } from "./Header";
+import { getMenuVisualCenterX, getPhonePracticeHeaderLayout, tabletHeaderHeight } from "./Header";
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 import DegreeLabel from "./Neck/DegreeLabel";
 import AudioSettingsScroll from "./AudioSettingsScroll";
@@ -22,31 +22,26 @@ const AUDIO_BUTTON_SIZE = 44;
 const AUDIO_BUTTON_GAP = 10;
 export const AUDIO_CONTROL_GROUP_WIDTH = AUDIO_BUTTON_SIZE + AUDIO_BUTTON_GAP + 38;
 
-const audioControlPlacement = (dimensions, insets, overview, phoneKeyCenterY) => {
+const audioControlPlacement = (dimensions, insets) => {
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const phoneTopInset = Platform.OS === "android" ? 0 : insets.top;
-  const headerBottom = isTablet ? tabletHeaderHeight : phoneHeaderHeight + phoneTopInset;
-  const top = !isTablet && overview && Number.isFinite(phoneKeyCenterY)
-    ? phoneKeyCenterY - AUDIO_BUTTON_SIZE / 2
-    : headerBottom + 12;
+  const phoneRow = getPhonePracticeHeaderLayout(insets);
+  const headerBottom = isTablet ? tabletHeaderHeight : phoneRow.top;
+  const top = isTablet ? headerBottom + 12 : phoneRow.centerY - AUDIO_BUTTON_SIZE / 2;
   const left = getMenuVisualCenterX(insets, isTablet) - AUDIO_CONTROL_GROUP_WIDTH / 2;
   return { headerBottom, isTablet, left, top };
 };
 
-export const AudioTrigger = ({ inline = false }) => {
+export const AudioTrigger = () => {
   const { dimensions, insets } = useContext(Store);
   const { showMenu } = useContext(OverlayStore);
-  const { showPositionOverview } = useContext(PositionVisibilityStore);
-  const { phoneKeyCenterY } = useContext(AudioControlLayoutStore);
   const { canPlay, countInBeat, isLoading, isPlaying, openPopover, play, popoverOpen, error } = useContext(AudioPlaybackStore);
-  const { isTablet, left, top } = audioControlPlacement(dimensions, insets, showPositionOverview, phoneKeyCenterY);
-  const phoneOverview = !isTablet && showPositionOverview;
+  const { left, top } = audioControlPlacement(dimensions, insets);
 
   // The settings card replaces both controls until it is dismissed.
-  if (showMenu || popoverOpen || (phoneOverview && !inline)) return null;
+  if (showMenu || popoverOpen) return null;
 
   return (
-    <View style={[styles.triggerGroup, { left: inline ? left - Math.max(insets.left, insets.right) : left, top: inline ? (88 - AUDIO_BUTTON_SIZE) / 2 : top }]}>
+    <View style={[styles.triggerGroup, { left, top }]}>
       <Pressable
         android_disableSound
         accessibilityLabel={isPlaying ? "Stop audio" : isLoading ? "Cancel audio loading" : "Play audio"}
@@ -95,7 +90,6 @@ const MixerIcon = ({ filled }) => (
 export const AudioPopover = () => {
   const { dimensions, insets } = useContext(Store);
   const { showPositionOverview } = useContext(PositionVisibilityStore);
-  const { phoneKeyCenterY } = useContext(AudioControlLayoutStore);
   const window = useWindowDimensions();
   const {
     accompaniment,
@@ -124,7 +118,7 @@ export const AudioPopover = () => {
   const [tempoText, setTempoText] = useState(String(tempo));
   const [settingsContentHeight, setSettingsContentHeight] = useState(null);
   const tempoTapTimes = useRef([]);
-  const { headerBottom, isTablet, left: triggerLeft, top: triggerTop } = audioControlPlacement(dimensions, insets, showPositionOverview, phoneKeyCenterY);
+  const { headerBottom, isTablet, left: triggerLeft, top: triggerTop } = audioControlPlacement(dimensions, insets);
   const showOverviewHint = !isTablet && showPositionOverview;
   const slowerTempoPress = useRepeatPress(() => {
     if (tempo <= MIN_TEMPO) return false;

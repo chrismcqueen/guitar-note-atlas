@@ -181,7 +181,7 @@ const PositionZoom = ({ compact = false }) => {
   const nextPress = useRepeatPress(next);
   return (
     <View style={[styles.container, !compact && { height: dimensions.height * 0.53 }, compact && styles.phoneContainer]}>
-      <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.title, compact && styles.phoneTitle]}>{title}</Text>
+      {compact ? <View style={styles.phoneTitleSpace} /> : <Text numberOfLines={1} adjustsFontSizeToFit style={styles.title}>{title}</Text>}
       <View style={[styles.row, compact && styles.phoneRow]}>
         {compact && (
           <View pointerEvents="none" style={[styles.phoneBackdrop, { height: compactNeckHeight, transform: [{ translateY: -compactNeckHeight / 2 }], width: safeWidth }]}>
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   container: { alignItems: "center", height: 370, marginBottom: 35, transform: [{ translateY: 20 }], width: "100%" },
   phoneContainer: { height: 292, marginBottom: 0, transform: [{ translateY: 30 }] },
   title: { fontFamily: "proletarsk", fontSize: 40, letterSpacing: 6, marginBottom: 12, textAlign: "center" },
-  phoneTitle: { fontSize: 31, letterSpacing: 5, lineHeight: 38, marginBottom: 18, transform: [{ translateY: 12 }], width: "62%" },
+  phoneTitleSpace: { height: 38, marginBottom: 18 },
   row: { alignItems: "center", flex: 1, flexDirection: "row", justifyContent: "center", width: "100%" },
   phoneRow: { justifyContent: "center" },
   phoneBackdrop: { position: "absolute", top: "50%" },

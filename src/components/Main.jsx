@@ -1,21 +1,26 @@
 import React, { useContext } from "react";
 import { StyleSheet, View } from "react-native";
 
-import KeySelector, { PHONE_KEY_ROW_HEIGHT, PHONE_KEY_ROW_OFFSET } from "./KeySelector";
+import KeySelector, { PHONE_KEY_ROW_HEIGHT } from "./KeySelector";
 import Neck from "./Neck";
 import PositionZoom from "./PositionZoom";
 import TabletNeck from "./TabletNeck";
 import { Footer } from "./Footer";
-import { AudioControlLayoutStore, PositionVisibilityStore, Store } from "../../Store";
+import { PositionStore, PositionVisibilityStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
+import { getPosition } from "../utils/positions.mjs";
+import { getPhonePracticeHeaderLayout } from "./Header";
 
 export const Main = React.memo(() => {
-  const { setPhoneKeyCenterY } = useContext(AudioControlLayoutStore);
-  const { dimensions, insets } = useContext(Store);
+  const { dimensions, insets, globalState } = useContext(Store);
+  const { positionId } = useContext(PositionStore);
   const { showPositionOverview } = useContext(PositionVisibilityStore);
   const fullScreen = { height: "100%", width: "100%" };
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const safeSideInset = Math.max(insets.left, insets.right);
+  const phoneHeader = getPhonePracticeHeaderLayout(insets);
+  const position = getPosition(positionId);
+  const positionTitle = globalState.options?.bassMode ? position.bassTitle : position.title;
   const contentInsets = isTablet
     ? { paddingLeft: insets.left, paddingRight: insets.right }
     : { paddingLeft: safeSideInset, paddingRight: safeSideInset };
@@ -35,12 +40,10 @@ export const Main = React.memo(() => {
               </View>
             </>
           ) : (
-            <View style={styles.phoneContent} onLayout={({ nativeEvent }) => {
-              if (showPositionOverview) setPhoneKeyCenterY(nativeEvent.layout.y + PHONE_KEY_ROW_OFFSET + PHONE_KEY_ROW_HEIGHT / 2);
-            }}>
+            <View style={styles.phoneContent}>
               {showPositionOverview ? (
                 <>
-                  <KeySelector />
+                  <View style={{ height: PHONE_KEY_ROW_HEIGHT }} />
                   <View style={styles.phoneNeck}><Neck /></View>
                 </>
               ) : (
@@ -49,6 +52,11 @@ export const Main = React.memo(() => {
             </View>
           )}
         </View>
+        {!isTablet && (
+          <View pointerEvents="box-none" style={{ position: "absolute", top: phoneHeader.top, height: phoneHeader.height, left: safeSideInset, right: safeSideInset }}>
+            <KeySelector positionTitle={showPositionOverview ? undefined : positionTitle} />
+          </View>
+        )}
         <Footer />
       </View>
     </View>

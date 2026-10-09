@@ -13,6 +13,13 @@ export const getMenuVisualCenterX = (insets, isTablet) => {
   return menuInset + 24 + textWidth / 2;
 };
 
+// Anchor the phone practice row to the blue header, independent of neck layout.
+export const getPhonePracticeHeaderLayout = (insets) => {
+  const top = phoneHeaderHeight + (Platform.OS === "android" ? 0 : insets.top);
+  const height = 56;
+  return { top, height, centerY: top + height / 2 };
+};
+
 const Header = () => {
   const { dimensions, globalState, insets } = useContext(Store);
   const { showMenu, setShowMenu, showOptions, setShowOptions } = useContext(OverlayStore);

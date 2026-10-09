@@ -9,11 +9,10 @@ import { withPressedOpacity } from "../utils/pressable";
 import { nextKeyOffset } from "../utils/keyNavigation.mjs";
 import { useRepeatPress } from "../utils/useRepeatPress";
 import VerticalStepButtons from "./VerticalStepButtons";
-import { AUDIO_CONTROL_GROUP_WIDTH, AudioTrigger } from "./AudioControls";
+import { AUDIO_CONTROL_GROUP_WIDTH } from "./AudioControls";
 import { getMenuVisualCenterX } from "./Header";
 
 export const PHONE_KEY_ROW_HEIGHT = 88;
-export const PHONE_KEY_ROW_OFFSET = 16;
 
 const TabletKeyTitle = ({ title }) => (
   <Text adjustsFontSizeToFit minimumFontScale={0.7} numberOfLines={1} style={styles.compactTitle}>
@@ -25,7 +24,7 @@ const TabletKeyTitle = ({ title }) => (
   </Text>
 );
 
-const KeySelector = ({ compact = false }) => {
+const KeySelector = ({ compact = false, positionTitle }) => {
   const { dimensions, insets, globalState, setGlobalState } = useContext(Store);
 
   const handlePressArrow = (direction) => {
@@ -39,8 +38,8 @@ const KeySelector = ({ compact = false }) => {
     setGlobalState(nextState);
     storeGlobalState(nextState);
   };
-  const previousKeyPress = useRepeatPress(() => handlePressArrow("left"));
-  const nextKeyPress = useRepeatPress(() => handlePressArrow("right"));
+  const previousKeyPress = useRepeatPress(() => handlePressArrow("left"), { disabled: Boolean(positionTitle) });
+  const nextKeyPress = useRepeatPress(() => handlePressArrow("right"), { disabled: Boolean(positionTitle) });
 
   if (compact) {
     return (
@@ -56,22 +55,24 @@ const KeySelector = ({ compact = false }) => {
   const safeInset = Math.max(insets.left, insets.right);
   const safeWidth = dimensions.width - safeInset * 2;
   const sideReserve = getMenuVisualCenterX(insets, false) + AUDIO_CONTROL_GROUP_WIDTH / 2 - safeInset + 8;
-  const titleWidth = Math.min(430, Math.max(0, safeWidth - 2 * (sideReserve + 44)));
-  const arrowInset = (safeWidth - titleWidth) / 2 - 44;
+  const keyTitleWidth = Math.min(430, Math.max(0, safeWidth - 2 * (sideReserve + 44)));
+  const arrowInset = (safeWidth - keyTitleWidth) / 2 - 44;
+  // Zoom titles can use the empty key-arrow lanes while retaining the same
+  // screen midpoint and vertical text box as the overview heading.
+  const titleWidth = positionTitle ? Math.min(430, Math.max(0, safeWidth - 2 * sideReserve)) : keyTitleWidth;
   const titleScale = titleWidth / 430;
 
   return (
     <View style={styles.titleContainer}>
-      {globalState.options?.audioPlayer && <AudioTrigger inline />}
-      <Pressable android_disableSound accessibilityLabel="Previous key" {...previousKeyPress} style={withPressedOpacity([styles.arrowContainer, styles.phoneArrow, { left: arrowInset }])}>
+      {!positionTitle && <Pressable android_disableSound accessibilityLabel="Previous key" {...previousKeyPress} style={withPressedOpacity([styles.arrowContainer, styles.phoneArrow, { left: arrowInset }])}>
         <View style={[styles.arrow, styles.arrowLeft]}></View>
-      </Pressable>
-      <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={[styles.title, styles.phoneTitle, { width: titleWidth, marginLeft: -titleWidth / 2, fontSize: 31 * titleScale, letterSpacing: 7 * titleScale }]}>
-        KEY CENTER - {globalState?.key.title}
+      </Pressable>}
+      <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={[styles.title, styles.phoneTitle, positionTitle && { paddingHorizontal: 0 }, { width: titleWidth, marginLeft: -titleWidth / 2, fontSize: 31 * titleScale, letterSpacing: (positionTitle ? 5 : 7) * titleScale }]}>
+        {positionTitle || `KEY CENTER - ${globalState?.key.title}`}
       </Text>
-      <Pressable android_disableSound accessibilityLabel="Next key" {...nextKeyPress} style={withPressedOpacity([styles.arrowContainer, styles.phoneArrow, { right: arrowInset }])}>
+      {!positionTitle && <Pressable android_disableSound accessibilityLabel="Next key" {...nextKeyPress} style={withPressedOpacity([styles.arrowContainer, styles.phoneArrow, { right: arrowInset }])}>
         <View style={[styles.arrow, styles.arrowRight]}></View>
-      </Pressable>
+      </Pressable>}
     </View>
   );
 };
@@ -110,14 +111,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     width: 430,
   },
-  phoneArrow: { position: "absolute" },
-  phoneTitle: { left: "50%", position: "absolute" },
+  phoneArrow: { position: "absolute", paddingVertical: 4 },
+  phoneTitle: { left: "50%", position: "absolute", height: 38, lineHeight: 38, includeFontPadding: false },
   titleContainer: {
-    height: PHONE_KEY_ROW_HEIGHT,
+    height: "100%",
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    transform: [{ translateY: PHONE_KEY_ROW_OFFSET }],
   },
   compactContainer: {
     alignItems: "center",
