@@ -9,7 +9,7 @@ import { withPressedOpacity } from "../utils/pressable";
 import { nextKeyOffset } from "../utils/keyNavigation.mjs";
 import { useRepeatPress } from "../utils/useRepeatPress";
 import VerticalStepButtons from "./VerticalStepButtons";
-import { AudioTrigger } from "./AudioControls";
+import { AUDIO_CONTROL_GROUP_WIDTH, AudioTrigger } from "./AudioControls";
 import { getMenuVisualCenterX } from "./Header";
 
 export const PHONE_KEY_ROW_HEIGHT = 88;
@@ -55,7 +55,7 @@ const KeySelector = ({ compact = false }) => {
   // when Audio is off, and mirror that reserve so the title never shifts.
   const safeInset = Math.max(insets.left, insets.right);
   const safeWidth = dimensions.width - safeInset * 2;
-  const sideReserve = getMenuVisualCenterX(insets, false) + 44 - safeInset + 8;
+  const sideReserve = getMenuVisualCenterX(insets, false) + AUDIO_CONTROL_GROUP_WIDTH / 2 - safeInset + 8;
   const titleWidth = Math.min(430, Math.max(0, safeWidth - 2 * (sideReserve + 44)));
   const arrowInset = (safeWidth - titleWidth) / 2 - 44;
   const titleScale = titleWidth / 430;

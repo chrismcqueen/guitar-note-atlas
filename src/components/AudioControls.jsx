@@ -17,6 +17,8 @@ import VerticalStepButtons from "./VerticalStepButtons";
 const CONTROL_HIT_SLOP = 3;
 const TAP_TEMPO_RESET_MS = 2000;
 const AUDIO_BUTTON_SIZE = 44;
+const AUDIO_BUTTON_GAP = 10;
+export const AUDIO_CONTROL_GROUP_WIDTH = AUDIO_BUTTON_SIZE + AUDIO_BUTTON_GAP + 38;
 
 const audioControlPlacement = (dimensions, insets, overview, phoneKeyCenterY) => {
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
@@ -25,7 +27,7 @@ const audioControlPlacement = (dimensions, insets, overview, phoneKeyCenterY) =>
   const top = !isTablet && overview && Number.isFinite(phoneKeyCenterY)
     ? phoneKeyCenterY - AUDIO_BUTTON_SIZE / 2
     : headerBottom + 12;
-  const left = getMenuVisualCenterX(insets, isTablet) - (44 + 6 + 38) / 2;
+  const left = getMenuVisualCenterX(insets, isTablet) - AUDIO_CONTROL_GROUP_WIDTH / 2;
   return { headerBottom, isTablet, left, top };
 };
 
@@ -355,7 +357,7 @@ const styles = StyleSheet.create({
   toggleIconSelected: { tintColor: theme.colors.white },
   toggleRow: { flexDirection: "row", gap: 8, marginTop: 12 },
   toggleSelected: { backgroundColor: theme.colors.blue, borderColor: theme.colors.blue },
-  triggerGroup: { position: "absolute", alignItems: "center", flexDirection: "row", gap: 6, zIndex: 300 },
+  triggerGroup: { position: "absolute", alignItems: "center", flexDirection: "row", gap: AUDIO_BUTTON_GAP, zIndex: 300 },
   settingsTrigger: { height: 40, width: 38, borderRadius: 8 },
   errorDot: { position: "absolute", right: 0, top: 0, width: 8, height: 8, borderRadius: 4, backgroundColor: "#A12622" },
   toggleLabel: { fontSize: 14, color: theme.colors.blue, fontFamily: "proletarsk" },

@@ -236,3 +236,8 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 
 - Move the card anchor down six points and clamp it below the shared header bottom plus six points. Preserve the replacement of both main-screen audio buttons and recalculate the bounded scrolling body for the reduced height.
 - Browser checks at 667 × 320 and 1200 × 800 show card tops at y=44 and y=57, respectively, six points below each header. Neither audio trigger is rendered while settings are open. Web export and Android/iOS bundled Release builds pass; iPad build installed/launched. Pixel update awaits its Play Protect prompt dismissal.
+
+### Wider audio-button gap — October 8, 2026
+
+- Increase the gap between the 44-point Play and 38-point Settings buttons from six to ten points. Use a shared 92-point group width for Menu centering and the phone key-arrow reserve.
+- At 667 × 320, the group spans x=63–155 with center x=109; Play ends at x=107, Settings begins at x=117, and the previous-key target begins at x=163. Both buttons retain the same vertical center and eight points of key-arrow clearance. Visual checks at 844 × 390 pass. Web export and Android/iOS bundled Release builds pass. iPad installed/launched; latest Pixel installation awaits the existing Play Protect prompt.
