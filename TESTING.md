@@ -249,3 +249,8 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Map physical drag deltas through the same portrait-shell rotation as settings scrolling. Thumb grabs retain their position, track taps move to the selected level on release, vertical swipes can transfer to settings scrolling, and horizontal drags retain control. Provide native increment/decrement accessibility actions and web keyboard arrows/Home/End with slider value semantics.
 - All 128 tests pass, including taper endpoints/midpoint, monotonicity, saved-level round trips, precise low levels, inset/clamped taps, rotated/unrotated horizontal gestures and vertical scroll direction. Web checks verify midpoint taps at −20 dB, independent accompaniment mute, keyboard adjustment, retention after reload and restoration to full volume. At 667 × 320, focusing the accompaniment slider scrolls it fully into view at y=240–284 while the header stays fixed; its 260-point width fits the body. Tablet screenshot saved in `docs/pr-51/tapered-volume-sliders.png`.
 - Web export and Android/iOS bundled Release builds pass. Final builds installed/launched on physical Pixel and iPad simulator. Native slider drag/scroll feel and listening remain manual checks.
+
+### Matching Notes section labels — October 8, 2026
+
+- Add NOTES immediately above the note controls, using the same centered label styling and six-point control gap as ACCOMPANIMENT. Shorten the note slider's visual label to VOLUME; keep its Notes volume accessibility name.
+- Tablet browser verification confirms the requested labels and grouping. Web export and Android/iOS bundled Release builds pass; updated builds installed/launched on Pixel and iPad simulator.

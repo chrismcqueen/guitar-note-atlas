@@ -255,7 +255,8 @@ export const AudioPopover = () => {
           </View>
         </View>
 
-        <View style={styles.toggleRow}>
+        <Text style={styles.sectionLabel}>NOTES</Text>
+        <View style={[styles.toggleRow, styles.sectionRow]}>
           <Toggle accessibilityLabel="Notes" label="Notes" onPress={() => setNotesEnabled(!notesEnabled)} selected={notesEnabled} />
           <Toggle accessibilityLabel="Loop" icon={require("../../assets/audio/icons/loop.png")} onPress={() => setLoopEnabled(!loopEnabled)} selected={loopEnabled} />
           <Toggle accessibilityLabel="Four-click count-in" label="Count in" onPress={() => setCountIn(!countIn)} selected={countIn} />
@@ -264,9 +265,9 @@ export const AudioPopover = () => {
           <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
           <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />
         </View>
-        <VolumeSlider label="NOTES VOLUME" name="Notes" value={notesVolume} onChange={setNotesVolume} />
-        <Text style={styles.accompanimentLabel}>ACCOMPANIMENT</Text>
-        <View style={[styles.toggleRow, styles.accompanimentRow]}>
+        <VolumeSlider label="VOLUME" name="Notes" value={notesVolume} onChange={setNotesVolume} />
+        <Text style={styles.sectionLabel}>ACCOMPANIMENT</Text>
+        <View style={[styles.toggleRow, styles.sectionRow]}>
           {[['off', 'Off'], ['metronome', 'Click'], ['drums', 'Drums']].map(([mode, label]) => (
             <Toggle key={mode} accessibilityLabel={`Accompaniment ${label}`} label={label} selected={accompaniment === mode} onPress={() => setAccompaniment(mode)} />
           ))}
@@ -309,8 +310,8 @@ const styles = StyleSheet.create({
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
   label: { color: theme.colors.black, flex: 1, fontFamily: "proletarsk", fontSize: 17, lineHeight: 24, includeFontPadding: false },
   mobileHint: { color: theme.colors.grey, fontSize: 12, lineHeight: 16, textAlign: "center" },
-  accompanimentLabel: { color: theme.colors.grey, fontSize: 12, marginTop: 12, textAlign: "center" },
-  accompanimentRow: { marginTop: 6 },
+  sectionLabel: { color: theme.colors.grey, fontSize: 12, marginTop: 12, textAlign: "center" },
+  sectionRow: { marginTop: 6 },
   mixerIcon: { gap: 5, width: 24 },
   mixerKnob: { backgroundColor: theme.colors.white, borderRadius: 3, height: 6, position: "absolute", top: -2, width: 6 },
   mixerKnobIdle: { backgroundColor: theme.colors.blue },
