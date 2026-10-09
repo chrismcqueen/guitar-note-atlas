@@ -21,11 +21,12 @@ const AUDIO_BUTTON_SIZE = 44;
 const audioControlPlacement = (dimensions, insets, overview, phoneKeyCenterY) => {
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const phoneTopInset = Platform.OS === "android" ? 0 : insets.top;
+  const headerBottom = isTablet ? tabletHeaderHeight : phoneHeaderHeight + phoneTopInset;
   const top = !isTablet && overview && Number.isFinite(phoneKeyCenterY)
     ? phoneKeyCenterY - AUDIO_BUTTON_SIZE / 2
-    : (isTablet ? tabletHeaderHeight : phoneHeaderHeight + phoneTopInset) + 12;
+    : headerBottom + 12;
   const left = getMenuVisualCenterX(insets, isTablet) - (44 + 6 + 38) / 2;
-  return { isTablet, left, top };
+  return { headerBottom, isTablet, left, top };
 };
 
 export const AudioTrigger = ({ inline = false }) => {
@@ -119,7 +120,7 @@ export const AudioPopover = () => {
   const [tempoText, setTempoText] = useState(String(tempo));
   const [settingsContentHeight, setSettingsContentHeight] = useState(null);
   const tempoTapTimes = useRef([]);
-  const { isTablet, left: triggerLeft, top: triggerTop } = audioControlPlacement(dimensions, insets, showPositionOverview, phoneKeyCenterY);
+  const { headerBottom, isTablet, left: triggerLeft, top: triggerTop } = audioControlPlacement(dimensions, insets, showPositionOverview, phoneKeyCenterY);
   const showOverviewHint = !isTablet && showPositionOverview;
   const slowerTempoPress = useRepeatPress(() => {
     if (tempo <= MIN_TEMPO) return false;
@@ -162,9 +163,9 @@ export const AudioPopover = () => {
   if (!popoverOpen) return null;
 
   const cardWidth = isTablet ? 330 : 292;
-  // Anchor to the same button group on every platform, with enough overhang
-  // to cover both buttons inside the card's rounded border.
-  const cardTop = triggerTop - 12;
+  // Replace both buttons and leave a small gap below the app header,
+  // including short phone layouts whose key row sits close to it.
+  const cardTop = Math.max(headerBottom + 6, triggerTop - 6);
   const cardLeft = Math.max(0, triggerLeft - 14);
   const viewportHeight = Math.min(dimensions.height, Platform.OS === "web" ? window.height : Math.min(window.width, window.height));
   const cardMaxHeight = Math.max(0, viewportHeight - cardTop - 12);

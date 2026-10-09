@@ -231,3 +231,8 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 
 - Remove all shadow properties and Android elevation from the shared main-screen audio trigger style. Change the Audio Settings card border to the existing light grey `#C8CCCF`.
 - At 844 × 390, browser visual verification confirms flat Play/Settings buttons; computed Play shadow is `none`, and the popover border is `rgb(200, 204, 207)`. Web export and Android/iOS bundled Release builds pass. Updated builds installed/launched on Pixel and iPad simulator.
+
+### Audio Settings header clearance — October 8, 2026
+
+- Move the card anchor down six points and clamp it below the shared header bottom plus six points. Preserve the replacement of both main-screen audio buttons and recalculate the bounded scrolling body for the reduced height.
+- Browser checks at 667 × 320 and 1200 × 800 show card tops at y=44 and y=57, respectively, six points below each header. Neither audio trigger is rendered while settings are open. Web export and Android/iOS bundled Release builds pass; iPad build installed/launched. Pixel update awaits its Play Protect prompt dismissal.
