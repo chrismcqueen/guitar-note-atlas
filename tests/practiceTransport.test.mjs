@@ -433,3 +433,44 @@ test('a failed preload stays suspended and can be retried',async()=>{
   assert.equal(transport.buffers.size,1);
   await transport.close();
 });
+
+test('independent mixer buses route notes and percussion without changing prepared PCM or the musical clock', async t => {
+  const { transport } = await make(t, { countIn: false, accompaniment: 'drums' });
+  const createGain = transport.context.createGain.bind(transport.context);
+  transport.context.createGain = () => {
+    const gain = createGain();
+    gain.connect = target => { gain.destination = target; };
+    return gain;
+  };
+  transport.start(false);
+  for (const { key, release } of transport.sources.values()) {
+    assert.equal(release.destination, key.startsWith('guitar:') ? transport.notesGain : transport.accompanimentGain);
+  }
+  const grid = { origin: transport.origin, beat: transport.nextBeat, note: transport.nextNote, index: transport.timeline.index, count: transport.countBeats };
+  const sources = transport.sources.size;
+  const buffers = transport.rendered.size;
+  transport.setVolumes({ notesVolume: 0, accompanimentVolume: 0.4 });
+  assert.equal(transport.volumeRamps.get(transport.notesGain).to, 0);
+  assert.equal(transport.volumeRamps.get(transport.accompanimentGain).to, 0.4);
+  assert.deepEqual({ origin: transport.origin, beat: transport.nextBeat, note: transport.nextNote, index: transport.timeline.index, count: transport.countBeats }, grid);
+  assert.equal(transport.sources.size, sources);
+  assert.equal(transport.rendered.size, buffers);
+  assert.deepEqual(transport.context.stops, []);
+  transport.stop();
+});
+
+test('rapid volume changes continue from the interpolated level instead of jumping or restarting voices', async t => {
+  const { transport } = await make(t, { countIn: false });
+  transport.start(false);
+  transport.context.currentTime = 1;
+  transport.setVolumes({ notesVolume: 0, accompanimentVolume: 1 });
+  transport.context.currentTime = 1.01;
+  transport.setVolumes({ notesVolume: 0.8, accompanimentVolume: 1 });
+  const ramp = transport.volumeRamps.get(transport.notesGain);
+  assert.ok(Math.abs(ramp.from - 0.5) < 1e-9);
+  assert.equal(ramp.to, 0.8);
+  assert.equal(ramp.end, 1.03);
+  assert.equal(transport.volumeRamps.get(transport.accompanimentGain).to, 1);
+  assert.deepEqual(transport.context.stops, []);
+  transport.stop();
+});

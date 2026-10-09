@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { Image, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import Svg, { Circle, Path, Rect, Text as SvgText } from "react-native-svg";
 
-import { OverlayStore, PositionVisibilityStore, Store } from "../../Store";
+import { AudioControlLayoutStore, OverlayStore, PositionVisibilityStore, Store } from "../../Store";
 import { monotonicNow } from "../utils/audioClock.mjs";
 import { MAX_TEMPO, MIN_TEMPO, NOTE_RATES, tempoFromTapTimes } from "../utils/audioSequence.mjs";
 import { theme } from "../utils/theme";
@@ -18,25 +18,30 @@ const CONTROL_HIT_SLOP = 3;
 const TAP_TEMPO_RESET_MS = 2000;
 const AUDIO_BUTTON_SIZE = 44;
 
-const audioControlPlacement = (dimensions, insets) => {
+const audioControlPlacement = (dimensions, insets, overview, phoneKeyCenterY) => {
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const phoneTopInset = Platform.OS === "android" ? 0 : insets.top;
-  const top = (isTablet ? tabletHeaderHeight : phoneHeaderHeight + phoneTopInset) + 12;
-  const left = isTablet ? getMenuVisualCenterX(insets, true) - AUDIO_BUTTON_SIZE / 2 : Math.max(insets.left, insets.right) + 8;
+  const top = !isTablet && overview && Number.isFinite(phoneKeyCenterY)
+    ? phoneKeyCenterY - AUDIO_BUTTON_SIZE / 2
+    : (isTablet ? tabletHeaderHeight : phoneHeaderHeight + phoneTopInset) + 12;
+  const left = getMenuVisualCenterX(insets, isTablet) - (44 + 6 + 38) / 2;
   return { isTablet, left, top };
 };
 
-export const AudioTrigger = () => {
+export const AudioTrigger = ({ inline = false }) => {
   const { dimensions, insets } = useContext(Store);
   const { showMenu } = useContext(OverlayStore);
+  const { showPositionOverview } = useContext(PositionVisibilityStore);
+  const { phoneKeyCenterY } = useContext(AudioControlLayoutStore);
   const { canPlay, countInBeat, isLoading, isPlaying, openPopover, play, popoverOpen, error } = useContext(AudioPlaybackStore);
-  const { left, top } = audioControlPlacement(dimensions, insets);
+  const { isTablet, left, top } = audioControlPlacement(dimensions, insets, showPositionOverview, phoneKeyCenterY);
+  const phoneOverview = !isTablet && showPositionOverview;
 
   // The settings card replaces both controls until it is dismissed.
-  if (showMenu || popoverOpen) return null;
+  if (showMenu || popoverOpen || (phoneOverview && !inline)) return null;
 
   return (
-    <View style={[styles.triggerGroup, { left, top }]}>
+    <View style={[styles.triggerGroup, { left: inline ? left - Math.max(insets.left, insets.right) : left, top: inline ? (88 - AUDIO_BUTTON_SIZE) / 2 : top }]}>
       <Pressable
         android_disableSound
         accessibilityLabel={isPlaying ? "Stop audio" : isLoading ? "Cancel audio loading" : "Play audio"}
@@ -85,11 +90,14 @@ const MixerIcon = ({ filled }) => (
 export const AudioPopover = () => {
   const { dimensions, insets } = useContext(Store);
   const { showPositionOverview } = useContext(PositionVisibilityStore);
+  const { phoneKeyCenterY } = useContext(AudioControlLayoutStore);
   const window = useWindowDimensions();
   const {
     accompaniment,
     countIn,
     notesEnabled,
+    notesVolume,
+    accompanimentVolume,
     startOnRoot,
     error,
     loopEnabled,
@@ -98,6 +106,8 @@ export const AudioPopover = () => {
     setAccompaniment,
     setCountIn,
     setNotesEnabled,
+    setNotesVolume,
+    setAccompanimentVolume,
     setStartOnRoot,
     setLoopEnabled,
     setNoteRate,
@@ -109,7 +119,7 @@ export const AudioPopover = () => {
   const [tempoText, setTempoText] = useState(String(tempo));
   const [settingsContentHeight, setSettingsContentHeight] = useState(null);
   const tempoTapTimes = useRef([]);
-  const { isTablet, left: triggerLeft, top: triggerTop } = audioControlPlacement(dimensions, insets);
+  const { isTablet, left: triggerLeft, top: triggerTop } = audioControlPlacement(dimensions, insets, showPositionOverview, phoneKeyCenterY);
   const showOverviewHint = !isTablet && showPositionOverview;
   const slowerTempoPress = useRepeatPress(() => {
     if (tempo <= MIN_TEMPO) return false;
@@ -200,7 +210,7 @@ export const AudioPopover = () => {
         )}
         <View style={[styles.tempoRow, !showOverviewHint && styles.tempoWithoutHint]}>
           <View style={styles.controlLead}>
-            <Text style={styles.label}>Tempo</Text>
+            <Text style={styles.label}>TEMPO</Text>
             <Pressable android_disableSound accessibilityLabel="Tap tempo" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} onPressIn={tapTempo} style={withPressedOpacity(styles.tapTempoButton)}>
               <Text style={styles.tapTempoText}>Tap</Text>
             </Pressable>
@@ -226,7 +236,7 @@ export const AudioPopover = () => {
         </View>
 
         <View style={styles.noteRateRow}>
-          <Text style={styles.label}>Subdivision</Text>
+          <Text style={styles.label}>SUBDIVISION</Text>
           <View style={styles.controlCluster}>
             <VerticalStepButtons upLabel="Select shorter subdivision" downLabel="Select longer subdivision" upHandlers={shorterSubdivisionPress} downHandlers={longerSubdivisionPress} upDisabled={!canSelectShorterRate} downDisabled={!canSelectLongerRate} />
             <View accessible accessibilityLabel={`Subdivision: ${selectedNoteRate.name}`} style={styles.rateValue}>
@@ -250,14 +260,37 @@ export const AudioPopover = () => {
           <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
           <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />
         </View>
-        <Text style={styles.accompanimentLabel}>Accompaniment</Text>
+        <VolumeControl label="NOTES VOLUME" name="Notes" value={notesVolume} onChange={setNotesVolume} />
+        <Text style={styles.accompanimentLabel}>ACCOMPANIMENT</Text>
         <View style={[styles.toggleRow, styles.accompanimentRow]}>
           {[['off', 'Off'], ['metronome', 'Click'], ['drums', 'Drums']].map(([mode, label]) => (
             <Toggle key={mode} accessibilityLabel={`Accompaniment ${label}`} label={label} selected={accompaniment === mode} onPress={() => setAccompaniment(mode)} />
           ))}
         </View>
+        <VolumeControl label="VOLUME" name="Accompaniment" value={accompanimentVolume} onChange={setAccompanimentVolume} />
         {!!error && <Text style={styles.error}>{error}</Text>}
         </AudioSettingsScroll>
+      </View>
+    </View>
+  );
+};
+
+const VolumeControl = ({ label, name, value, onChange }) => {
+  const percent = Math.round(value * 100);
+  const louder = useRepeatPress(() => {
+    if (percent >= 100) return false;
+    onChange(Math.min(100, percent + 5) / 100);
+  }, { disabled: percent >= 100 });
+  const quieter = useRepeatPress(() => {
+    if (percent <= 0) return false;
+    onChange(Math.max(0, percent - 5) / 100);
+  }, { disabled: percent <= 0 });
+  return (
+    <View style={styles.volumeRow}>
+      <Text style={[styles.label, styles.volumeLabel]}>{label}</Text>
+      <View style={styles.controlCluster}>
+        <VerticalStepButtons upLabel={`Increase ${name.toLowerCase()} volume`} downLabel={`Decrease ${name.toLowerCase()} volume`} upHandlers={louder} downHandlers={quieter} upDisabled={percent >= 100} downDisabled={percent <= 0} />
+        <Text accessibilityLabel={`${name} volume`} accessibilityValue={{ min: 0, max: 100, now: percent, text: `${percent} percent` }} style={styles.volumeValue}>{percent}%</Text>
       </View>
     </View>
   );
@@ -270,10 +303,10 @@ const Toggle = ({ accessibilityLabel, icon, label, onPress, selected }) => (
 );
 
 const styles = StyleSheet.create({
-  bpm: { color: theme.colors.grey, fontFamily: "proletarsk", fontSize: 13, marginLeft: 2 },
+  bpm: { color: theme.colors.grey, fontFamily: "proletarsk", fontSize: 13, height: 24, lineHeight: 24, includeFontPadding: false, marginLeft: 2 },
   card: {
     backgroundColor: theme.colors.white,
-    borderColor: theme.colors.blue,
+    borderColor: theme.colors.grey,
     borderRadius: 10,
     borderWidth: 2,
     elevation: 12,
@@ -291,7 +324,7 @@ const styles = StyleSheet.create({
   controlLead: { alignItems: "center", flex: 1, flexDirection: "row" },
   dismissLayer: { backgroundColor: "rgba(0, 0, 0, 0.001)", left: 0, position: "absolute", top: 0, zIndex: 0 },
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
-  label: { color: theme.colors.black, flex: 1, fontFamily: "proletarsk", fontSize: 17 },
+  label: { color: theme.colors.black, flex: 1, fontFamily: "proletarsk", fontSize: 17, lineHeight: 24, includeFontPadding: false },
   mobileHint: { color: theme.colors.grey, fontSize: 12, lineHeight: 16, textAlign: "center" },
   accompanimentLabel: { color: theme.colors.grey, fontSize: 12, marginTop: 12, textAlign: "center" },
   accompanimentRow: { marginTop: 6 },
@@ -306,10 +339,13 @@ const styles = StyleSheet.create({
   rateLabel: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 15, height: 18, lineHeight: 18, padding: 0, includeFontPadding: false, textAlign: "center", width: 74 },
   settingsContent: { paddingBottom: 8 },
   tapTempoButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", marginRight: 6, width: 42 },
-  tapTempoText: { color: theme.colors.blue, fontFamily: "proletarsk", fontSize: 13 },
-  tempoInput: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 19, minHeight: 38, padding: 0, textAlign: "right", width: 30 },
+  tapTempoText: { color: theme.colors.blue, fontFamily: "proletarsk", fontSize: 13, lineHeight: 24, includeFontPadding: false },
+  tempoInput: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 19, height: 24, lineHeight: 24, includeFontPadding: false, padding: 0, textAlign: "right", width: 30 },
   tempoWithoutHint: { marginTop: 0 },
   tempoRow: { alignItems: "center", flexDirection: "row", marginTop: 12 },
+  volumeRow: { alignItems: "center", flexDirection: "row", marginTop: 10 },
+  volumeLabel: { fontSize: 14 },
+  volumeValue: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 17, height: 24, lineHeight: 24, includeFontPadding: false, textAlign: "center", width: 74 },
   tempoValue: { alignItems: "center", flexDirection: "row", justifyContent: "center", width: 74 },
   title: { color: theme.colors.black, flex: 1, fontFamily: "blackout", fontSize: 20, textAlign: "center" },
   titleRow: { alignItems: "center", backgroundColor: theme.colors.white, flexDirection: "row", flexShrink: 0, height: 32, marginBottom: 6, zIndex: 1 },

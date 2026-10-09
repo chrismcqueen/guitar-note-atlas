@@ -12,8 +12,10 @@ import { createNativeAudioTransport } from "../utils/nativeAudioTransport";
 import { buildPositionSequence, getPositionNotes, practiceAudioMode } from "../utils/positionPlayback.mjs";
 import { clampTempo, DEFAULT_NOTE_RATE, DEFAULT_TEMPO, millisecondsPerNote, normalizeNoteRate } from "../utils/audioSequence.mjs";
 
+import { clampVolume, fallbackSourceVolume, hasPlaybackChanges, sourceMixVolume } from "../utils/audioMix.mjs";
+
 export const AudioPlaybackStore = createContext(null);
-const DEFAULTS = { tempo: DEFAULT_TEMPO, noteRate: DEFAULT_NOTE_RATE, loop: true, notesEnabled: true, accompaniment: "off", countIn: true, startOnRoot: true };
+const DEFAULTS = { tempo: DEFAULT_TEMPO, noteRate: DEFAULT_NOTE_RATE, loop: true, notesEnabled: true, accompaniment: "off", countIn: true, startOnRoot: true, notesVolume: 1, accompanimentVolume: 1 };
 const STORAGE_KEY = "audioPracticeSettings";
 const withTimeout = (promise, ms) => new Promise((resolve, reject) => {
   const timeout = setTimeout(() => reject(new Error("Audio initialization timed out.")), ms);
@@ -96,6 +98,7 @@ export const AudioPlaybackProvider = ({ children }) => {
         };
         const value = { ...DEFAULTS, ...legacy, ...(saved ? JSON.parse(saved) : {}) };
         if (!cancelled) setSettings({ ...value, tempo: clampTempo(value.tempo), noteRate: normalizeNoteRate(value.noteRate),
+          notesVolume: clampVolume(value.notesVolume), accompanimentVolume: clampVolume(value.accompanimentVolume),
           accompaniment: ["off", "metronome", "drums"].includes(value.accompaniment) ? value.accompaniment : "off" });
       } catch (_) {} finally {
         if (!cancelled) { readySettings.current = true; setSettingsLoaded(true); }
@@ -141,6 +144,7 @@ export const AudioPlaybackProvider = ({ children }) => {
         onCount: setCountInBeat,
         onEnded: () => { running.current = false; notesRequested.current = false; fallbackIndex.current = 0; setIsPlaying(false); },
       });
+      native.current?.setVolumes(next);
     }
     if (native.current) {
       const transport = native.current;
@@ -184,7 +188,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     const index = voices.current.get(key) ?? 0;
     const player = pool[index % pool.length];
     voices.current.set(key, index + 1);
-    player.volume = volume;
+    player.volume = sourceMixVolume(key, configRef.current, volume);
     player.shouldCorrectPitch = false;
     player.setPlaybackRate(rate);
     player.play();
@@ -292,7 +296,11 @@ export const AudioPlaybackProvider = ({ children }) => {
   useEffect(() => {
     const previous = lastConfig.current;
     lastConfig.current = config;
-    if (running.current) {
+    native.current?.setVolumes(config);
+    players.current.forEach((pool, key) => pool.forEach(player => {
+      try { player.volume = fallbackSourceVolume(key, config); } catch (_) {}
+    }));
+    if (running.current && hasPlaybackChanges(previous, config)) {
       void start(false, previous.plan !== config.plan || previous.notesEnabled !== config.notesEnabled);
     }
   }, [config, start]);
@@ -337,6 +345,8 @@ export const AudioPlaybackProvider = ({ children }) => {
     setLoopEnabled: (enabled) => update("loop", enabled),
     setNotesEnabled: (enabled) => update("notesEnabled", enabled),
     setAccompaniment,
+    setNotesVolume: (volume) => update("notesVolume", clampVolume(volume)),
+    setAccompanimentVolume: (volume) => update("accompanimentVolume", clampVolume(volume)),
     setCountIn: (enabled) => update("countIn", enabled),
     setStartOnRoot: (enabled) => update("startOnRoot", enabled),
   };

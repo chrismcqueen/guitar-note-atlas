@@ -9,6 +9,11 @@ import { withPressedOpacity } from "../utils/pressable";
 import { nextKeyOffset } from "../utils/keyNavigation.mjs";
 import { useRepeatPress } from "../utils/useRepeatPress";
 import VerticalStepButtons from "./VerticalStepButtons";
+import { AudioTrigger } from "./AudioControls";
+import { getMenuVisualCenterX } from "./Header";
+
+export const PHONE_KEY_ROW_HEIGHT = 88;
+export const PHONE_KEY_ROW_OFFSET = 16;
 
 const TabletKeyTitle = ({ title }) => (
   <Text adjustsFontSizeToFit minimumFontScale={0.7} numberOfLines={1} style={styles.compactTitle}>
@@ -46,15 +51,18 @@ const KeySelector = ({ compact = false }) => {
     );
   }
 
-  // Reserve matching side lanes regardless of Audio mode so the heading
-  // stays centered. Audio controls occupy 96 points; each key arrow uses 69.
-  const safeWidth = dimensions.width - Math.max(insets.left, insets.right) * 2;
-  const titleWidth = Math.min(430, Math.max(0, safeWidth - 330));
-  const arrowInset = (safeWidth - titleWidth) / 2 - 69;
+  // Leave room for the complete audio group centered beneath Menu, even
+  // when Audio is off, and mirror that reserve so the title never shifts.
+  const safeInset = Math.max(insets.left, insets.right);
+  const safeWidth = dimensions.width - safeInset * 2;
+  const sideReserve = getMenuVisualCenterX(insets, false) + 44 - safeInset + 8;
+  const titleWidth = Math.min(430, Math.max(0, safeWidth - 2 * (sideReserve + 44)));
+  const arrowInset = (safeWidth - titleWidth) / 2 - 44;
   const titleScale = titleWidth / 430;
 
   return (
     <View style={styles.titleContainer}>
+      {globalState.options?.audioPlayer && <AudioTrigger inline />}
       <Pressable android_disableSound accessibilityLabel="Previous key" {...previousKeyPress} style={withPressedOpacity([styles.arrowContainer, styles.phoneArrow, { left: arrowInset }])}>
         <View style={[styles.arrow, styles.arrowLeft]}></View>
       </Pressable>
@@ -83,7 +91,8 @@ const styles = StyleSheet.create({
     borderBottomColor: "transparent",
   },
   arrowContainer: {
-    padding: 20,
+    paddingHorizontal: 7.5,
+    paddingVertical: 20,
   },
   arrowRight: {
     borderLeftWidth: arrowDepth,
@@ -104,11 +113,11 @@ const styles = StyleSheet.create({
   phoneArrow: { position: "absolute" },
   phoneTitle: { left: "50%", position: "absolute" },
   titleContainer: {
-    height: 88,
+    height: PHONE_KEY_ROW_HEIGHT,
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    transform: [{ translateY: 16 }],
+    transform: [{ translateY: PHONE_KEY_ROW_OFFSET }],
   },
   compactContainer: {
     alignItems: "center",

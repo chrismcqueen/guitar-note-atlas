@@ -1,15 +1,16 @@
 import React, { useContext } from "react";
 import { StyleSheet, View } from "react-native";
 
-import KeySelector from "./KeySelector";
+import KeySelector, { PHONE_KEY_ROW_HEIGHT, PHONE_KEY_ROW_OFFSET } from "./KeySelector";
 import Neck from "./Neck";
 import PositionZoom from "./PositionZoom";
 import TabletNeck from "./TabletNeck";
 import { Footer } from "./Footer";
-import { PositionVisibilityStore, Store } from "../../Store";
+import { AudioControlLayoutStore, PositionVisibilityStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 
 export const Main = React.memo(() => {
+  const { setPhoneKeyCenterY } = useContext(AudioControlLayoutStore);
   const { dimensions, insets } = useContext(Store);
   const { showPositionOverview } = useContext(PositionVisibilityStore);
   const fullScreen = { height: "100%", width: "100%" };
@@ -34,7 +35,9 @@ export const Main = React.memo(() => {
               </View>
             </>
           ) : (
-            <View style={styles.phoneContent}>
+            <View style={styles.phoneContent} onLayout={({ nativeEvent }) => {
+              if (showPositionOverview) setPhoneKeyCenterY(nativeEvent.layout.y + PHONE_KEY_ROW_OFFSET + PHONE_KEY_ROW_HEIGHT / 2);
+            }}>
               {showPositionOverview ? (
                 <>
                   <KeySelector />

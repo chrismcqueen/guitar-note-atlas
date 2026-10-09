@@ -5,12 +5,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getLandscapeDimensions, getLandscapeInsets } from "./src/utils/orientation.mjs";
 
 export const Store = createContext(null);
+export const AudioControlLayoutStore = createContext(null);
 export const OverlayStore = createContext(null);
 export const PositionStore = createContext(null);
 export const PositionActionsStore = createContext(null);
 export const PositionVisibilityStore = createContext(null);
 
 export const StoreProvider = ({ children }) => {
+  const [phoneKeyCenterY, setPhoneKeyCenterY] = useState(null);
+  const controlLayout = useMemo(() => ({ phoneKeyCenterY, setPhoneKeyCenterY }), [phoneKeyCenterY]);
   const [showMenu, setShowMenu] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -57,14 +60,16 @@ export const StoreProvider = ({ children }) => {
   const positionActions = useMemo(() => ({ setPositionSelection, setShowPositionOverview }), []);
 
   return (
-    <Store.Provider value={value}>
-      <OverlayStore.Provider value={overlayValue}>
-        <PositionActionsStore.Provider value={positionActions}>
-          <PositionStore.Provider value={positionValue}>
-            <PositionVisibilityStore.Provider value={positionVisibilityValue}>{children}</PositionVisibilityStore.Provider>
-          </PositionStore.Provider>
-        </PositionActionsStore.Provider>
-      </OverlayStore.Provider>
-    </Store.Provider>
+    <AudioControlLayoutStore.Provider value={controlLayout}>
+      <Store.Provider value={value}>
+        <OverlayStore.Provider value={overlayValue}>
+          <PositionActionsStore.Provider value={positionActions}>
+            <PositionStore.Provider value={positionValue}>
+              <PositionVisibilityStore.Provider value={positionVisibilityValue}>{children}</PositionVisibilityStore.Provider>
+            </PositionStore.Provider>
+          </PositionActionsStore.Provider>
+        </OverlayStore.Provider>
+      </Store.Provider>
+    </AudioControlLayoutStore.Provider>
   );
 };

@@ -1,11 +1,12 @@
 import { millisecondsPerNote } from './audioSequence.mjs';
 import { PracticeTimeline } from './practiceTimeline.mjs';
 import { renderNotePcm } from './notePcm.mjs';
+import { clampVolume, DRUM_LEVELS } from './audioMix.mjs';
 
 const LEAD = 0.1;
 const STOP_FADE = 0.012;
 const IDLE_DELAY_MS = 50;
-const VOLUMES = { hat: 0.08, kick: 0.48, snare: 0.45, click: 0.3 };
+const VOLUMES = DRUM_LEVELS;
 const renderedKey = (key, rate, duration, volume) => `${key}:${rate}:${duration === undefined ? 'full' : Math.round(duration * 1e6)}:${volume}`;
 const displayFrames = {
   request: callback => typeof globalThis.requestAnimationFrame === 'function'
@@ -20,6 +21,14 @@ export class NativeAudioTransport {
     this.masterGain = this.context.createGain();
     this.masterGain.gain.value = 0.8;
     this.masterGain.connect(this.context.destination);
+    this.notesGain = this.context.createGain();
+    this.accompanimentGain = this.context.createGain();
+    this.volumeRamps = new Map();
+    for (const gain of [this.notesGain, this.accompanimentGain]) {
+      gain.gain.value = 1;
+      gain.connect(this.masterGain);
+      this.volumeRamps.set(gain, { from: 1, to: 1, start: 0, end: 0 });
+    }
     this.audioManager = AudioManager;
     this.sessionReady = null;
     this.callbacks = callbacks;
@@ -84,8 +93,30 @@ export class NativeAudioTransport {
   configure(config, resetPosition = false) {
     this.prepare(config);
     this.config = config;
+    this.setVolumes(config);
     if (this.active) this.timeline.configure(config, this.context.currentTime, resetPosition);
     else if (resetPosition) this.audibleIndex = 0;
+  }
+
+  setVolumes(config) {
+    const now = this.context.currentTime;
+    for (const [gain, value] of [[this.notesGain, config.notesVolume], [this.accompanimentGain, config.accompanimentVolume]]) {
+      const target = clampVolume(value);
+      const previous = this.volumeRamps.get(gain);
+      if (target === previous.to) continue;
+      const fraction = previous.end <= previous.start ? 1 : Math.max(0, Math.min(1, (now - previous.start) / (previous.end - previous.start)));
+      const current = previous.from + (previous.to - previous.from) * fraction;
+      gain.gain.cancelScheduledValues(now);
+      if (!this.active && this.sources.size === 0) {
+        gain.gain.setValueAtTime(target, now);
+        this.volumeRamps.set(gain, { from: target, to: target, start: now, end: now });
+      } else {
+        // Preserve the current interpolated level when replacing a live ramp.
+        gain.gain.setValueAtTime(current, now);
+        gain.gain.linearRampToValueAtTime(target, now + 0.02);
+        this.volumeRamps.set(gain, { from: current, to: target, start: now, end: now + 0.02 });
+      }
+    }
   }
 
   get nextBeat() { return this.timeline.nextBeat; }
@@ -125,7 +156,7 @@ export class NativeAudioTransport {
     release.gain.value = 1;
     source.buffer = buffer;
     source.connect(release);
-    release.connect(this.masterGain);
+    release.connect(key.startsWith('guitar:') ? this.notesGain : this.accompanimentGain);
     source.onEnded = () => {
       this.sources.delete(source);
       source.onEnded = null;
