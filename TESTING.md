@@ -270,3 +270,9 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Actual bundled PCM regression checks place click/kick/snare peaks within 4 dB of every guitar sample. A conservative absolute-sample sum, including hi-hat tails from the previous beat and the maximum guitar amplitude, stays below 0.92 at every supported integer tempo (40–240 BPM). This verifies normal scheduled mix headroom; physical-device loudness and artifact listening remain manual checks.
 - All 130 tests, web export, and Android/iOS bundled Release builds pass. Browser checks verify plain 0, 50 and 100 readouts, independent slider values, and a computed zero-width panel border. The musical taper and saved linear gains remain intact; half travel still gives −20 dB. Screenshot: `docs/pr-51/balanced-audio-settings.png`.
 - Updated bundled builds installed and launched successfully on physical Pixel 4a and iPad Pro simulator.
+
+### Subdivision within Notes — October 8, 2026
+
+- Move Subdivision below Root start/Lowest note and directly above Notes Volume. Tempo remains above Notes because it controls the shared clock. Preserve the existing arrow controls and hold behavior while alternative control designs are discussed.
+- Web export and Android/iOS bundled Release builds pass. Browser checks at 1200 × 800 verify Notes → note toggles → start mode → Subdivision → Notes Volume ordering. At 667 × 320 the relocated shorter-subdivision button changes dotted half to half; focusing Notes Volume scrolls its entire 44-point target into view (y=173–217, width=264). Screenshot: `docs/pr-51/notes-subdivision.png`.
+- Refreshed bundled build installed/launched successfully on the iPad simulator.

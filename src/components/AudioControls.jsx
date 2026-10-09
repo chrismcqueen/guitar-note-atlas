@@ -240,6 +240,16 @@ export const AudioPopover = () => {
           </View>
         </View>
 
+        <Text style={[audioSettingsStyles.label, styles.sectionLabel]}>NOTES</Text>
+        <View style={[styles.toggleRow, styles.sectionRow]}>
+          <Toggle accessibilityLabel="Notes" label="Notes" onPress={() => setNotesEnabled(!notesEnabled)} selected={notesEnabled} />
+          <Toggle accessibilityLabel="Loop" icon={require("../../assets/audio/icons/loop.png")} onPress={() => setLoopEnabled(!loopEnabled)} selected={loopEnabled} />
+          <Toggle accessibilityLabel="Four-click count-in" label="Count in" onPress={() => setCountIn(!countIn)} selected={countIn} />
+        </View>
+        <View style={styles.toggleRow}>
+          <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
+          <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />
+        </View>
         <View style={styles.noteRateRow}>
           <Text style={[audioSettingsStyles.label, styles.label]}>SUBDIVISION</Text>
           <View style={styles.controlCluster}>
@@ -256,16 +266,6 @@ export const AudioPopover = () => {
           </View>
         </View>
 
-        <Text style={[audioSettingsStyles.label, styles.sectionLabel]}>NOTES</Text>
-        <View style={[styles.toggleRow, styles.sectionRow]}>
-          <Toggle accessibilityLabel="Notes" label="Notes" onPress={() => setNotesEnabled(!notesEnabled)} selected={notesEnabled} />
-          <Toggle accessibilityLabel="Loop" icon={require("../../assets/audio/icons/loop.png")} onPress={() => setLoopEnabled(!loopEnabled)} selected={loopEnabled} />
-          <Toggle accessibilityLabel="Four-click count-in" label="Count in" onPress={() => setCountIn(!countIn)} selected={countIn} />
-        </View>
-        <View style={styles.toggleRow}>
-          <Toggle accessibilityLabel="Start at lowest root" label="Root start" selected={startOnRoot} onPress={() => setStartOnRoot(true)} />
-          <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />
-        </View>
         <VolumeSlider label="VOLUME" name="Notes" value={notesVolume} onChange={setNotesVolume} />
         <Text style={[audioSettingsStyles.label, styles.sectionLabel]}>ACCOMPANIMENT</Text>
         <View style={[styles.toggleRow, styles.sectionRow]}>
