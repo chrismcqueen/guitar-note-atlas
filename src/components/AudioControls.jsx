@@ -14,6 +14,7 @@ import DegreeLabel from "./Neck/DegreeLabel";
 import AudioSettingsScroll from "./AudioSettingsScroll";
 import VerticalStepButtons from "./VerticalStepButtons";
 import VolumeSlider from "./VolumeSlider";
+import { audioSettingsStyles } from "./audioSettingsStyles";
 
 const CONTROL_HIT_SLOP = 3;
 const TAP_TEMPO_RESET_MS = 2000;
@@ -214,7 +215,7 @@ export const AudioPopover = () => {
         )}
         <View style={[styles.tempoRow, !showOverviewHint && styles.tempoWithoutHint]}>
           <View style={styles.controlLead}>
-            <Text style={styles.label}>TEMPO</Text>
+            <Text style={[audioSettingsStyles.label, styles.label]}>TEMPO</Text>
             <Pressable android_disableSound accessibilityLabel="Tap tempo" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} onPressIn={tapTempo} style={withPressedOpacity(styles.tapTempoButton)}>
               <Text style={styles.tapTempoText}>Tap</Text>
             </Pressable>
@@ -240,7 +241,7 @@ export const AudioPopover = () => {
         </View>
 
         <View style={styles.noteRateRow}>
-          <Text style={styles.label}>SUBDIVISION</Text>
+          <Text style={[audioSettingsStyles.label, styles.label]}>SUBDIVISION</Text>
           <View style={styles.controlCluster}>
             <VerticalStepButtons upLabel="Select shorter subdivision" downLabel="Select longer subdivision" upHandlers={shorterSubdivisionPress} downHandlers={longerSubdivisionPress} upDisabled={!canSelectShorterRate} downDisabled={!canSelectLongerRate} />
             <View accessible accessibilityLabel={`Subdivision: ${selectedNoteRate.name}`} style={styles.rateValue}>
@@ -255,7 +256,7 @@ export const AudioPopover = () => {
           </View>
         </View>
 
-        <Text style={styles.sectionLabel}>NOTES</Text>
+        <Text style={[audioSettingsStyles.label, styles.sectionLabel]}>NOTES</Text>
         <View style={[styles.toggleRow, styles.sectionRow]}>
           <Toggle accessibilityLabel="Notes" label="Notes" onPress={() => setNotesEnabled(!notesEnabled)} selected={notesEnabled} />
           <Toggle accessibilityLabel="Loop" icon={require("../../assets/audio/icons/loop.png")} onPress={() => setLoopEnabled(!loopEnabled)} selected={loopEnabled} />
@@ -266,7 +267,7 @@ export const AudioPopover = () => {
           <Toggle accessibilityLabel="Start at lowest note" label="Lowest note" selected={!startOnRoot} onPress={() => setStartOnRoot(false)} />
         </View>
         <VolumeSlider label="VOLUME" name="Notes" value={notesVolume} onChange={setNotesVolume} />
-        <Text style={styles.sectionLabel}>ACCOMPANIMENT</Text>
+        <Text style={[audioSettingsStyles.label, styles.sectionLabel]}>ACCOMPANIMENT</Text>
         <View style={[styles.toggleRow, styles.sectionRow]}>
           {[['off', 'Off'], ['metronome', 'Click'], ['drums', 'Drums']].map(([mode, label]) => (
             <Toggle key={mode} accessibilityLabel={`Accompaniment ${label}`} label={label} selected={accompaniment === mode} onPress={() => setAccompaniment(mode)} />
@@ -308,9 +309,9 @@ const styles = StyleSheet.create({
   controlLead: { alignItems: "center", flex: 1, flexDirection: "row" },
   dismissLayer: { backgroundColor: "rgba(0, 0, 0, 0.001)", left: 0, position: "absolute", top: 0, zIndex: 0 },
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
-  label: { color: theme.colors.black, flex: 1, fontFamily: "proletarsk", fontSize: 17, lineHeight: 24, includeFontPadding: false },
+  label: { flex: 1, height: 24 },
   mobileHint: { color: theme.colors.grey, fontSize: 12, lineHeight: 16, textAlign: "center" },
-  sectionLabel: { color: theme.colors.grey, fontSize: 12, fontWeight: "700", marginTop: 12, textAlign: "left" },
+  sectionLabel: { marginTop: 12 },
   sectionRow: { marginTop: 6 },
   mixerIcon: { gap: 5, width: 24 },
   mixerKnob: { backgroundColor: theme.colors.white, borderRadius: 3, height: 6, position: "absolute", top: -2, width: 6 },

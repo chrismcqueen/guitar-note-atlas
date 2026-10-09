@@ -258,3 +258,8 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 ### Bold left-aligned audio section labels — October 8, 2026
 
 - Set the shared NOTES/ACCOMPANIMENT label style to weight 700 and left alignment. Tablet browser checks confirm both start at x=16 with computed weight 700 and left alignment. Web export and Android/iOS bundled Release builds pass; refreshed builds installed/launched on Pixel and iPad simulator.
+
+### Unified Audio Settings label typography — October 8, 2026
+
+- Give TEMPO, SUBDIVISION, NOTES, ACCOMPANIMENT and both VOLUME labels one shared style: 14-point system font, weight 700, black, left aligned and a 24-point line height. Keep row sizing and section margins separate from typography.
+- Tablet browser checks confirm identical computed font family, size, weight, color and alignment for all six labels. Compact-phone SUBDIVISION fits its 124-point slot without overflow. Web export and Android/iOS bundled Release builds pass; updated iPad installed/launched. Pixel update awaits its security-check prompt.

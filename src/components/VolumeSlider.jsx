@@ -4,6 +4,7 @@ import { PanResponder, Platform, StyleSheet, Text, useWindowDimensions, View } f
 import { sliderFromVolume, volumeDecibels, volumeFromSlider } from '../utils/audioMix.mjs';
 import { isSliderDrag, SLIDER_INSET, sliderPositionAtX, sliderPositionForGesture } from '../utils/volumeSlider.mjs';
 import { theme } from '../utils/theme';
+import { audioSettingsStyles } from './audioSettingsStyles';
 
 const VolumeSlider = ({ label, name, value, onChange }) => {
   const window = useWindowDimensions();
@@ -49,7 +50,7 @@ const VolumeSlider = ({ label, name, value, onChange }) => {
   return (
     <View style={styles.container}>
       <View style={styles.heading}>
-        <Text style={styles.label}>{label}</Text>
+        <Text style={audioSettingsStyles.label}>{label}</Text>
         <Text accessible={false} style={styles.value}>{volumeDecibels(value)}</Text>
       </View>
       <View
@@ -92,7 +93,6 @@ const VolumeSlider = ({ label, name, value, onChange }) => {
 const styles = StyleSheet.create({
   container: { marginTop: 12, width: '100%' },
   heading: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
-  label: { color: theme.colors.black, fontFamily: 'proletarsk', fontSize: 14, lineHeight: 24, includeFontPadding: false },
   value: { color: theme.colors.grey, fontFamily: 'proletarsk', fontSize: 14, lineHeight: 24, includeFontPadding: false, textAlign: 'right', width: 70 },
   slider: { height: 44, width: '100%', ...Platform.select({ web: { cursor: 'pointer', touchAction: 'pan-y' }, default: {} }) },
   track: { backgroundColor: theme.colors.neckLightGray, borderRadius: 2, height: 4, left: SLIDER_INSET, position: 'absolute', right: SLIDER_INSET, top: 20 },
