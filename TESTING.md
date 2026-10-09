@@ -254,3 +254,7 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 
 - Add NOTES immediately above the note controls, using the same centered label styling and six-point control gap as ACCOMPANIMENT. Shorten the note slider's visual label to VOLUME; keep its Notes volume accessibility name.
 - Tablet browser verification confirms the requested labels and grouping. Web export and Android/iOS bundled Release builds pass; updated builds installed/launched on Pixel and iPad simulator.
+
+### Bold left-aligned audio section labels — October 8, 2026
+
+- Set the shared NOTES/ACCOMPANIMENT label style to weight 700 and left alignment. Tablet browser checks confirm both start at x=16 with computed weight 700 and left alignment. Web export and Android/iOS bundled Release builds pass; refreshed builds installed/launched on Pixel and iPad simulator.

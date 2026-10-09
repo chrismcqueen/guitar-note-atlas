@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
   label: { color: theme.colors.black, flex: 1, fontFamily: "proletarsk", fontSize: 17, lineHeight: 24, includeFontPadding: false },
   mobileHint: { color: theme.colors.grey, fontSize: 12, lineHeight: 16, textAlign: "center" },
-  sectionLabel: { color: theme.colors.grey, fontSize: 12, marginTop: 12, textAlign: "center" },
+  sectionLabel: { color: theme.colors.grey, fontSize: 12, fontWeight: "700", marginTop: 12, textAlign: "left" },
   sectionRow: { marginTop: 6 },
   mixerIcon: { gap: 5, width: 24 },
   mixerKnob: { backgroundColor: theme.colors.white, borderRadius: 3, height: 6, position: "absolute", top: -2, width: 6 },
