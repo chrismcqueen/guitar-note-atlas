@@ -2,6 +2,8 @@ const { withAndroidManifest, withMainActivity } = require("@expo/config-plugins"
 
 const RESTRICTED_RESIZABILITY_PROPERTY =
   "android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY";
+const ORIENTATION_OVERRIDE_PROPERTY =
+  "android.window.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE";
 
 const IMPORTS = `import android.content.pm.ActivityInfo
 import android.content.res.Configuration
@@ -40,10 +42,13 @@ const ORIENTATION_METHODS = `
       windowManager.defaultDisplay.getRealMetrics(metrics)
       minOf(metrics.widthPixels, metrics.heightPixels) / density
     }
-    val orientation = when {
-      shortestDisplayDp < 600 -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-      isInMultiWindowMode -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-      else -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    // Keep the tablet request fixed even in Samsung's maximized freeform mode.
+    // Resizing is independent: the activity stays resizable and JS uses its
+    // current window size to switch between tablet and compact practice views.
+    val orientation = if (shortestDisplayDp < 600) {
+      ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    } else {
+      ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     }
     if (requestedOrientation != orientation) requestedOrientation = orientation
   }
@@ -103,6 +108,13 @@ module.exports = function withAndroidImmersiveMode(config) {
       }
 
       application.property = application.property || [];
+      const orientationOverride = application.property.find(
+        (property) => property.$?.["android:name"] === ORIENTATION_OVERRIDE_PROPERTY,
+      );
+      if (orientationOverride) orientationOverride.$["android:value"] = "false";
+      else application.property.push({
+        $: { "android:name": ORIENTATION_OVERRIDE_PROPERTY, "android:value": "false" },
+      });
       const existingProperty = application.property.find(
         (property) => property.$?.["android:name"] === RESTRICTED_RESIZABILITY_PROPERTY,
       );
@@ -146,6 +158,8 @@ module.exports = function withAndroidImmersiveMode(config) {
 
     // Upgrade the earlier generated launch-only orientation policy in place.
     source = source.replace(/    requestedOrientation =\n      if \(resources.configuration.smallestScreenWidthDp >= 600\) \{[\s\S]*?\n      \}/, "    applyOrientationPolicy()");
+    // Existing prebuilds must get the same policy as newly generated activities.
+    source = source.replace(/\n  private fun applyOrientationPolicy\(\) \{[\s\S]*?\n  \}/, ORIENTATION_METHODS.split("\n  override fun onMultiWindowModeChanged")[0].trimEnd());
     if (!source.includes("private fun applyOrientationPolicy")) {
       source = source.replace("\n  /**\n   * Returns the name of the main component", `${ORIENTATION_METHODS}\n  /**\n   * Returns the name of the main component`);
     }

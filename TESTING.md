@@ -1,5 +1,12 @@
 # Device testing
 
+## Android tablet landscape request and footer seam — October 10, 2026
+
+- Reproduced the Samsung app reporting `SCREEN_ORIENTATION_UNSPECIFIED` in its maximized desktop window. The activity deliberately released the tablet lock whenever Android reported multi-window mode. Keep requesting fixed landscape for tablets in every window mode, using maximum display bounds for device identity; phones retain portrait. Keep the activity resizable and the existing window-based tablet/compact breakpoint and upright tablet gestures. Add the supported orientation-override opt-out without changing iPad configuration.
+- Upgrade already generated Android activities as well as fresh prebuilds. Two regression tests exercise fresh generation, upgrading the previous multi-window policy, repeated prebuilds and manifest resizability/compatibility properties. All 165 tests pass, including existing compact-window and iPad/phone orientation checks.
+- Reproduced a one-pixel blue hairline above the footer in Samsung's tall maximized window. Back the shared body/footer container with cream and paint the iPad's extra blue home-indicator band only at the bottom. Preserve all footer sizes and labels. Native updated Samsung, iPad and iPhone SE captures confirm the footer boundary and retained iPad home-bar placement: `docs/feature-polish/samsung-landscape-footer.png`, `docs/feature-polish/ipad-footer.png`, `docs/feature-polish/iphone-se-footer.png`.
+- Bundled Android and iOS Release builds pass. Installed and launched the Samsung and all four iOS simulators with saved preferences retained; Pixel was disconnected. The Samsung now reports `SCREEN_ORIENTATION_LANDSCAPE` with `mLastReportedMultiWindowMode=true` and `RESIZE_MODE_RESIZEABLE`, and its full-screen landscape layout renders correctly. Lane physically turned the tablet upright/sideways and confirmed it stays locked. Existing automated resizing checks pass; interactive window resizing after this update remains a manual check. Samsung/Android desktop modes can override app orientation requests on other configurations.
+
 Run these checks before releasing changes that affect layout, navigation, music data, or Expo dependencies.
 
 ## Active manual-test builds
