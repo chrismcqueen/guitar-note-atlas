@@ -1,16 +1,22 @@
 import React from "react";
-import Svg, { Line, Defs, ClipPath, G, Path, Circle, Rect } from "react-native-svg";
+import Svg, { Line, Defs, ClipPath, G, Path, Circle, Rect, LinearGradient, Stop } from "react-native-svg";
 
 import { theme } from "../../utils/theme";
 
-const NeckSVG = () => {
+const NeckSVG = ({ width, height }) => {
   const { colors } = theme;
+  const scale = Math.max(width / 2208.018, height / 196.5);
   return (
     // Keep the phone composition on every aspect ratio: fill the lower fifth
     // with two strings and crop the continuing neck at the screen edge.
-    // Slice preserves note proportions while taller windows crop the right.
-    <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 2208.018 196.5" preserveAspectRatio="xMinYMin slice">
+    // Uniform cover scaling preserves note proportions on every aspect ratio.
+    <Svg xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
       <Defs>
+        <LinearGradient id="splash-neck-fade" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2={height}>
+          <Stop offset="0" stopColor={colors.blue} stopOpacity="0" />
+          <Stop offset="0.5" stopColor={colors.blue} stopOpacity="0" />
+          <Stop offset="1" stopColor={colors.blue} stopOpacity="1" />
+        </LinearGradient>
         <ClipPath id="clip-path">
           <Rect id="Rectangle_1" dataName="Rectangle 1" width="88" height="55" transform="translate(796 1187)" fill={colors.pureWhite} />
         </ClipPath>
@@ -21,6 +27,7 @@ const NeckSVG = () => {
           <Rect id="Rectangle_3" dataName="Rectangle 3" width="88" height="45" transform="translate(451 1197)" fill={colors.pureWhite} />
         </ClipPath>
       </Defs>
+      <G transform={`scale(${scale})`}>
       <Line id="Line_1" dataName="Line 1" x1="2208" y1="1" transform="translate(0.009 38)" fill="none" stroke={colors.black} strokeWidth="9.9" />
       <Line id="Line_2" dataName="Line 2" x1="2208" y1="4" transform="translate(0.009 130)" fill="none" stroke={colors.black} strokeWidth="9.9" />
       <Line id="Line_3" dataName="Line 3" x1="2208" y1="1" transform="translate(0.009 223)" fill="none" stroke={colors.black} strokeWidth="9.9" />
@@ -89,6 +96,8 @@ const NeckSVG = () => {
           <Circle cx="39" cy="39" r="32.5" fill="none" />
         </G>
       </G>
+      </G>
+      <Rect x={-1} width={width + 2} height={height + 1} fill="url(#splash-neck-fade)" />
     </Svg>
   );
 };

@@ -8,6 +8,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Store } from "../../../Store";
 import { storeGlobalState } from "../../utils/functions";
 import { theme } from "../../utils/theme";
+import { getSplashLayout } from "../../utils/splashLayout.mjs";
 
 const initialValue = {
   key: {
@@ -33,7 +34,7 @@ const initialValue = {
 };
 
 const Splash = ({ setLoading, error, onRetry }) => {
-  const { setGlobalState, setShowTutorialPrompt, dimensions } = useContext(Store);
+  const { setGlobalState, setShowTutorialPrompt, dimensions, safeAreaInsets, obstructions } = useContext(Store);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,18 +66,18 @@ const Splash = ({ setLoading, error, onRetry }) => {
     return () => { cancelled = true; clearTimeout(timer); };
   }, [setGlobalState, setLoading, setShowTutorialPrompt]);
 
-  const paddingLeft = dimensions.width / 100;
+  const layout = getSplashLayout(dimensions, safeAreaInsets, obstructions);
   const screenBounds = dimensions;
   return (
     <>
       <View style={[styles.container, screenBounds]}>
-        <View style={[styles.title, { paddingLeft: paddingLeft }]}>
+        <View style={[styles.title, layout.title]}>
           <TitleSVG />
         </View>
-        <View style={styles.neck}>
-          <NeckSVG />
+        <View pointerEvents="none" style={[styles.neck, layout.neck]}>
+          <NeckSVG width={dimensions.width - layout.neck.left - layout.neck.right} height={layout.neck.height} />
         </View>
-        {!!error && <View style={styles.loadError}>
+        {!!error && <View style={[styles.loadError, layout.error]}>
           <Text style={styles.errorText}>{error}</Text>
           <Pressable accessibilityRole="button" onPress={onRetry} style={styles.retryButton}>
             <Text style={styles.errorText}>Retry</Text>
@@ -90,7 +91,7 @@ const Splash = ({ setLoading, error, onRetry }) => {
 export default Splash;
 
 const styles = StyleSheet.create({
-  loadError: { alignItems: "center", bottom: 24, left: 16, position: "absolute", right: 16 },
+  loadError: { alignItems: "center", backgroundColor: theme.colors.blue, padding: 8, position: "absolute" },
   errorText: { color: theme.colors.splashCream, fontSize: 16 },
   retryButton: { borderColor: theme.colors.splashCream, borderRadius: 6, borderWidth: 1, marginTop: 10, paddingHorizontal: 20, paddingVertical: 10 },
   container: {
@@ -100,15 +101,11 @@ const styles = StyleSheet.create({
   },
 
   neck: {
-    bottom: 0,
-    height: "20%",
-    left: 0,
     overflow: "hidden",
     position: "absolute",
-    right: 0,
   },
   title: {
-    height: "60%",
     justifyContent: "center",
+    position: "absolute",
   },
 });

@@ -41,6 +41,7 @@ export const StoreProvider = ({ children }) => {
 
   const value = useMemo(() => ({
     dimensions,
+    safeAreaInsets: fallbackInsets,
     insets,
     navigationInsets,
     footerInsets,
@@ -52,7 +53,7 @@ export const StoreProvider = ({ children }) => {
     setShowTutorialPrompt,
     globalState,
     setGlobalState,
-  }), [dimensions, globalState, insets, navigationInsets, footerInsets, overlayInsets, obstructions, showTutorial, showTutorialPrompt]);
+  }), [dimensions, fallbackInsets, globalState, insets, navigationInsets, footerInsets, overlayInsets, obstructions, showTutorial, showTutorialPrompt]);
 
   const overlayValue = useMemo(() => ({
     showMenu,
