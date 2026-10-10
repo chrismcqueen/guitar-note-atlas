@@ -4,21 +4,13 @@ import { Platform, Text, View, StyleSheet, Pressable } from "react-native";
 import { OverlayStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
-import { getNavigationSideInset, getPhoneNavigationLayout, TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
+import { getNavigationSideInset, getPhoneNavigationLayout, PHONE_HEADER_HEIGHT, TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
 
 const phoneMenuTextWidth = 52;
 const tabletMenuTextWidth = 62;
 export const getMenuVisualCenterX = (insets, isTablet) => {
   if (!isTablet) return getPhoneNavigationLayout(insets, Platform.OS).menuCenter;
   return getNavigationSideInset(insets, Platform.OS, 55) + 24 + tabletMenuTextWidth / 2;
-};
-
-// Anchor the phone practice row to the blue header, independent of neck layout.
-export const getPhonePracticeHeaderLayout = (insets) => {
-  const headerBottom = phoneHeaderHeight + (Platform.OS === "android" ? 0 : insets.top);
-  const top = headerBottom + 3;
-  const height = 56;
-  return { headerBottom, top, height, centerY: top + height / 2 };
 };
 
 const Header = () => {
@@ -133,7 +125,7 @@ const Header = () => {
 
 export default Header;
 
-export const phoneHeaderHeight = 38;
+export const phoneHeaderHeight = PHONE_HEADER_HEIGHT;
 export const tabletHeaderHeight = TABLET_HEADER_HEIGHT;
 
 const styles = StyleSheet.create({

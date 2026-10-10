@@ -1,7 +1,9 @@
 export const TABLET_HEADER_HEIGHT = 51;
 export const TABLET_FOOTER_HEIGHT = 87;
 export const PHONE_FOOTER_HEIGHT = 53;
-export const TABLET_POSITION_TITLE_HEIGHT = 64;
+export const PHONE_HEADER_HEIGHT = 38;
+export const PRACTICE_ROW_HEIGHT = 56;
+export const PRACTICE_NECK_GAP = 20;
 export const TABLET_BODY_GAP = 8;
 
 export const getNavigationSideInset = (insets, platform = "ios", centerOffset = 50) =>
@@ -20,20 +22,33 @@ export const getPhoneNavigationLayout = (insets, platform = "ios") => {
   };
 };
 
-// Allocate the usable body between the zoom neck and overview. Both SVGs
-// preserve their proportions, and neither can borrow space from navigation.
-export const getTabletPracticeLayout = ({ width, height }, insets) => {
-  const bodyHeight = height - TABLET_HEADER_HEIGHT - TABLET_FOOTER_HEIGHT - TABLET_BODY_GAP * 2;
-  const overviewWidth = width - insets.left - insets.right - 8;
-  const overviewHeight = Math.min(overviewWidth * 175 / 864, bodyHeight * 0.36);
+// Reserve one row independently of the selected position/view. Extra vertical
+// room increases its header gap gently; short windows keep the compact gap.
+export const getPracticeHeaderLayout = ({ width, height }, insets = {}, platform = "ios") => {
+  const tablet = width >= 1000 && height >= 550;
+  const headerBottom = tablet ? TABLET_HEADER_HEIGHT : PHONE_HEADER_HEIGHT + (platform === "android" ? 0 : insets.top || 0);
+  const footerHeight = tablet ? TABLET_FOOTER_HEIGHT : PHONE_FOOTER_HEIGHT;
+  const availableHeight = height - headerBottom - footerHeight;
+  const gap = tablet
+    ? Math.min(26, 12 + Math.max(0, availableHeight - 450) * 0.06)
+    : Math.min(18, 6 + Math.max(0, availableHeight - 230) * 0.15);
+  const top = headerBottom + gap;
+  return { headerBottom, top, height: PRACTICE_ROW_HEIGHT, centerY: top + PRACTICE_ROW_HEIGHT / 2, bottom: top + PRACTICE_ROW_HEIGHT };
+};
+
+// Allocate neck space only after reserving the shared title/audio row.
+export const getTabletPracticeLayout = (dimensions, insets, header = getPracticeHeaderLayout(dimensions, insets)) => {
+  const bodyHeight = dimensions.height - header.bottom - PRACTICE_NECK_GAP - TABLET_FOOTER_HEIGHT - TABLET_BODY_GAP;
+  const overviewWidth = dimensions.width - insets.left - insets.right - 8;
+  const overviewHeight = Math.min(overviewWidth * 175 / 864, bodyHeight * 0.4);
   return { overviewHeight, zoomHeight: bodyHeight - overviewHeight };
 };
 
 export const getPhonePracticeBodyHeight = (height, header) =>
-  height - header.top - header.height - PHONE_FOOTER_HEIGHT - TABLET_BODY_GAP * 2;
+  height - header.bottom - PRACTICE_NECK_GAP - PHONE_FOOTER_HEIGHT - TABLET_BODY_GAP;
 
 export const getPositionNeckSize = (dimensions, { compact, sideInset = 0, zoomHeight, maxHeight = Infinity }) => {
-  const height = compact ? Math.min(dimensions.height * 0.53, maxHeight) : zoomHeight - TABLET_POSITION_TITLE_HEIGHT;
+  const height = compact ? Math.min(dimensions.height * 0.53, maxHeight) : zoomHeight;
   const preferredWidth = compact ? (dimensions.width - sideInset * 2) * 0.505 : dimensions.width * 0.46;
   // Avoid stretching a very wide, short window into an unreadable fretboard.
   return { height, width: Math.min(preferredWidth, height * 642 / 300) };

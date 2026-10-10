@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Svg, { Circle, Defs, Line, LinearGradient, Rect, Stop, Text as SvgText } from "react-native-svg";
 
 import { PositionActionsStore, PositionStore, Store } from "../../Store";
@@ -12,7 +12,7 @@ import { withPressedOpacity } from "../utils/pressable";
 import { useRepeatPress } from "../utils/useRepeatPress";
 import { getPositionNotes } from "../utils/positionPlayback.mjs";
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
-import { getPositionNeckSize, TABLET_POSITION_TITLE_HEIGHT } from "../utils/practiceLayout.mjs";
+import { getPositionNeckSize } from "../utils/practiceLayout.mjs";
 
 const WIDTH = 642;
 const SPACING_X = 100;
@@ -189,7 +189,7 @@ const PositionZoom = ({ compact = false, height }) => {
   const nextPress = useRepeatPress(next);
   return (
     <View style={[styles.container, !compact && [styles.tabletContainer, { height: height ?? dimensions.height * 0.53 }], compact && [styles.phoneContainer, height !== undefined && { height }]]}>
-      {compact ? (height === undefined && <View style={styles.phoneTitleSpace} />) : <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.title, styles.tabletTitle]}>{title}</Text>}
+      {compact && height === undefined && <View style={styles.phoneTitleSpace} />}
       <View style={[styles.row, compact && styles.phoneRow]}>
         {compact && (
           <View pointerEvents="none" style={[styles.phoneBackdrop, { height: compactNeckHeight, transform: [{ translateY: -compactNeckHeight / 2 }], width: safeWidth }]}>
@@ -232,9 +232,7 @@ export default PositionZoom;
 const styles = StyleSheet.create({
   container: { alignItems: "center", height: 370, marginBottom: 35, transform: [{ translateY: 20 }], width: "100%" },
   tabletContainer: { marginBottom: 0, transform: [{ translateY: 0 }] },
-  tabletTitle: { height: TABLET_POSITION_TITLE_HEIGHT, marginBottom: 0, lineHeight: 52, width: "100%" },
   phoneContainer: { height: 292, marginBottom: 0, transform: [{ translateY: 0 }] },
-  title: { fontFamily: "proletarsk", fontSize: 40, letterSpacing: 6, marginBottom: 12, textAlign: "center" },
   phoneTitleSpace: { height: 38, marginBottom: 18 },
   row: { alignItems: "center", flex: 1, flexDirection: "row", justifyContent: "center", width: "100%" },
   phoneRow: { justifyContent: "center" },

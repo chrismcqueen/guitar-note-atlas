@@ -1,4 +1,4 @@
-import { PHONE_FOOTER_HEIGHT, TABLET_FOOTER_HEIGHT, TABLET_HEADER_HEIGHT } from './practiceLayout.mjs';
+import { PHONE_FOOTER_HEIGHT, TABLET_FOOTER_HEIGHT, getPracticeHeaderLayout, PRACTICE_NECK_GAP } from './practiceLayout.mjs';
 
 // Inverse of RotatedViewport's clockwise 90-degree transform. Cutout bounds
 // are relative to the native React root, including any letterbox margins.
@@ -33,14 +33,14 @@ export const getBandInsets = ({ width }, rects, top, bottom, gap = 6) => {
 export const getPracticeSectionInsets = (dimensions, rects, fallback) => {
   if (rects === null) return { body: fallback, navigation: fallback, footer: fallback, overlay: fallback };
   const tablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const header = tablet ? TABLET_HEADER_HEIGHT : 38;
+  const header = getPracticeHeaderLayout(dimensions, {}, "android");
   const footerTop = dimensions.height - (tablet ? TABLET_FOOTER_HEIGHT : PHONE_FOOTER_HEIGHT);
   const footer = getBandInsets(dimensions, rects, footerTop, dimensions.height);
   if (footer.left || footer.right) footer.avoidObstructions = true;
   return {
-    navigation: getBandInsets(dimensions, rects, 0, header + (tablet ? 56 : 59)),
-    body: getBandInsets(dimensions, rects, header + (tablet ? 8 : 67), footerTop),
+    navigation: getBandInsets(dimensions, rects, 0, header.bottom),
+    body: getBandInsets(dimensions, rects, header.bottom + PRACTICE_NECK_GAP, footerTop),
     footer,
-    overlay: getBandInsets(dimensions, rects, header + 6, dimensions.height - 12),
+    overlay: getBandInsets(dimensions, rects, header.headerBottom + 6, dimensions.height - 12),
   };
 };

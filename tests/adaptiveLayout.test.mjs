@@ -5,7 +5,7 @@ import { positionFingerLabelY } from '../src/utils/positions.mjs';
 import { getFooterGeometry } from '../src/utils/footerSelection.mjs';
 import { settingsOffsetForGesture } from '../src/utils/settingsScroll.mjs';
 import { sliderPositionForGesture } from '../src/utils/volumeSlider.mjs';
-import { getNavigationSideInset, getPhoneNavigationLayout, getPhonePracticeBodyHeight, getPositionNeckSize, getTabletPracticeLayout, TABLET_BODY_GAP, TABLET_HEADER_HEIGHT, TABLET_FOOTER_HEIGHT, PHONE_FOOTER_HEIGHT } from '../src/utils/practiceLayout.mjs';
+import { getNavigationSideInset, getPhoneNavigationLayout, getPhonePracticeBodyHeight, getPracticeHeaderLayout, getPositionNeckSize, getTabletPracticeLayout, PRACTICE_NECK_GAP, TABLET_BODY_GAP, TABLET_HEADER_HEIGHT, TABLET_FOOTER_HEIGHT, PHONE_FOOTER_HEIGHT } from '../src/utils/practiceLayout.mjs';
 
 test('phone navigation reserves actual safe areas without adding notched-phone margins to the SE', () => {
   for (const insets of [{ left: 0, right: 0 }, { left: 27, right: 0 }, { left: 59, right: 34 }]) {
@@ -102,7 +102,7 @@ test('bass and guitar finger labels clear the last note and remain inside the zo
   for (const dimensions of [screen, { width: 1194, height: 834 }, { width: 1000, height: 550 }, { width: 1800, height: 550 }, { width: 844, height: 390 }, { width: 1152, height: 320 }, { width: 568, height: 320 }]) {
     const compact = dimensions.width < 1000 || dimensions.height < 550;
     const { zoomHeight } = getTabletPracticeLayout(dimensions, { left: 0, right: 0 });
-    const maxHeight = getPhonePracticeBodyHeight(dimensions.height, { top: 41, height: 56 });
+    const maxHeight = getPhonePracticeBodyHeight(dimensions.height, getPracticeHeaderLayout(dimensions));
     const neck = getPositionNeckSize(dimensions, { compact, zoomHeight, maxHeight });
     const viewBoxHeight = 642 * neck.height / neck.width;
     const baseGap = Math.floor((viewBoxHeight - viewBoxHeight / 4.5) / 5.44);
@@ -123,21 +123,22 @@ test('bass and guitar finger labels clear the last note and remain inside the zo
 });
 
 test('short phone necks fit below the fixed practice row and above the footer', () => {
-  const header = { top: 41, height: 56 };
   for (const dimensions of [{ width: 568, height: 320 }, { width: 667, height: 375 }, { width: 852, height: 393 }]) {
+    const header = getPracticeHeaderLayout(dimensions);
     const maxHeight = getPhonePracticeBodyHeight(dimensions.height, header);
     const neck = getPositionNeckSize(dimensions, { compact: true, maxHeight });
     assert.ok(neck.height <= maxHeight);
-    assert.ok(header.top + header.height + TABLET_BODY_GAP + neck.height + TABLET_BODY_GAP + PHONE_FOOTER_HEIGHT <= dimensions.height);
-    assert.ok(neck.height > 140);
+    assert.ok(header.bottom + PRACTICE_NECK_GAP + neck.height + TABLET_BODY_GAP + PHONE_FOOTER_HEIGHT <= dimensions.height);
+    assert.ok(neck.height > 128);
   }
 });
 
 test('tablet necks share the remaining space without overlapping navigation', () => {
   for (const dimensions of [screen, { width: 1280, height: 674 }, { width: 1000, height: 550 }, { width: 1800, height: 550 }]) {
     const layout = getTabletPracticeLayout(dimensions, { left: 0, right: 0 });
-    assert.equal(TABLET_HEADER_HEIGHT + TABLET_BODY_GAP * 2 + layout.zoomHeight + layout.overviewHeight + TABLET_FOOTER_HEIGHT, dimensions.height);
-    assert.ok(layout.zoomHeight > 200);
+    const header = getPracticeHeaderLayout(dimensions);
+    assert.ok(Math.abs(header.bottom + PRACTICE_NECK_GAP + TABLET_BODY_GAP + layout.zoomHeight + layout.overviewHeight + TABLET_FOOTER_HEIGHT - dimensions.height) < 1e-8);
+    assert.ok(layout.zoomHeight > 180);
     assert.ok(layout.overviewHeight > 100);
   }
 });
@@ -149,4 +150,67 @@ test('Android window captions and system bars cannot cover the practice canvas',
   assert.equal(viewport.dimensions.height, 712);
   assert.deepEqual(viewport.padding, { top: 48, bottom: 40 });
   assert.deepEqual(getViewportInsets(insets, window, viewport), { top: 0, bottom: 0, left: 0, right: 0 });
+});
+
+
+test('practice row gains bounded breathing room with height and stays independent of neck width', () => {
+  for (const platform of ['ios', 'android']) {
+    const compact = getPracticeHeaderLayout({ width: 568, height: 320 }, {}, platform);
+    const phone = getPracticeHeaderLayout({ width: 851, height: 393 }, {}, platform);
+    const tallPhone = getPracticeHeaderLayout({ width: 950, height: 540 }, {}, platform);
+    assert.equal(compact.top - compact.headerBottom, 6);
+    assert.ok(phone.top > compact.top);
+    assert.equal(tallPhone.top - tallPhone.headerBottom, 18);
+    assert.deepEqual(phone, getPracticeHeaderLayout({ width: 667, height: 393 }, {}, platform));
+    const shortTablet = getPracticeHeaderLayout({ width: 1000, height: 550 }, {}, platform);
+    const ipad = getPracticeHeaderLayout({ width: 1194, height: 834 }, {}, platform);
+    const tallTablet = getPracticeHeaderLayout({ width: 1800, height: 1200 }, {}, platform);
+    assert.equal(shortTablet.top - shortTablet.headerBottom, 12);
+    assert.equal(ipad.top - ipad.headerBottom, 26);
+    assert.equal(tallTablet.top, ipad.top);
+    for (const row of [compact, phone, tallPhone, shortTablet, ipad, tallTablet]) {
+      assert.equal(row.height, 56);
+      assert.equal(row.centerY, row.top + 28);
+      assert.equal(row.bottom, row.top + row.height);
+      assert.ok(row.centerY - 22 > row.headerBottom); // full 44-point audio control clearance
+    }
+  }
+});
+
+test('safe-area placement and neck budgets use the same row on every supported window size', () => {
+  for (const width of [568, 667, 851, 1000, 1194, 1800]) {
+    for (const height of [320, 375, 393, 550, 674, 834, 1200]) {
+      const dimensions = { width, height };
+      const row = getPracticeHeaderLayout(dimensions, { top: 8 }, 'ios');
+      const tablet = width >= 1000 && height >= 550;
+      assert.equal(row.headerBottom, tablet ? TABLET_HEADER_HEIGHT : 46);
+      if (tablet) {
+        const layout = getTabletPracticeLayout(dimensions, { left: 20, right: 30 }, row);
+        assert.ok(layout.zoomHeight > 0 && layout.overviewHeight > 0);
+        assert.ok(Math.abs(row.bottom + PRACTICE_NECK_GAP + TABLET_BODY_GAP + layout.zoomHeight + layout.overviewHeight + TABLET_FOOTER_HEIGHT - height) < 1e-8);
+      } else {
+        const body = getPhonePracticeBodyHeight(height, row);
+        assert.ok(body > 128);
+        assert.equal(row.bottom + PRACTICE_NECK_GAP + TABLET_BODY_GAP + body + PHONE_FOOTER_HEIGHT, height);
+      }
+      assert.equal(getPracticeHeaderLayout(dimensions, { top: 80 }, 'android').headerBottom,
+        tablet ? TABLET_HEADER_HEIGHT : 38);
+    }
+  }
+});
+
+test('phone title and audio row keeps clear of either neck without moving between views', () => {
+  for (const dimensions of [{ width: 667, height: 375 }, { width: 844, height: 390 }, { width: 852, height: 393 }, { width: 851, height: 392 }]) {
+    for (const platform of ['ios', 'android']) {
+      const row = getPracticeHeaderLayout(dimensions, { top: 0 }, platform);
+      const bodyTop = row.bottom + PRACTICE_NECK_GAP;
+      const bodyHeight = getPhonePracticeBodyHeight(dimensions.height, row);
+      const zoom = getPositionNeckSize(dimensions, { compact: true, maxHeight: bodyHeight });
+      const zoomTop = bodyTop + (bodyHeight - zoom.height) / 2;
+      assert.ok(bodyTop - row.bottom >= 20);
+      assert.ok(zoomTop - row.bottom >= 20);
+      assert.ok(bodyTop - (row.centerY + 22) >= 26);
+      assert.equal(bodyTop + bodyHeight + TABLET_BODY_GAP + PHONE_FOOTER_HEIGHT, dimensions.height);
+    }
+  }
 });

@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 
 import KeySelector from "./KeySelector";
 import Neck from "./Neck";
@@ -7,10 +7,11 @@ import PositionZoom from "./PositionZoom";
 import TabletNeck from "./TabletNeck";
 import { Footer } from "./Footer";
 import { PositionStore, PositionVisibilityStore, Store } from "../../Store";
+import { AUDIO_CONTROL_GROUP_WIDTH } from "./AudioControls";
+import { getMenuVisualCenterX } from "./Header";
 import { theme } from "../utils/theme";
 import { getPosition } from "../utils/positions.mjs";
-import { getPhonePracticeHeaderLayout } from "./Header";
-import { getPhonePracticeBodyHeight, getTabletPracticeLayout, TABLET_BODY_GAP, TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
+import { getPhonePracticeBodyHeight, getPracticeHeaderLayout, getTabletPracticeLayout, PRACTICE_NECK_GAP, TABLET_BODY_GAP } from "../utils/practiceLayout.mjs";
 
 export const Main = React.memo(() => {
   const { dimensions, insets, navigationInsets, globalState } = useContext(Store);
@@ -19,12 +20,13 @@ export const Main = React.memo(() => {
   const fullScreen = { height: "100%", width: "100%" };
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const safeSideInset = Math.max(insets.left, insets.right);
-  const phoneHeader = getPhonePracticeHeaderLayout(navigationInsets);
+  const practiceHeader = getPracticeHeaderLayout(dimensions, navigationInsets, Platform.OS);
   const navigationSideInset = Math.max(navigationInsets.left, navigationInsets.right);
-  const phoneBodyHeight = getPhonePracticeBodyHeight(dimensions.height, phoneHeader);
+  const phoneBodyHeight = getPhonePracticeBodyHeight(dimensions.height, practiceHeader);
   const position = getPosition(positionId);
   const positionTitle = globalState.options?.bassMode ? position.bassTitle : position.title;
-  const tabletLayout = getTabletPracticeLayout(dimensions, insets);
+  const tabletLayout = getTabletPracticeLayout(dimensions, insets, practiceHeader);
+  const tabletTitleWidth = dimensions.width - 2 * (getMenuVisualCenterX(navigationInsets, true) + AUDIO_CONTROL_GROUP_WIDTH / 2 + 12);
   const contentInsets = isTablet
     ? { paddingLeft: insets.left, paddingRight: insets.right }
     : { paddingLeft: safeSideInset, paddingRight: safeSideInset };
@@ -32,7 +34,7 @@ export const Main = React.memo(() => {
   return (
     <View style={styles.container}>
       <View style={fullScreen}>
-        <View style={[styles.content, isTablet ? styles.tabletContent : { paddingTop: phoneHeader.top + phoneHeader.height + TABLET_BODY_GAP, paddingBottom: TABLET_BODY_GAP }, contentInsets]}>
+        <View style={[styles.content, { paddingTop: practiceHeader.bottom + PRACTICE_NECK_GAP, paddingBottom: TABLET_BODY_GAP }, contentInsets]}>
           {isTablet ? (
             <>
               <PositionZoom height={tabletLayout.zoomHeight} />
@@ -53,11 +55,13 @@ export const Main = React.memo(() => {
             </View>
           )}
         </View>
-        {!isTablet && (
-          <View pointerEvents="box-none" style={{ position: "absolute", top: phoneHeader.top, height: phoneHeader.height, left: navigationSideInset, right: navigationSideInset }}>
+        <View pointerEvents="box-none" style={{ position: "absolute", top: practiceHeader.top, height: practiceHeader.height, left: navigationSideInset, right: navigationSideInset }}>
+          {isTablet ? (
+            <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.tabletPositionTitle, { width: tabletTitleWidth, height: practiceHeader.height, lineHeight: practiceHeader.height }]}>{positionTitle}</Text>
+          ) : (
             <KeySelector positionTitle={showPositionOverview ? undefined : positionTitle} />
-          </View>
-        )}
+          )}
+        </View>
         <Footer />
       </View>
     </View>
@@ -84,9 +88,15 @@ export const styles = StyleSheet.create({
     position: "relative",
     width: "100%",
   },
-  tabletContent: {
-    paddingTop: TABLET_HEADER_HEIGHT + TABLET_BODY_GAP,
-    paddingBottom: TABLET_BODY_GAP,
+  tabletPositionTitle: {
+    alignSelf: "center",
+    color: theme.colors.black,
+    fontFamily: "proletarsk",
+    fontSize: 40,
+    includeFontPadding: false,
+    letterSpacing: 6,
+    textAlign: "center",
+    width: "100%",
   },
   tabletKeySelector: {
     left: "3%",
