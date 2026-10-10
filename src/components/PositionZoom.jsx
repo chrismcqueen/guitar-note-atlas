@@ -6,12 +6,13 @@ import { PositionActionsStore, PositionStore, Store } from "../../Store";
 import coordinates from "../../data/positionCoordinates.json";
 import DegreeLabel from "./Neck/DegreeLabel";
 import { getScaleDegreeLabel } from "../utils/music.mjs";
-import { getPosition, positionBandVerticalGeometry, positionStartFret, stepPosition } from "../utils/positions.mjs";
+import { getPosition, positionBandVerticalGeometry, positionFingerLabelY, positionStartFret, stepPosition } from "../utils/positions.mjs";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
 import { useRepeatPress } from "../utils/useRepeatPress";
 import { getPositionNotes } from "../utils/positionPlayback.mjs";
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
+import { getPositionNeckSize, TABLET_POSITION_TITLE_HEIGHT } from "../utils/practiceLayout.mjs";
 
 const WIDTH = 642;
 const SPACING_X = 100;
@@ -54,7 +55,7 @@ const PhoneNeckBackdrop = ({ bassMode, height, neckWidth, short, stringCount, wi
   );
 };
 
-const PositionZoom = ({ compact = false }) => {
+const PositionZoom = ({ compact = false, height }) => {
   const { dimensions, globalState, insets } = useContext(Store);
   const { activeNote } = useContext(AudioPlaybackStore);
   const { positionFret, positionId } = useContext(PositionStore);
@@ -70,16 +71,13 @@ const PositionZoom = ({ compact = false }) => {
   const labels = position.short ? ["1", "2", "3", "4", "(4)"] : ["(1)", "1", "2", "3", "4", "(4)"];
   const safeSideInset = Math.max(insets.left, insets.right);
   const safeWidth = dimensions.width - safeSideInset * 2;
-  const compactNeckWidth = safeWidth * 0.505;
-  const compactNeckHeight = dimensions.height * 0.53;
+  const { width: compactNeckWidth, height: compactNeckHeight } = getPositionNeckSize(dimensions, { compact: true, sideInset: safeSideInset, maxHeight: height });
   const compactArrowRegionWidth = (safeWidth - compactNeckWidth) / 2;
   const compactArrowHeight = dimensions.height * 0.295;
   // The released iPad app drew into a narrower compatibility canvas. Using
   // that observed width preserves the original gap between the neck and its
   // position arrows on modern full-screen iPads.
-  const tabletNeckWidth = dimensions.width * 0.46;
-  const tabletNeckHeight = dimensions.height * 0.45;
-  const tabletArrowOffsetY = -tabletNeckHeight * 0.08 + 11;
+  const { width: tabletNeckWidth, height: tabletNeckHeight } = getPositionNeckSize(dimensions, { compact: false, zoomHeight: height ?? dimensions.height * 0.53 });
   const displayNeckWidth = compact ? compactNeckWidth : tabletNeckWidth;
   const displayNeckHeight = compact ? compactNeckHeight : tabletNeckHeight;
   const viewBoxHeight = WIDTH * (displayNeckHeight / displayNeckWidth);
@@ -103,9 +101,19 @@ const PositionZoom = ({ compact = false }) => {
   const baseVerticalOffset = initialVerticalSpacing / 3.2;
   const verticalOffset = baseVerticalOffset * (bassMode ? 2.1 : 1);
   const tabletGridOffset = compact ? 0 : 20;
+  const fingerLabelY = positionFingerLabelY({
+    stringOriginY: verticalOffset + tabletGridOffset,
+    stringCount,
+    stringGap: renderedStringGap,
+    noteRadius,
+    noteStrokeWidth,
+    fontSize: fingerLabelFontSize,
+  });
   const compactScale = compactNeckWidth / WIDTH;
   const compactGridCenter = (verticalOffset + ((stringCount - 1) * stringGap) / 2) * compactScale;
   const compactArrowOffsetY = compactGridCenter - compactNeckHeight / 2;
+  const tabletGridCenter = (verticalOffset + tabletGridOffset + (stringCount - 1) * renderedStringGap / 2) * tabletNeckWidth / WIDTH;
+  const tabletArrowOffsetY = tabletGridCenter - tabletNeckHeight / 2;
   const bandFret = globalState.options.leftHand ? fretCount - 1 - position.baseFret : position.baseFret;
   const band = positionBandVerticalGeometry({
     bassMode,
@@ -164,7 +172,7 @@ const PositionZoom = ({ compact = false }) => {
         );
       })}
       {labels.map((label, index) => (
-        <SvgText key={label + index} x={horizontalOffset + (globalState.options.leftHand ? labels.length - 1 - index : index) * SPACING_X + SPACING_X / 2} y={verticalOffset + 5.45 * baseStringGap + fingerLabelFontSize * 0.75 + (compact ? 0 : 6)} textAnchor="middle" fontFamily="jrHand" fontSize={fingerLabelFontSize} fill={theme.colors.black}>
+        <SvgText key={label + index} x={horizontalOffset + (globalState.options.leftHand ? labels.length - 1 - index : index) * SPACING_X + SPACING_X / 2} y={fingerLabelY} textAnchor="middle" fontFamily="jrHand" fontSize={fingerLabelFontSize} fill={theme.colors.black}>
           {label}
         </SvgText>
       ))}
@@ -180,8 +188,8 @@ const PositionZoom = ({ compact = false }) => {
   const previousPress = useRepeatPress(previous);
   const nextPress = useRepeatPress(next);
   return (
-    <View style={[styles.container, !compact && { height: dimensions.height * 0.53 }, compact && styles.phoneContainer]}>
-      {compact ? <View style={styles.phoneTitleSpace} /> : <Text numberOfLines={1} adjustsFontSizeToFit style={styles.title}>{title}</Text>}
+    <View style={[styles.container, !compact && [styles.tabletContainer, { height: height ?? dimensions.height * 0.53 }], compact && [styles.phoneContainer, height !== undefined && { height }]]}>
+      {compact ? (height === undefined && <View style={styles.phoneTitleSpace} />) : <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.title, styles.tabletTitle]}>{title}</Text>}
       <View style={[styles.row, compact && styles.phoneRow]}>
         {compact && (
           <View pointerEvents="none" style={[styles.phoneBackdrop, { height: compactNeckHeight, transform: [{ translateY: -compactNeckHeight / 2 }], width: safeWidth }]}>
@@ -223,7 +231,9 @@ export default PositionZoom;
 
 const styles = StyleSheet.create({
   container: { alignItems: "center", height: 370, marginBottom: 35, transform: [{ translateY: 20 }], width: "100%" },
-  phoneContainer: { height: 292, marginBottom: 0, transform: [{ translateY: 30 }] },
+  tabletContainer: { marginBottom: 0, transform: [{ translateY: 0 }] },
+  tabletTitle: { height: TABLET_POSITION_TITLE_HEIGHT, marginBottom: 0, lineHeight: 52, width: "100%" },
+  phoneContainer: { height: 292, marginBottom: 0, transform: [{ translateY: 0 }] },
   title: { fontFamily: "proletarsk", fontSize: 40, letterSpacing: 6, marginBottom: 12, textAlign: "center" },
   phoneTitleSpace: { height: 38, marginBottom: 18 },
   row: { alignItems: "center", flex: 1, flexDirection: "row", justifyContent: "center", width: "100%" },

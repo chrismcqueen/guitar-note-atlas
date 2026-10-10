@@ -5,19 +5,20 @@ import { Store } from "../../../Store";
 import { Accidental } from "./Accidental";
 import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
+import { getFooterGeometry } from "../../utils/footerSelection.mjs";
 
 export const ScaleDegreeButton = (props) => {
-  const { dimensions, globalState, setGlobalState } = useContext(Store);
+  const { dimensions, insets, globalState, setGlobalState } = useContext(Store);
   const { selected, altSelected, d, e, onTouchStart } = props;
   const { getScaleDegree, getMatchingScale } = useFooter();
   const [accidental, degree] = getScaleDegree(d).length === 2 ? getScaleDegree(d).split("") : [undefined, getScaleDegree(d)];
   const [altAccidental, altDegree] = e === undefined ? [] : getScaleDegree(e).split("");
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const degreeWidth = isTablet ? TABLET_DEGREE_WIDTH : PHONE_DEGREE_WIDTH;
+  const { degreeWidth, scale } = getFooterGeometry(dimensions, insets);
   const degreeSize = { width: degreeWidth };
   const degreeContainerSize = { height: isTablet ? TABLET_DEGREE_HEIGHT : SCALE_DEGREE_HEIGHT, width: degreeWidth };
-  const degreeTextStyle = isTablet && styles.tabletScaleDegree;
-  const degreeSmallStyle = isTablet && styles.tabletScaleDegreeSmall;
+  const degreeTextStyle = [isTablet && styles.tabletScaleDegree, { fontSize: (isTablet ? 49 : 33) * scale }];
+  const degreeSmallStyle = [isTablet && styles.tabletScaleDegreeSmall, { fontSize: (isTablet ? 36 : 25) * scale }];
   const degreeSmallTopStyle = isTablet ? styles.tabletScaleDegreeSmallTop : styles.scaleDegreeSmallTop;
   const degreeSmallBottomStyle = isTablet ? styles.tabletScaleDegreeSmallBottom : styles.scaleDegreeSmallBottom;
 
@@ -104,8 +105,6 @@ export const ScaleDegreeButton = (props) => {
 
 const SCALE_DEGREE_HEIGHT = 45;
 const TABLET_DEGREE_HEIGHT = 79;
-const PHONE_DEGREE_WIDTH = 46;
-const TABLET_DEGREE_WIDTH = 80;
 
 const styles = StyleSheet.create({
   label: {

@@ -1,31 +1,24 @@
-import React, { useRef } from "react";
-import { Platform, StyleSheet, useWindowDimensions, View } from "react-native";
+import React, { useMemo, useRef, useState } from "react";
+import { Dimensions, Platform, StyleSheet, useWindowDimensions, View } from "react-native";
 
-import { getLandscapeDimensions, isPortraitWindow } from "../utils/orientation.mjs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { getAppViewport, isPortraitWindow, isTabletDisplay } from "../utils/orientation.mjs";
+import { ViewportContext } from "./ViewportContext";
 
 /**
- * Keeps the native window in portrait so system gestures stay in their normal
- * orientation, while exposing the same landscape canvas the app has always
- * rendered into. Keeping the rotation at this single boundary means the neck,
- * menu, tutorial, and overlays continue to share one coordinate system.
+ * Phones and iOS retain the portrait shell. Android tablet windows render
+ * upright at their available size, with compact layouts when space is tight.
+ * Layout, overlays and gestures all share this canvas and its transform.
  */
 const RotatedViewport = ({ children }) => {
   const window = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const portraitWindow = isPortraitWindow(window);
-  const nativeLandscapeTablet =
-    Platform.OS === "android" &&
-    !portraitWindow &&
-    Math.min(window.height, window.width) >= 600;
+  const screen = Dimensions.get("screen");
+  const portraitShell = Platform.OS === "ios" || (Platform.OS === "android" && !isTabletDisplay(screen));
   const lastPortraitWindow = useRef(null);
-
-  if (Platform.OS === "web") return children;
-
-  // Android tablets are naturally landscape. Rendering directly into that
-  // landscape activity avoids rotating a portrait compatibility box, while
-  // phones and iOS keep the app's established portrait-shell behavior.
-  if (nativeLandscapeTablet) {
-    return <View style={styles.nativeLandscape}>{children}</View>;
-  }
+  const [contentWindow, setContentWindow] = useState(null);
 
   // Expo Go can briefly report its own landscape-shaped host window while it
   // hands off to this project's portrait lock. Never let that transient host
@@ -33,28 +26,35 @@ const RotatedViewport = ({ children }) => {
   // portrait window immediately, while Expo Go gets a black frame until its
   // intended window is ready.
   if (portraitWindow) lastPortraitWindow.current = window;
-
-  const stablePortraitWindow = lastPortraitWindow.current;
-
-  if (!stablePortraitWindow) return <View style={styles.screen} />;
-
-  const landscape = getLandscapeDimensions(stablePortraitWindow);
+  const activeWindow = portraitShell ? (lastPortraitWindow.current ?? window) : (contentWindow ?? window);
+  const viewport = useMemo(() => getAppViewport({ window: activeWindow, screen, platform: Platform.OS, insets }),
+    [activeWindow.height, activeWindow.width, screen.height, screen.width, insets.top, insets.bottom]);
+  if (portraitShell && !lastPortraitWindow.current) return <View style={styles.screen} />;
 
   return (
-    <View style={styles.screen}>
+    <ViewportContext.Provider value={viewport}>
       <View
-        style={[
-          styles.landscape,
-          {
-            height: landscape.height,
-            width: landscape.width,
-          },
-          styles.rotated,
-        ]}
-      >
-        {children}
+        onLayout={portraitShell ? undefined : ({ nativeEvent: { layout } }) => {
+          if (layout.width > 0 && layout.height > 0) {
+            setContentWindow(previous => previous?.width === layout.width && previous?.height === layout.height
+              ? previous : { width: layout.width, height: layout.height });
+          }
+        }}
+        style={[styles.screen, { paddingTop: viewport.padding.top, paddingBottom: viewport.padding.bottom }]}>
+        <View
+          style={[
+            styles.landscape,
+            {
+              height: viewport.dimensions.height,
+              width: viewport.dimensions.width,
+              transform: [{ rotate: viewport.rotated ? "90deg" : "0deg" }, { scale: viewport.scale }],
+            },
+          ]}
+        >
+          {children}
+        </View>
       </View>
-    </View>
+    </ViewportContext.Provider>
   );
 };
 
@@ -62,14 +62,6 @@ export default RotatedViewport;
 
 const styles = StyleSheet.create({
   landscape: {
-    overflow: "hidden",
-  },
-  rotated: {
-    transform: [{ rotate: "90deg" }],
-  },
-  nativeLandscape: {
-    backgroundColor: "#F9F8EF",
-    flex: 1,
     overflow: "hidden",
   },
   screen: {

@@ -1,11 +1,13 @@
 import React, { useContext, useRef } from "react";
-import { Platform, View, StyleSheet, useWindowDimensions } from "react-native";
+import { Platform, View, StyleSheet } from "react-native";
 
+import { ViewportContext } from "../ViewportContext";
 import { Store } from "../../../Store";
 import { FooterButton } from "./FooterButton";
 import { ScaleDegreeButton } from "./ScaleDegreeButton";
 import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
+import { PHONE_FOOTER_HEIGHT, TABLET_FOOTER_HEIGHT } from "../../utils/practiceLayout.mjs";
 import {
   footerDegreeIndexFromGestureX,
   footerGestureDistance,
@@ -13,7 +15,7 @@ import {
 } from "../../utils/footerSelection.mjs";
 
 export const Footer = () => {
-  const nativeWindow = useWindowDimensions();
+  const { rotated, scale } = useContext(ViewportContext);
   const { dimensions, globalState, insets, setGlobalState } = useContext(Store);
   const { degrees, getMatchingScale, handleClear, handleAll } = useFooter();
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
@@ -22,15 +24,14 @@ export const Footer = () => {
   const dragStartIndex = useRef(0);
   const dragCurrentIndex = useRef(null);
   const touchStartPoint = useRef({ x: 0, y: 0 });
-  const useVerticalGestureAxis = Platform.OS !== "android"
-    && nativeWindow.height > nativeWindow.width;
+  const useVerticalGestureAxis = Platform.OS !== "android" && rotated;
   const indexAtGestureEvent = (event) => footerDegreeIndexFromGestureX(
     footerGestureDistance(
       touchStartPoint.current,
       { x: event.nativeEvent.pageX, y: event.nativeEvent.pageY },
       useVerticalGestureAxis,
     ),
-    degreeRowWidth.current,
+    degreeRowWidth.current * scale,
     degrees.length,
     dragStartIndex.current,
   );
@@ -123,13 +124,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    minHeight: 49,
+    minHeight: PHONE_FOOTER_HEIGHT,
   },
   scaleDegreeContainer: {
     flexDirection: "row",
     justifyContent: "center",
   },
   tabletContainer: {
-    minHeight: 83,
+    minHeight: TABLET_FOOTER_HEIGHT,
   },
 });

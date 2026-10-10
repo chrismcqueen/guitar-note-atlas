@@ -4,11 +4,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import TitleSVG from "./TitleSVG";
 import NeckSVG from "./NeckSVG";
 
-import { Dimensions, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Store } from "../../../Store";
 import { storeGlobalState } from "../../utils/functions";
 import { theme } from "../../utils/theme";
-import { orientScreenBounds } from "../../utils/screenBounds.mjs";
 
 const initialValue = {
   key: {
@@ -67,7 +66,7 @@ const Splash = ({ setLoading, error, onRetry }) => {
   }, [setGlobalState, setLoading, setShowTutorialPrompt]);
 
   const paddingLeft = dimensions.width / 100;
-  const screenBounds = (Platform.OS === "web" ? dimensions : orientScreenBounds(Dimensions.get("screen"), dimensions));
+  const screenBounds = dimensions;
   return (
     <>
       <View style={[styles.container, screenBounds]}>

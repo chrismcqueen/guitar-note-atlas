@@ -1,14 +1,15 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { PanResponder, Platform, ScrollView, StyleSheet, useWindowDimensions, View } from "react-native";
+import React, { useEffect, useContext, useMemo, useRef, useState } from "react";
+import { PanResponder, Platform, ScrollView, StyleSheet, View } from "react-native";
 
+import { ViewportContext } from "./ViewportContext";
 import { clampSettingsOffset, settingsOffsetForGesture, shouldScrollSettings } from "../utils/settingsScroll.mjs";
 
 // Native scroll recognition does not reliably follow the portrait shell's
 // rotation. Capture only app-vertical drags and drive the native Y offset;
 // keep the native ScrollView for clipping and accessibility.
 const AudioSettingsScroll = ({ children, contentContainerStyle, height, onContentSizeChange }) => {
-  const window = useWindowDimensions();
-  const rotated = Platform.OS !== "web" && window.height >= window.width;
+  const { rotated, scale } = useContext(ViewportContext);
+  const customScroll = Platform.OS !== "web" && rotated;
   const scroll = useRef(null);
   const offset = useRef(0);
   const startOffset = useRef(0);
@@ -27,31 +28,31 @@ const AudioSettingsScroll = ({ children, contentContainerStyle, height, onConten
   };
   useEffect(() => scrollTo(offset.current), [height]);
   const responder = useMemo(() => PanResponder.create({
-    onMoveShouldSetPanResponderCapture: (_, gesture) => shouldScrollSettings(gesture, rotated, maxOffset()),
+    onMoveShouldSetPanResponderCapture: (_, gesture) => shouldScrollSettings(gesture, rotated, maxOffset(), scale),
     onPanResponderGrant: (_, gesture) => {
       dragging.current = true;
       startOffset.current = offset.current;
-      scrollTo(settingsOffsetForGesture(startOffset.current, gesture, rotated, maxOffset()));
+      scrollTo(settingsOffsetForGesture(startOffset.current, gesture, rotated, maxOffset(), scale));
     },
-    onPanResponderMove: (_, gesture) => scrollTo(settingsOffsetForGesture(startOffset.current, gesture, rotated, maxOffset())),
+    onPanResponderMove: (_, gesture) => scrollTo(settingsOffsetForGesture(startOffset.current, gesture, rotated, maxOffset(), scale)),
     onPanResponderRelease: () => { dragging.current = false; },
     onPanResponderTerminate: () => { dragging.current = false; },
     onPanResponderTerminationRequest: () => true,
     onShouldBlockNativeResponder: () => true,
-  }), [rotated]);
+  }), [rotated, scale]);
 
   const body = (
     <ScrollView
       ref={scroll}
       horizontal={false}
-      disableScrollViewPanResponder={Platform.OS !== "web"}
+      disableScrollViewPanResponder={customScroll}
       canCancelContentTouches={false}
       directionalLockEnabled
       alwaysBounceHorizontal={false}
       bounces={false}
       showsHorizontalScrollIndicator={false}
       showsVerticalScrollIndicator={false}
-      scrollEnabled={Platform.OS === "web"}
+      scrollEnabled={!customScroll}
       keyboardShouldPersistTaps="handled"
       onScroll={({ nativeEvent }) => {
         if (!dragging.current) {
@@ -78,7 +79,7 @@ const AudioSettingsScroll = ({ children, contentContainerStyle, height, onConten
   const thumbTop = overflow > 0 ? clampSettingsOffset(indicatorOffset, overflow) / overflow * (height - thumbHeight) : 0;
 
   return (
-    <View {...(Platform.OS === "web" ? {} : responder.panHandlers)} style={[styles.viewport, { height }]}>
+    <View {...(customScroll ? responder.panHandlers : {})} style={[styles.viewport, { height }]}>
       {body}
       {overflow > 0 && (
         <View accessible={false} pointerEvents="none" style={[styles.indicator, { height: thumbHeight, top: thumbTop }]} />

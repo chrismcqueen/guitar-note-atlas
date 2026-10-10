@@ -1,14 +1,14 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { PanResponder, Platform, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import React, { useContext, useMemo, useRef, useState } from 'react';
+import { PanResponder, Platform, StyleSheet, Text, View } from 'react-native';
 
+import { ViewportContext } from "./ViewportContext";
 import { sliderFromVolume, volumePercent, volumeFromSlider } from '../utils/audioMix.mjs';
 import { isSliderDrag, SLIDER_INSET, sliderPositionAtX, sliderPositionForGesture } from '../utils/volumeSlider.mjs';
 import { theme } from '../utils/theme';
 import { audioSettingsStyles } from './audioSettingsStyles';
 
 const VolumeSlider = ({ label, name, value, onChange }) => {
-  const window = useWindowDimensions();
-  const rotated = Platform.OS !== 'web' && window.height >= window.width;
+  const { rotated, scale } = useContext(ViewportContext);
   const [width, setWidth] = useState(0);
   const position = sliderFromVolume(value);
   const percent = volumePercent(value);
@@ -30,14 +30,14 @@ const VolumeSlider = ({ label, name, value, onChange }) => {
       dragging.current = false;
     },
     onPanResponderMove: (_, gesture) => {
-      if (isSliderDrag(gesture, rotated)) dragging.current = true;
+      if (isSliderDrag(gesture, rotated, scale)) dragging.current = true;
       if (dragging.current && latest.current.width > 0) {
-        change(sliderPositionForGesture(startX.current, gesture, rotated, latest.current.width));
+        change(sliderPositionForGesture(startX.current, gesture, rotated, latest.current.width, scale));
       }
     },
     onPanResponderRelease: (_, gesture) => {
       if (latest.current.width > 0) {
-        if (dragging.current) change(sliderPositionForGesture(startX.current, gesture, rotated, latest.current.width));
+        if (dragging.current) change(sliderPositionForGesture(startX.current, gesture, rotated, latest.current.width, scale));
         else if (Math.abs(gesture.dx) <= 6 && Math.abs(gesture.dy) <= 6) change(sliderPositionAtX(startX.current, latest.current.width));
       }
       dragging.current = false;
@@ -46,7 +46,7 @@ const VolumeSlider = ({ label, name, value, onChange }) => {
     // Let a vertical swipe scroll, but retain a horizontal slider drag.
     onPanResponderTerminationRequest: () => !dragging.current,
     onShouldBlockNativeResponder: () => true,
-  }), [rotated]);
+  }), [rotated, scale]);
   const thumbX = SLIDER_INSET + position * Math.max(0, width - SLIDER_INSET * 2);
   return (
     <View style={styles.container}>

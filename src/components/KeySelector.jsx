@@ -60,7 +60,8 @@ const KeySelector = ({ compact = false, positionTitle }) => {
   // Zoom titles can use the empty key-arrow lanes while retaining the same
   // screen midpoint and vertical text box as the overview heading.
   const titleWidth = positionTitle ? Math.min(430, Math.max(0, safeWidth - 2 * sideReserve)) : keyTitleWidth;
-  const titleScale = titleWidth / 430;
+  const shortKeyTitle = !positionTitle && keyTitleWidth < 200;
+  const titleScale = titleWidth / (shortKeyTitle ? 220 : 430);
 
   return (
     <View style={styles.titleContainer}>
@@ -68,7 +69,7 @@ const KeySelector = ({ compact = false, positionTitle }) => {
         <View style={[styles.arrow, styles.arrowLeft]}></View>
       </Pressable>}
       <Text adjustsFontSizeToFit minimumFontScale={0.75} numberOfLines={1} style={[styles.title, styles.phoneTitle, positionTitle && { paddingHorizontal: 0 }, { width: titleWidth, marginLeft: -titleWidth / 2, fontSize: 31 * titleScale, letterSpacing: (positionTitle ? 5 : 7) * titleScale }]}>
-        {positionTitle || `KEY CENTER - ${globalState?.key.title}`}
+        {positionTitle || `${shortKeyTitle ? "KEY:" : "KEY CENTER -"} ${globalState?.key.title}`}
       </Text>
       {!positionTitle && <Pressable android_disableSound accessibilityLabel="Next key" {...nextKeyPress} style={withPressedOpacity([styles.arrowContainer, styles.phoneArrow, { right: arrowInset }])}>
         <View style={[styles.arrow, styles.arrowRight]}></View>

@@ -4,6 +4,7 @@ import { Platform, Text, View, StyleSheet, Pressable } from "react-native";
 import { OverlayStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
+import { TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
 
 const phoneMenuTextWidth = 52;
 const tabletMenuTextWidth = 62;
@@ -139,7 +140,7 @@ const Header = () => {
 export default Header;
 
 export const phoneHeaderHeight = 38;
-export const tabletHeaderHeight = 51;
+export const tabletHeaderHeight = TABLET_HEADER_HEIGHT;
 
 const styles = StyleSheet.create({
   container: {

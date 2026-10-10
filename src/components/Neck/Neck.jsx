@@ -18,7 +18,7 @@ const STRING_SPAN = 180;
 const LINE_WIDTH = 3;
 const ACTIVE_CLIP_OVERDRAW = LINE_WIDTH;
 
-const Neck = React.memo(() => {
+const Neck = React.memo(({ maxHeight = Infinity }) => {
   const { dimensions, globalState, insets } = useContext(Store);
   const { setPositionSelection, setShowPositionOverview } = useContext(PositionActionsStore);
   const [pressedPositionId, setPressedPositionId] = useState(null);
@@ -32,7 +32,7 @@ const Neck = React.memo(() => {
   const horizontalMargin = 8;
   const heightRatio = isTablet ? 0.38 : 0.56;
   const maxScale = isTablet ? 1.85 : 1.3;
-  const scale = Math.min((safeWidth - horizontalMargin) / 864, (dimensions.height * heightRatio) / 233, maxScale);
+  const scale = Math.min((safeWidth - horizontalMargin) / 864, Math.min(dimensions.height * heightRatio, maxHeight) / 233, maxScale);
   const neckDimensions = { height: 233 * scale, width: 864 * scale };
   const pressedPosition = pressedPositionId === null ? null : getPosition(pressedPositionId);
   const selectedFret = pressedPosition && positionDisplayFret(pressedPositionId, pressedPositionFret, globalState.key.key_offset);
@@ -75,7 +75,6 @@ const Neck = React.memo(() => {
   };
 
   return (
-    // TODO: make container responsive
     <View
       accessibilityHint="Opens the selected fretboard position"
       accessibilityLabel="Full fretboard overview"

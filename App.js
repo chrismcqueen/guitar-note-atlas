@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useFonts } from "expo-font";
 import { useKeepAwake } from "expo-keep-awake";
-import { Animated, Dimensions, Easing, Platform, Pressable, StatusBar, StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, Pressable, StatusBar, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import Header from "./src/components/Header";
@@ -15,7 +15,7 @@ import { AudioPopover, AudioTrigger } from "./src/components/AudioControls";
 import { AudioPlaybackProvider, AudioPlaybackStore } from "./src/components/AudioPlaybackProvider";
 import { OverlayStore, Store, StoreProvider } from "./Store";
 import { storeGlobalState } from "./src/utils/functions";
-import { getOptionsDrawerWidth, orientScreenBounds } from "./src/utils/screenBounds.mjs";
+import { getOptionsDrawerWidth } from "./src/utils/screenBounds.mjs";
 import { theme } from "./src/utils/theme";
 import {
   getWelcomeMessage,
@@ -61,12 +61,11 @@ const AppContent = () => {
   const { dimensions } = React.useContext(Store);
   const { showOptions } = React.useContext(OverlayStore);
   const { popoverOpen } = React.useContext(AudioPlaybackStore);
-  const screenBounds = Platform.OS === "web" ? dimensions : orientScreenBounds(Dimensions.get("screen"), dimensions);
+  const screenBounds = dimensions;
   const optionsTransition = useRef(new Animated.Value(0)).current;
   const [optionsMounted, setOptionsMounted] = useState(false);
-  const [viewport, setViewport] = useState(dimensions);
-  const viewportWidth = viewport.width || dimensions.width;
-  const viewportHeight = viewport.height || dimensions.height;
+  const viewportWidth = dimensions.width;
+  const viewportHeight = dimensions.height;
   const optionsWidth = getOptionsDrawerWidth(viewportWidth);
 
   useEffect(() => {
@@ -118,10 +117,6 @@ const AppContent = () => {
 
   return (
     <View
-      onLayout={({ nativeEvent }) => {
-        const { height, width } = nativeEvent.layout;
-        if (width !== viewport.width || height !== viewport.height) setViewport({ height, width });
-      }}
       style={[
         styles.app,
         screenBounds,
@@ -158,7 +153,7 @@ const AppContent = () => {
       >
         <AudioTrigger />
       </Animated.View>
-      <Options interactionDisabled={popoverOpen} mounted={optionsMounted} transition={optionsTransition} viewport={viewport} />
+      <Options interactionDisabled={popoverOpen} mounted={optionsMounted} transition={optionsTransition} viewport={dimensions} />
       <AudioPopover />
       <TutorialGate />
       <TutorialPrompt />

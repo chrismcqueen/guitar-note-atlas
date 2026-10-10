@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { StyleSheet, View } from "react-native";
 
-import KeySelector, { PHONE_KEY_ROW_HEIGHT } from "./KeySelector";
+import KeySelector from "./KeySelector";
 import Neck from "./Neck";
 import PositionZoom from "./PositionZoom";
 import TabletNeck from "./TabletNeck";
@@ -10,6 +10,7 @@ import { PositionStore, PositionVisibilityStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { getPosition } from "../utils/positions.mjs";
 import { getPhonePracticeHeaderLayout } from "./Header";
+import { getPhonePracticeBodyHeight, getTabletPracticeLayout, TABLET_BODY_GAP, TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
 
 export const Main = React.memo(() => {
   const { dimensions, insets, globalState } = useContext(Store);
@@ -19,8 +20,10 @@ export const Main = React.memo(() => {
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const safeSideInset = Math.max(insets.left, insets.right);
   const phoneHeader = getPhonePracticeHeaderLayout(insets);
+  const phoneBodyHeight = getPhonePracticeBodyHeight(dimensions.height, phoneHeader);
   const position = getPosition(positionId);
   const positionTitle = globalState.options?.bassMode ? position.bassTitle : position.title;
+  const tabletLayout = getTabletPracticeLayout(dimensions, insets);
   const contentInsets = isTablet
     ? { paddingLeft: insets.left, paddingRight: insets.right }
     : { paddingLeft: safeSideInset, paddingRight: safeSideInset };
@@ -28,26 +31,23 @@ export const Main = React.memo(() => {
   return (
     <View style={styles.container}>
       <View style={fullScreen}>
-        <View style={[styles.content, isTablet && styles.tabletContent, contentInsets]}>
+        <View style={[styles.content, isTablet ? styles.tabletContent : { paddingTop: phoneHeader.top + phoneHeader.height + TABLET_BODY_GAP, paddingBottom: TABLET_BODY_GAP }, contentInsets]}>
           {isTablet ? (
             <>
-              <PositionZoom />
+              <PositionZoom height={tabletLayout.zoomHeight} />
               <View style={styles.tabletNeckRow}>
                 <View style={styles.tabletKeySelector}>
                   <KeySelector compact />
                 </View>
-                <TabletNeck />
+                <TabletNeck maxHeight={tabletLayout.overviewHeight} />
               </View>
             </>
           ) : (
-            <View style={styles.phoneContent}>
+            <View style={[styles.phoneContent, { height: phoneBodyHeight }]}>
               {showPositionOverview ? (
-                <>
-                  <View style={{ height: PHONE_KEY_ROW_HEIGHT }} />
-                  <View style={styles.phoneNeck}><Neck /></View>
-                </>
+                <Neck maxHeight={phoneBodyHeight} />
               ) : (
-                <PositionZoom compact />
+                <PositionZoom compact height={phoneBodyHeight} />
               )}
             </View>
           )}
@@ -81,11 +81,11 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
-    transform: [{ translateY: -20 }],
     width: "100%",
   },
   tabletContent: {
-    transform: [{ translateY: 36 }],
+    paddingTop: TABLET_HEADER_HEIGHT + TABLET_BODY_GAP,
+    paddingBottom: TABLET_BODY_GAP,
   },
   tabletKeySelector: {
     left: "3%",
@@ -94,9 +94,7 @@ export const styles = StyleSheet.create({
   },
   phoneContent: {
     alignItems: "center",
+    justifyContent: "center",
     width: "100%",
-  },
-  phoneNeck: {
-    transform: [{ translateY: 10 }],
   },
 });

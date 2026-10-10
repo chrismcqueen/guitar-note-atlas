@@ -1,3 +1,10 @@
+export const getFooterGeometry = ({ width, height }, insets) => {
+  const tablet = width >= 1000 && height >= 550;
+  const safeWidth = width - insets.left - insets.right;
+  const scale = Math.min(1, safeWidth / (tablet ? 1240 : 752));
+  return { scale, degreeWidth: (tablet ? 80 : 46) * scale, actionWidth: (tablet ? 140 : 100) * scale };
+};
+
 export const isDegreeChoiceSelected = (selectedDegrees, choice) => (
   selectedDegrees.includes(choice.d)
   || (choice.e !== undefined && selectedDegrees.includes(choice.e))

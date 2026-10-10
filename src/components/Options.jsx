@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { StyleSheet, Text, View, Animated, Platform, Pressable, ScrollView, useWindowDimensions } from "react-native";
+import { StyleSheet, Text, View, Animated, Platform, Pressable, ScrollView } from "react-native";
 import * as Linking from "expo-linking";
 
 import { OverlayStore, Store } from "../../Store";
@@ -12,10 +12,9 @@ import { KEY_NAVIGATION_MODES } from "../utils/keyNavigation.mjs";
 const Options = ({ interactionDisabled = false, mounted, transition, viewport }) => {
   const { dimensions, insets, setShowTutorial, globalState, setGlobalState } = useContext(Store);
   const { setShowOptions, showOptions } = useContext(OverlayStore);
-  const usableWindow = useWindowDimensions();
   const viewportWidth = viewport?.width || dimensions.width;
   const viewportHeight = viewport?.height || dimensions.height;
-  const scrollViewportHeight = Math.min(viewportHeight, usableWindow.height);
+  const scrollViewportHeight = viewportHeight;
   const width = getOptionsDrawerWidth(viewportWidth);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const useCompactStars = !isTablet && width < 300;

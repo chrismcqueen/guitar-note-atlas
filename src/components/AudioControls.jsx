@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Image, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { Image, Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import Svg, { Circle, Path, Rect, Text as SvgText } from "react-native-svg";
 
 import { OverlayStore, PositionVisibilityStore, Store } from "../../Store";
@@ -90,7 +90,6 @@ const MixerIcon = ({ filled }) => (
 export const AudioPopover = () => {
   const { dimensions, insets } = useContext(Store);
   const { showPositionOverview } = useContext(PositionVisibilityStore);
-  const window = useWindowDimensions();
   const {
     accompaniment,
     countIn,
@@ -165,7 +164,7 @@ export const AudioPopover = () => {
   // including short phone layouts whose key row sits close to it.
   const cardTop = Math.max(headerBottom + 6, triggerTop - 6);
   const cardLeft = Math.max(0, triggerLeft - 14);
-  const viewportHeight = Math.min(dimensions.height, Platform.OS === "web" ? window.height : Math.min(window.width, window.height));
+  const viewportHeight = dimensions.height;
   const cardMaxHeight = Math.max(0, viewportHeight - cardTop - 12);
   // Reserve padding (28) and the fixed header plus gap (38). Native
   // ScrollView needs a bounded height; maxHeight/flex shrink alone can leave

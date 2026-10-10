@@ -1,5 +1,8 @@
 export const POSITION_ORDER = [0, 2, 4, 6, 1, 3, 5];
 
+export const positionFingerLabelY = ({ stringOriginY, stringCount, stringGap, noteRadius, noteStrokeWidth, fontSize }) =>
+  stringOriginY + (stringCount - 1) * stringGap + noteRadius + noteStrokeWidth / 2 + fontSize * 0.9;
+
 // The released iOS app numbers keys from A (0), while this app's public data
 // numbers them from C (0). Color-band placement still follows the iOS IDs.
 export const legacyKeyOffset = (keyOffset) => (keyOffset + 3) % 12;

@@ -19,14 +19,17 @@ const NECK_RIGHT = 842;
 const LINE_WIDTH = 2.25;
 const ACTIVE_CLIP_OVERDRAW = LINE_WIDTH;
 
-const TabletNeck = () => {
+const TabletNeck = ({ maxHeight = Infinity }) => {
   const { dimensions, globalState, insets } = useContext(Store);
   const { positionFret, positionId } = useContext(PositionStore);
   const { setPositionSelection } = useContext(PositionActionsStore);
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
-  const width = dimensions.width - insets.left - insets.right - 8;
+  // Leave room for the zoom view, header and footer in short tablet windows.
+  // The overview keeps its aspect ratio instead of pushing the title upward.
+  const availableWidth = dimensions.width - insets.left - insets.right - 8;
+  const width = Math.min(availableWidth, maxHeight * 864 / VIEWBOX_HEIGHT);
   const height = (width * VIEWBOX_HEIGHT) / 864;
   const position = getPosition(positionId);
   const selectedOccurrenceFret = resolvedPositionFret(positionId, positionFret, globalState.key.key_offset);
