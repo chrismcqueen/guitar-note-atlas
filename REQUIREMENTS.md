@@ -134,3 +134,10 @@ Native device timing, pitch shifting, and layout still require device listening/
 - Handle corner and centered cameras on either side, multiple cutouts, visible system bars and changing tablet windows. Upright tablet top/bottom safe areas remain outside the practice canvas. Preserve the approved iOS safe-area geometry.
 - Keep footer buttons intact. Use existing outer whitespace before moving the footer, shift only enough to clear a reported obstruction plus six points, and scale the row only when it cannot fit in the remaining safe width. On the connected Pixel, the footer needs a six-point shift from its normal centered position.
 - Keep Audio Settings anchored over its buttons. If a cutout intersects its lower area, shorten the scrolling body above it while retaining the fixed header.
+
+
+## Position swipe boundary behavior — October 9
+
+- Use the same swipe behavior on iOS and Android, in phone and tablet layouts. A gesture beginning on the full-neck selector keeps ownership when the finger leaves its bounds. Hold the last valid position while outside; do not clamp an outside touch to an end fret or clear the highlight.
+- Re-entering anywhere on the neck during that same held gesture selects the position under the finger and resumes sliding. On phones, releasing outside opens the last valid highlighted position; tablets retain their last live selection. Genuine system cancellation still cancels the mobile preview.
+- Track movement from stable screen coordinates relative to the initial neck-local point, accounting for canvas rotation and scale. Hit-test both axes against the rendered neck view; decorative SVG children must not change the initial coordinate origin.

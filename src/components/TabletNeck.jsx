@@ -8,7 +8,8 @@ import Frets from "./Neck/Frets";
 import Note from "./Neck/Note";
 import Strings from "./Neck/Strings";
 import PositionBands from "./Neck/PositionBands";
-import { fretForNeckX, getPosition, positionDisplayFret, positionTargetForFret, resolvedPositionFret, stepPositionTarget } from "../utils/positions.mjs";
+import { getPosition, positionDisplayFret, resolvedPositionFret, stepPositionTarget } from "../utils/positions.mjs";
+import { useNeckSelectionGesture } from "./Neck/useNeckSelectionGesture";
 import { theme } from "../utils/theme";
 
 const VIEWBOX_HEIGHT = 175;
@@ -42,9 +43,7 @@ const TabletNeck = ({ maxHeight = Infinity }) => {
   // Refresh Android's cached clipping region when the position window moves.
   const activeClipId = `tablet-active-position-${selectedX}-${selectedWidth}`;
 
-  const selectPositionAtX = (x) => {
-    const fret = fretForNeckX(x, width, globalState.options.leftHand);
-    const nextTarget = positionTargetForFret(fret, globalState.key.key_offset);
+  const selectTarget = (nextTarget) => {
     if (nextTarget.id !== positionId || nextTarget.fret !== positionFret) {
       setPositionSelection({ id: nextTarget.id, fret: nextTarget.fret });
     }
@@ -54,6 +53,13 @@ const TabletNeck = ({ maxHeight = Infinity }) => {
     const nextTarget = stepPositionTarget(positionId, selectedOccurrenceFret, amount, globalState.key.key_offset);
     setPositionSelection({ id: nextTarget.id, fret: nextTarget.fret });
   };
+
+  const selectionGesture = useNeckSelectionGesture({
+    width, height,
+    keyOffset: globalState.key.key_offset,
+    leftHand: globalState.options.leftHand,
+    onSelect: selectTarget,
+  });
 
   return (
     <View
@@ -65,10 +71,7 @@ const TabletNeck = ({ maxHeight = Infinity }) => {
         if (event.nativeEvent.actionName === "increment") stepSelection(1);
         if (event.nativeEvent.actionName === "decrement") stepSelection(-1);
       }}
-      onMoveShouldSetResponder={() => true}
-      onResponderGrant={(event) => selectPositionAtX(event.nativeEvent.locationX)}
-      onResponderMove={(event) => selectPositionAtX(event.nativeEvent.locationX)}
-      onStartShouldSetResponder={() => true}
+      {...selectionGesture}
       style={{ height, width }}
     >
       <Svg width="100%" height="100%" viewBox={`0 0 864 ${VIEWBOX_HEIGHT}`}>

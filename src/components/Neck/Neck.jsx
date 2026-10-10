@@ -8,7 +8,8 @@ import Frets from "./Frets";
 import Strings from "./Strings";
 import PositionBands from "./PositionBands";
 import { PositionActionsStore, Store } from "../../../Store";
-import { fretForNeckX, getPosition, positionDisplayFret, positionTargetForFret } from "../../utils/positions.mjs";
+import { getPosition, positionDisplayFret } from "../../utils/positions.mjs";
+import { useNeckSelectionGesture } from "./useNeckSelectionGesture";
 import { theme } from "../../utils/theme";
 
 const FRET_WIDTH = 49;
@@ -47,13 +48,7 @@ const Neck = React.memo(({ maxHeight = Infinity }) => {
   // Change both the definition and reference when the selected window changes.
   const activeClipId = `phone-active-position-${selectedX}-${selectedWidth}`;
 
-  const positionAtX = (x) => positionTargetForFret(
-    fretForNeckX(x, neckDimensions.width, globalState.options.leftHand),
-    globalState.key.key_offset,
-  );
-
-  const handlePressIn = (event) => {
-    const nextTarget = positionAtX(event.nativeEvent.locationX);
+  const selectTarget = (nextTarget) => {
     if (nextTarget.id === pressedTargetRef.current?.id && nextTarget.fret === pressedTargetRef.current?.fret) return;
     pressedTargetRef.current = nextTarget;
     setPressedPositionId(nextTarget.id);
@@ -76,17 +71,21 @@ const Neck = React.memo(({ maxHeight = Infinity }) => {
     setPressedPositionFret(null);
   };
 
+  const selectionGesture = useNeckSelectionGesture({
+    ...neckDimensions,
+    keyOffset: globalState.key.key_offset,
+    leftHand: globalState.options.leftHand,
+    onSelect: selectTarget,
+    onFinish: finishSelection,
+    onCancel: cancelSelection,
+  });
+
   return (
     <View
       accessibilityHint="Opens the selected fretboard position"
       accessibilityLabel="Full fretboard overview"
       accessibilityRole="button"
-      onMoveShouldSetResponder={() => true}
-      onResponderGrant={handlePressIn}
-      onResponderMove={handlePressIn}
-      onResponderRelease={finishSelection}
-      onResponderTerminate={cancelSelection}
-      onStartShouldSetResponder={() => true}
+      {...selectionGesture}
       style={[styles.container, neckDimensions]}
     >
       <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 864 233">
