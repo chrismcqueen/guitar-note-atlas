@@ -37,9 +37,9 @@ export const StoreProvider = ({ children }) => {
   const insets = sections.body;
   const navigationInsets = sections.navigation;
   const footerInsets = sections.footer;
-  // Extend the footer's blue baseline behind the iPad home indicator while
-  // keeping its buttons and cream edge above that system gesture area.
-  const footerBottomInset = Platform.OS === "ios" && Platform.isPad ? fallbackInsets.bottom : 0;
+  // Keep a thin blue band around the iPad indicator rather than reserving its
+  // entire gesture zone. The existing 8-point footer border counts toward it.
+  const footerBottomInset = Platform.OS === "ios" && Platform.isPad ? Math.max(0, Math.min(18, fallbackInsets.bottom) - 8) : 0;
   const overlayInsets = sections.overlay;
 
   const value = useMemo(() => ({

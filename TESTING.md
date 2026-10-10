@@ -432,3 +432,9 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Refine the full-height iPad footer: keep blue extending to the screen bottom and raise its cream-to-blue horizontal edge and buttons above the actual mapped home-indicator inset. Reserve that height in the neck body budget and align the open scale menu with the raised footer. Keep the title/audio row at its existing position.
 - This changes only native iPad footer content clearance; phone and Android layouts retain their existing geometry. The app canvas, popover and splash still use the full viewport.
 - All 163 tests, production web export and bundled iOS/Android Release builds pass. Native iPad verification shows a continuous blue band behind the home indicator and complete footer labels: `docs/pr-51/ipad-blue-home-indicator.png`. The open scale menu ends at the raised footer; closing it restores the practice view. All six test devices installed and launched successfully.
+
+
+### Tighter iPad home-indicator clearance — October 9
+
+- Cap the blue home-indicator band at 18 points within the mapped bottom safe inset, counting the existing eight-point footer border toward that height. This lowers the buttons/cream edge while preserving a small visible gap above the home indicator and the full-height canvas. The neck body and scale-menu boundary use that same reduced reservation.
+- All 163 tests and the bundled iOS Release build pass. Native iPad verification confirms the thinner band and clear buttons; proof: `docs/pr-51/ipad-blue-home-indicator.png`.
