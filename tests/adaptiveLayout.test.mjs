@@ -30,9 +30,16 @@ test('Android Menu/audio alignment adds breathing room without moving iOS contro
     // clears the shifted navigation target without changing its midpoint.
     assert.ok(android.menuCenter - 92 / 2 - insets.left >= 24);
     assert.ok(android.titleInset >= android.menuLeft + android.controlWidth + 12);
-    assert.equal(android.optionsRight, ios.optionsRight);
+    assert.equal(android.optionsRight, android.menuLeft);
+    assert.equal(android.optionsRight + android.controlWidth / 2, android.menuCenter);
     assert.equal(getMenuLeftInset(insets, 'android'), android.menuLeft);
   }
+  // A larger right-side cutout still takes precedence over visual symmetry.
+  const pixel = getPhoneNavigationLayout({ left: 0, right: 51 }, 'android');
+  assert.equal(pixel.optionsRight + 50, pixel.menuCenter);
+  const cutout = getPhoneNavigationLayout({ left: 0, right: 80 }, 'android');
+  assert.equal(cutout.optionsRight + 50 - 12, 80);
+  assert.ok(cutout.titleInset >= cutout.optionsRight + cutout.controlWidth);
 });
 
 const screen = { width: 1280, height: 800 };

@@ -4,7 +4,7 @@ import { Platform, Text, View, StyleSheet, Pressable } from "react-native";
 import { OverlayStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
-import { getMenuLeftInset, getPhoneNavigationLayout, TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
+import { getMenuLeftInset, getOptionsRightInset, getPhoneNavigationLayout, TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
 
 const phoneMenuTextWidth = 52;
 const tabletMenuTextWidth = 62;
@@ -35,7 +35,7 @@ const Header = () => {
   const headerInset = isTablet || Platform.OS === "android" ? 0 : insets.top;
   const controlTop = headerInset;
   const menuInset = getMenuLeftInset(insets, Platform.OS);
-  const optionsInset = insets.right;
+  const optionsInset = getOptionsRightInset(insets, Platform.OS, isTablet ? 55 : 50);
   // The released iPad build was laid out inside an approximately 4:3 UIKit
   // canvas. Keep its navigation-item scale when immersive mode exposes a
   // wider modern iPad viewport.
@@ -199,7 +199,9 @@ const styles = StyleSheet.create({
     width: 75,
   },
   androidSettingsButtonContainer: {
-    width: 120,
+    // Menu's tablet label center is 24 + 62 / 2 = 55 points.
+    // Mirror that center from the right edge rather than the hit area's center.
+    width: 110,
   },
   phoneControl: {
     width: 100,

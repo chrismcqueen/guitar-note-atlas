@@ -7,9 +7,14 @@ export const TABLET_BODY_GAP = 8;
 export const getMenuLeftInset = (insets, platform = "ios") =>
   insets.left + (platform === "android" ? 24 : 0);
 
+export const getOptionsRightInset = (insets, platform = "ios", centerOffset = 50) =>
+  // Clear the visible dots (24 points), rather than reserving the entire
+  // touch target beyond a cutout and pushing Options farther in than Menu.
+  platform === "android" ? Math.max(getMenuLeftInset(insets, platform), insets.right + 12 - centerOffset) : insets.right;
+
 export const getPhoneNavigationLayout = (insets, platform = "ios") => ({
   menuLeft: getMenuLeftInset(insets, platform),
-  optionsRight: insets.right,
+  optionsRight: getOptionsRightInset(insets, platform),
   controlWidth: 100,
   menuCenter: getMenuLeftInset(insets, platform) + 50,
   titleInset: Math.max(getMenuLeftInset(insets, platform), insets.right) + 112,

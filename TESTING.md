@@ -351,3 +351,8 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Add 24 logical points beyond Android's reported left safe area, shared by the tablet Menu and phone navigation helpers. Audio controls and their anchored popover follow Menu; the phone heading reserves symmetric clearance while retaining its screen midpoint. iOS offsets are unchanged.
 - All 140 tests pass, including Android edge clearance, Menu/audio alignment, title reservation and unchanged iOS navigation. Android arm64 and universal iOS simulator Release builds pass. Refreshed physical Samsung/Pixel and all three iOS simulators.
 - Native Samsung tablet zoom and Pixel phone overview captures confirm the additional edge space and centered Menu/audio pair. Samsung Menu still covers the controls; Audio Settings opens at its shifted anchor on both Android devices and closes normally. Proof: `docs/pr-51/samsung-menu-spacing.png` and `docs/pr-51/pixel-menu-spacing.png`.
+
+### Matching Android Options spacing
+
+- Mirror Menu's visible center for the Android Options dots. Tablet Options uses a 55-point center offset matching Menu's label, while compact layouts use 50 points on each side. Clear the actual dots from right-side cutouts instead of adding the whole touch target beyond the inset; preserve iOS offsets.
+- All 140 tests pass, including Pixel-style asymmetric safe areas and unusually large cutouts. Bundled Android/iOS Release builds pass; all five test devices are refreshed. Native captures confirm matching center distances on Samsung and Pixel: `docs/pr-51/samsung-menu-options-symmetry.png` and `docs/pr-51/pixel-menu-options-symmetry.png`.
