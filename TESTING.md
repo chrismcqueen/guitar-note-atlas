@@ -4,15 +4,17 @@ Run these checks before releasing changes that affect layout, navigation, music 
 
 ## Active manual-test builds
 
-Lane requested on October 8 that each app refresh include all three targets below. Install and reopen the current bundled Release build after app changes; preserve each device's saved preferences. Both iOS simulators can use the universal app built in `/tmp/gna-bundled-ipad/Build/Products/Release-iphonesimulator/guitarnoteatlas.app`.
+Lane requested on October 8 that each app refresh include the iPhone, iPad and connected Pixel, then added the iPhone SE and physical Samsung tablet for testing. Install and reopen the current bundled Release build on the available targets below after app changes; preserve each device's saved preferences. All iOS simulators can use the universal app built in `/tmp/gna-bundled-ipad/Build/Products/Release-iphonesimulator/guitarnoteatlas.app`.
 
 | Target | Device identity | App |
 | --- | --- | --- |
 | iPhone 16, iOS 18.4 | `6FC22721-D615-459C-A2E9-D28CCFDE4B0A` | `dev.com.guitar-note-atlas` |
+| iPhone SE (3rd generation), iOS 18.4 | `581D67C8-78BA-4ADF-B81B-A25C055DFC9B` | `dev.com.guitar-note-atlas` |
 | iPad Pro 11-inch (M4), iOS 18.4 | `497648CB-7BFE-4972-BDE7-29C43C849A7A` | `dev.com.guitar-note-atlas` |
 | Physical Pixel 4a, Android 13 | `08281JEC229228` | `dev.com.guitarnoteatlas` |
+| Physical Samsung Galaxy Tab A11+, SM-X230 | `R5GL7221G8R` | `dev.com.guitarnoteatlas` |
 
-The iPhone simulator is booted with the current bundled Release build. Dismissed the first-run tutorial prompt; Audio Player is always available, and left the app stopped in full-neck overview with the simulator upright in landscape. Native UI inspection confirms the fretboard, key header and audio controls are visible. Keep this iPhone running and refresh it alongside the iPad and connected Pixel. Other project simulators are separate.
+The iPhone simulator is booted with the current bundled Release build. Its first-run tutorial prompt has been dismissed; Audio Player is always available. The app was left stopped in full-neck overview with the simulator upright in landscape. Native UI inspection confirms the fretboard, key header and audio controls are visible. Keep the testing simulators running and refresh them alongside connected physical devices. Other project simulators are separate.
 
 ## Automated checks
 
@@ -306,3 +308,9 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Always mount AudioTrigger and AudioPopover. Remove the Enable Audio Player menu item, switch handling, disabled startup default and provider effect that stopped/closed audio when the old preference was off. Legacy saved flags no longer control visibility or transport. Preserve audio settings, manual Play/Stop, splash preloading and existing clock/mixer behavior.
 - Browser upgrade check: on the previous build, turn Audio Player off through Options and confirm both audio controls disappear. Reload the new build at the same origin; both controls return without toggling a preference. Options no longer contains an Audio Player item, and Audio Settings opens/closes normally. Screenshots: `docs/pr-51/always-audio-home.png` and `docs/pr-51/always-audio-options.png`.
 - All 130 tests, web export and Android/iOS bundled Release builds pass. Updated builds installed/launched on physical Pixel 4a, iPhone 16 simulator and iPad Pro simulator.
+
+### Samsung tablet Menu label — October 9, 2026
+
+- Reproduced `MEN` / `U` wrapping on the physical SM-X230 tablet with its existing system font scale of 1.15 and density of 240 dpi. The Menu label had a fixed width but no single-line constraint or fitting behavior.
+- Menu now stays on one line and fits its existing label width. The button hit area, label center, and audio-button alignment stay unchanged; the tablet's font-size preference remains untouched.
+- All 130 tests pass. Android and iOS bundled Release builds succeed; the iPhone 16, iPhone SE and iPad simulators were refreshed. Native iPad screenshot confirms Menu remains on one line. The Pixel is disconnected. Samsung installation is waiting for its Play Protect security-check prompt to be dismissed before final native visual verification.

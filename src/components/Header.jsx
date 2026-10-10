@@ -72,6 +72,9 @@ const Header = () => {
           onPress={() => setShowMenu(!showMenu)}
         >
           <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.68}
             style={[
               styles.menu,
               { width: menuTextWidth },
