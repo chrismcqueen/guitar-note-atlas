@@ -21,7 +21,7 @@
           "UIInterfaceOrientationPortrait"
         ],
         "UISupportedInterfaceOrientations~ipad": [
-          "UIInterfaceOrientationPortrait"
+          "UIInterfaceOrientationLandscapeRight"
         ]
       },
       "config": {
@@ -41,12 +41,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      [
-        "expo-screen-orientation",
-        {
-          "initialOrientation": "PORTRAIT_UP"
-        }
-      ],
+      "expo-screen-orientation",
       "./plugins/withAndroidImmersiveMode",
       "expo-font",
       [

@@ -7,8 +7,8 @@ import { getAppViewport, isPortraitWindow, isTabletDisplay } from "../utils/orie
 import { ViewportContext } from "./ViewportContext";
 
 /**
- * Phones and iOS retain the portrait shell. Android tablet windows render
- * upright at their available size, with compact layouts when space is tight.
+ * Only phones use the rotated portrait shell. Tablets render upright at their
+ * available size, with compact layouts when space is tight.
  * Layout, overlays and gestures all share this canvas and its transform.
  */
 const RotatedViewport = ({ children }) => {
@@ -16,7 +16,8 @@ const RotatedViewport = ({ children }) => {
   const insets = useSafeAreaInsets();
   const portraitWindow = isPortraitWindow(window);
   const screen = Dimensions.get("screen");
-  const portraitShell = Platform.OS === "ios" || (Platform.OS === "android" && !isTabletDisplay(screen));
+  const tablet = Platform.OS === "ios" ? Platform.isPad : isTabletDisplay(screen);
+  const portraitShell = (Platform.OS === "ios" || Platform.OS === "android") && !tablet;
   const lastPortraitWindow = useRef(null);
   const [contentWindow, setContentWindow] = useState(null);
 
@@ -27,8 +28,8 @@ const RotatedViewport = ({ children }) => {
   // intended window is ready.
   if (portraitWindow) lastPortraitWindow.current = window;
   const activeWindow = portraitShell ? (lastPortraitWindow.current ?? window) : (contentWindow ?? window);
-  const viewport = useMemo(() => getAppViewport({ window: activeWindow, screen, platform: Platform.OS, insets }),
-    [activeWindow.height, activeWindow.width, screen.height, screen.width, insets.top, insets.bottom]);
+  const viewport = useMemo(() => getAppViewport({ window: activeWindow, screen, platform: Platform.OS, insets, tablet }),
+    [activeWindow.height, activeWindow.width, screen.height, screen.width, insets.top, insets.bottom, tablet]);
   if (portraitShell && !lastPortraitWindow.current) return <View style={styles.screen} />;
 
   return (

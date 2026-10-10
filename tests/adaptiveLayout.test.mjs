@@ -71,14 +71,33 @@ test('tablet resizing uses the available window and never rotates a small portra
   assert.ok(compact.scale < 1);
 });
 
-test('portrait phones and iOS retain their established rotated shell', () => {
+test('portrait phones retain their established rotated shell on both platforms', () => {
   for (const platform of ['android', 'ios']) {
     const window = { width: 393, height: 852 };
     assert.deepEqual(getAppViewport({ window, screen: window, platform }), {
       dimensions: { width: 852, height: 393 }, rotated: true, scale: 1, padding: { top: 0, bottom: 0 },
     });
   }
-  assert.equal(getAppViewport({ window: { width: 834, height: 1210 }, platform: 'ios' }).rotated, true);
+});
+
+test('iPad renders directly in native landscape and never rotates a smaller tablet window', () => {
+  const screen = { width: 1210, height: 834 };
+  const viewport = getAppViewport({ window: screen, screen, platform: 'ios', tablet: true });
+  assert.deepEqual(viewport, { dimensions: screen, rotated: false, scale: 1, padding: { top: 0, bottom: 0 } });
+  assert.deepEqual(getViewportInsets({ top: 0, bottom: 20, left: 0, right: 0 }, screen, viewport),
+    { top: 0, bottom: 20, left: 0, right: 0 });
+  const insets = { top: 0, bottom: 20, left: 0, right: 0 };
+  const safeViewport = getAppViewport({ window: screen, screen, platform: 'ios', tablet: true, insets });
+  assert.deepEqual(safeViewport.dimensions, screen);
+  assert.deepEqual(safeViewport.padding, { top: 0, bottom: 0 });
+  assert.deepEqual(getViewportInsets(insets, screen, safeViewport), insets);
+  for (const window of [{ width: 834, height: 1210 }, { width: 500, height: 700 }]) {
+    assert.equal(getAppViewport({ window, screen, platform: 'ios', tablet: true }).rotated, false);
+  }
+  // Native idiom takes priority even when a tablet host reports a small screen.
+  assert.equal(getAppViewport({ window: { width: 500, height: 700 }, platform: 'ios', tablet: true }).rotated, false);
+  assert.equal(settingsOffsetForGesture(0, { dx: 0, dy: -50 }, viewport.rotated, 300, viewport.scale), 50);
+  assert.equal(sliderPositionForGesture(12, { dx: 50, dy: 0 }, viewport.rotated, 224, viewport.scale), 0.25);
 });
 
 test('tablet window safe areas and scaled gestures share canvas coordinates', () => {

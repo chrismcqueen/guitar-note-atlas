@@ -20,10 +20,10 @@ export const getLandscapeInsets = (insets, windowDimensions) => {
 // practice layout. A small tablet window must never become a rotated phone.
 export const isTabletDisplay = ({ height, width }) => Math.min(height, width) >= 600;
 
-export const getAppViewport = ({ window, screen = window, platform, insets = {} }) => {
-  const portraitShell = platform === "ios" || (platform === "android" && !isTabletDisplay(screen));
+export const getAppViewport = ({ window, screen = window, platform, insets = {}, tablet = isTabletDisplay(screen) }) => {
+  const portraitShell = (platform === "ios" || platform === "android") && !tablet;
   // Android freeform caption/status/navigation bars can cover the activity.
-  // Consume their vertical safe area before sizing and centering the canvas.
+  // iPad intentionally keeps its blue footer flush with the screen bottom.
   const padding = platform === "android" && !portraitShell
     ? { top: insets.top || 0, bottom: insets.bottom || 0 }
     : { top: 0, bottom: 0 };
