@@ -7,6 +7,7 @@ import { storeGlobalState } from "../utils/functions";
 import { theme } from "../utils/theme";
 import { phoneHeaderHeight, tabletHeaderHeight } from "./Header";
 import { pressedOpacity } from "../utils/pressable";
+import { PHONE_FOOTER_HEIGHT, TABLET_FOOTER_HEIGHT } from "../utils/practiceLayout.mjs";
 
 const splitToColumns = (items) => {
   const midpoint = Math.ceil(items.length / 2);
@@ -29,7 +30,7 @@ const Menu = () => {
   const [mounted, setMounted] = useState(false);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const menuTop = (isTablet ? tabletHeaderHeight : phoneHeaderHeight) + (isTablet ? 0 : insets.top);
-  const footerHeight = (isTablet ? 87 : 53) + footerBottomInset;
+  const footerHeight = (isTablet ? TABLET_FOOTER_HEIGHT : PHONE_FOOTER_HEIGHT) + footerBottomInset;
   const menuItemFontSize = isTablet ? dimensions.width / 40 : 19;
   const menuRowHeight = isTablet ? dimensions.width / 27 : 28;
   const sectionHeaderFontSize = isTablet ? dimensions.width / 36 : 21;

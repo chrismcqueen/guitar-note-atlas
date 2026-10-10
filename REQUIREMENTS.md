@@ -159,3 +159,7 @@ Native device timing, pitch shifting, and layout still require device listening/
 
 - Match the released app's user-visible name: Guitar Atlas on iOS and Android launchers/system app labels and the web page title. Preserve Guitar Note Atlas in the established product/welcome copy. Keep the restored original icon artwork and the released iOS Music category; hide the native startup status bar on phone and iPad.
 - Opening Audio Settings dims the entire underlying app with the same shared black 50%-opacity overlay as Options. Keep the card undimmed and the screen at its existing size/position. Retain tap-outside dismissal and block underlying controls while open.
+
+## Tablet footer label spacing — October 9
+
+- Reduce excess space between tablet degree labels and the bottom blue baseline on both platforms. Keep the label font sizes and top spacing, with complete stacked accidental choices. Use 71-point tablet buttons plus the eight-point baseline and keep the menu/body layout aligned with that height. Preserve the mobile footer geometry and the thin iPad home-indicator band.

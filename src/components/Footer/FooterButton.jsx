@@ -4,6 +4,7 @@ import { Store } from "../../../Store";
 
 import { theme } from "../../utils/theme";
 import { getFooterGeometry } from "../../utils/footerSelection.mjs";
+import { TABLET_FOOTER_BUTTON_HEIGHT } from "../../utils/practiceLayout.mjs";
 
 export const FooterButton = ({ children, onPress }) => {
   const { dimensions, footerInsets: insets, globalState, setGlobalState } = useContext(Store);
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
     width: 100,
   },
   tabletButton: {
-    height: 79,
+    height: TABLET_FOOTER_BUTTON_HEIGHT,
     width: 140,
   },
   tabletLabel: {

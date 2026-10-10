@@ -7,6 +7,7 @@ import DegreeLabel from "../Neck/DegreeLabel";
 import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
 import { getFooterGeometry } from "../../utils/footerSelection.mjs";
+import { TABLET_FOOTER_BUTTON_HEIGHT } from "../../utils/practiceLayout.mjs";
 
 export const ScaleDegreeButton = (props) => {
   const { dimensions, footerInsets: insets, globalState, setGlobalState } = useContext(Store);
@@ -14,15 +15,16 @@ export const ScaleDegreeButton = (props) => {
   const { getScaleDegree, getMatchingScale } = useFooter();
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const { degreeWidth, scale } = getFooterGeometry(dimensions, insets);
-  const height = isTablet ? 79 : 45;
+  const height = isTablet ? TABLET_FOOTER_BUTTON_HEIGHT : 45;
   const selectedLabel = altSelected ? getScaleDegree(e) : selected ? getScaleDegree(d) : null;
   const stacked = e !== undefined && !selectedLabel;
   const fontSize = (isTablet ? (stacked ? 36 : 49) : (stacked ? 25 : 33)) * scale;
   const fill = selectedLabel ? theme.colors.white : theme.colors.lightBlue;
-  // Basic Manual's digit ink is about 65% of its em. Center that ink inside
-  // each lane instead of translating a fixed-height native text box downward.
+  // Preserve the tablet labels' top spacing while removing eight points of
+  // extra space below them. Stacked choices split that reduction by lane.
   const laneHeight = stacked ? height / 2 : height;
-  const baseline = (laneHeight + fontSize * 0.65) / 2;
+  const labelLaneHeight = laneHeight + (isTablet ? (stacked ? 4 : 8) : 0);
+  const baseline = (labelLaneHeight + fontSize * 0.65) / 2;
 
   const onPressScaleDegree = () => {
     const currentDegrees = globalState.scale.degrees;

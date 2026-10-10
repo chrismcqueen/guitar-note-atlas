@@ -438,3 +438,10 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 
 - Cap the blue home-indicator band at 18 points within the mapped bottom safe inset, counting the existing eight-point footer border toward that height. This lowers the buttons/cream edge while preserving a small visible gap above the home indicator and the full-height canvas. The neck body and scale-menu boundary use that same reduced reservation.
 - All 163 tests and the bundled iOS Release build pass. Native iPad verification confirms the thinner band and clear buttons; proof: `docs/pr-51/ipad-blue-home-indicator.png`.
+
+
+### Tablet footer label bottom spacing — October 9
+
+- Reduce tablet footer buttons from 79 to 71 points, retaining the eight-point blue baseline. Preserve single-label baselines relative to each button's top; keep the first stacked label's top spacing and shorten the distance to its second lane by four points. Font sizes and mobile footer dimensions/baselines stay unchanged.
+- Share the new tablet footer height with practice body budgets, cutout bands and the scale menu. Preserve the separate thin iPad home-indicator background band.
+- All 163 tests, production web export and bundled iOS/Android Release builds pass. Native iPad and Samsung maximized-window verification confirm the reduced bottom gap and complete single/stacked labels; proof: `docs/pr-51/ipad-footer-label-spacing.png` and `docs/pr-51/samsung-footer-label-spacing.png`. All six test devices installed and launched successfully; iPhone 12 retains its mobile footer layout.
