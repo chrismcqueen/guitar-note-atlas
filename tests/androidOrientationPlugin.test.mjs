@@ -84,3 +84,17 @@ test("keeping tablet orientation fixed preserves Android window resizing", async
   }
   assert.deepEqual(await apply(structuredClone(manifest)), manifest);
 });
+
+test("native fold cover attaches once and hides stale frames before React receives configuration changes", async () => {
+  const generated = await generateActivity(freshActivity);
+  const previous = generated
+    .replace("import expo.modules.atlasdisplay.FoldTransitionCover\n", "")
+    .replace("    FoldTransitionCover.attach(this)\n", "")
+    .replace("    FoldTransitionCover.configurationChanging(this)\n", "")
+    .replace(/\n  override fun onDestroy\(\) \{[\s\S]*?\n  \}\n/, "");
+  assert.equal(await generateActivity(previous), generated);
+  assert.equal(await generateActivity(generated), generated);
+  assert.match(generated, /super.onCreate\(null\)\n    FoldTransitionCover.attach\(this\)/);
+  assert.match(generated, /FoldTransitionCover.configurationChanging\(this\)\n    super.onConfigurationChanged/);
+  assert.match(generated, /FoldTransitionCover.detach\(\)\n    super.onDestroy\(\)/);
+});

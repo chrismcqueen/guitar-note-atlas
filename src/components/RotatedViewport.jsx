@@ -1,10 +1,11 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Dimensions, Platform, StyleSheet, useWindowDimensions, View } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { getAppViewport, isPortraitWindow, isTabletDisplay } from "../utils/orientation.mjs";
 import { ViewportContext } from "./ViewportContext";
+import { completeDisplayTransition, useAndroidDisplayGeometry } from "../utils/useAndroidDisplayGeometry";
 
 /**
  * Only phones use the rotated portrait shell. Tablets render upright at their
@@ -21,6 +22,7 @@ const RotatedViewport = ({ children }) => {
   const lastPortraitWindow = useRef(null);
   const lastTablet = useRef(tablet);
   const [contentWindow, setContentWindow] = useState(null);
+  const geometry = useAndroidDisplayGeometry();
 
   // Folding changes the physical display class without remounting the app.
   // Never carry the old display's measured canvas into the new shell.
@@ -39,7 +41,16 @@ const RotatedViewport = ({ children }) => {
     : (contentWindow?.tablet === tablet ? contentWindow : window);
   const viewport = useMemo(() => getAppViewport({ window: activeWindow, screen, platform: Platform.OS, insets, tablet }),
     [activeWindow.height, activeWindow.width, screen.height, screen.width, insets.top, insets.bottom, tablet]);
-  if (portraitShell && !lastPortraitWindow.current) return <View style={styles.screen} />;
+  const waitingForPortrait = portraitShell && !lastPortraitWindow.current;
+  // Android can deliver display metrics, native orientation and root layout in
+  // separate commits. Keep the native cover until those changes settle. Never
+  // unmount the providers: doing so restarts preferences, audio and practice.
+  useEffect(() => {
+    if (!geometry?.transitioning || waitingForPortrait) return;
+    const timer = setTimeout(() => completeDisplayTransition(geometry.transitionId, window.width, window.height), 200);
+    return () => clearTimeout(timer);
+  }, [geometry?.transitionId, geometry?.transitioning, window.width, window.height,
+    viewport.dimensions.width, viewport.dimensions.height, viewport.rotated, viewport.scale, waitingForPortrait]);
 
   return (
     <ViewportContext.Provider value={viewport}>
@@ -57,6 +68,7 @@ const RotatedViewport = ({ children }) => {
             {
               height: viewport.dimensions.height,
               width: viewport.dimensions.width,
+              opacity: waitingForPortrait ? 0 : 1,
               transform: [{ rotate: viewport.rotated ? "90deg" : "0deg" }, { scale: viewport.scale }],
             },
           ]}

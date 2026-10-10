@@ -4,6 +4,10 @@ import { requireOptionalNativeModule } from "expo";
 
 const displayGeometry = Platform.OS === "android" ? requireOptionalNativeModule("AtlasDisplayGeometry") : null;
 
+export const completeDisplayTransition = (id, width, height) => {
+  if (displayGeometry?.completeTransition) void displayGeometry.completeTransition(id, width, height).catch(() => {});
+};
+
 export const useAndroidDisplayGeometry = () => {
   const [geometry, setGeometry] = useState(null);
   useEffect(() => {

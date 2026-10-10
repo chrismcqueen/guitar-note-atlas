@@ -25,6 +25,7 @@ const BEFORE_SUPER = `    applyOrientationPolicy()
 `;
 
 const AFTER_SUPER = `
+    FoldTransitionCover.attach(this)
     fitWindowCaption()
     hideSystemBars()
 `;
@@ -85,10 +86,18 @@ const CAPTION_METHOD = `
 
 const CONFIGURATION_METHOD = `
   override fun onConfigurationChanged(newConfig: Configuration) {
+    FoldTransitionCover.configurationChanging(this)
     super.onConfigurationChanged(newConfig)
     // Fold/unfold can replace the active display without recreating the activity.
     applyOrientationPolicy()
     hideSystemBars()
+  }
+`;
+
+const DESTROY_METHOD = `
+  override fun onDestroy() {
+    FoldTransitionCover.detach()
+    super.onDestroy()
   }
 `;
 
@@ -157,6 +166,11 @@ module.exports = function withAndroidImmersiveMode(config) {
   return withMainActivity(config, (mainActivityConfig) => {
     let source = mainActivityConfig.modResults.contents;
 
+    if (!source.includes("import expo.modules.atlasdisplay.FoldTransitionCover")) {
+      const anchor = source.includes("import androidx.core.view.WindowInsetsControllerCompat") ? "import androidx.core.view.WindowInsetsControllerCompat" : "import android.os.Bundle";
+      source = source.replace(anchor, `${anchor}\nimport expo.modules.atlasdisplay.FoldTransitionCover`);
+    }
+
     if (!source.includes("androidx.core.view.WindowCompat")) {
       source = source.replace("import android.os.Bundle", `import android.os.Bundle\n${IMPORTS}`);
     }
@@ -200,7 +214,17 @@ module.exports = function withAndroidImmersiveMode(config) {
     }
 
     if (!source.includes("override fun onConfigurationChanged")) {
-      source = source.replace("\n  /**\n   * Returns the name of the main component", `${CONFIGURATION_METHOD}\n  /**\n   * Returns the name of the main component`);
+      const anchor = source.includes("\n  override fun onDestroy()") ? "\n  override fun onDestroy()" : "\n  /**\n   * Returns the name of the main component";
+      source = source.replace(anchor, `${CONFIGURATION_METHOD}${anchor}`);
+    }
+    if (!source.includes("FoldTransitionCover.configurationChanging(this)")) {
+      source = source.replace("super.onConfigurationChanged(newConfig)", "FoldTransitionCover.configurationChanging(this)\n    super.onConfigurationChanged(newConfig)");
+    }
+    if (!source.includes("FoldTransitionCover.attach(this)")) {
+      source = source.replace("super.onCreate(null)", "super.onCreate(null)\n    FoldTransitionCover.attach(this)");
+    }
+    if (!source.includes("override fun onDestroy()")) {
+      source = source.replace("\n  /**\n   * Returns the name of the main component", `${DESTROY_METHOD}\n  /**\n   * Returns the name of the main component`);
     }
 
     mainActivityConfig.modResults.contents = source;
