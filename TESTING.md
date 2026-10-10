@@ -339,3 +339,9 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 
 - Clamp the card's left position to at least six canvas points instead of zero, matching its minimum gap below the header. Preserve the existing Menu/audio anchor when it gives a larger inset.
 - Android/iOS bundled Release builds pass; refreshed Samsung, Pixel and all three iOS simulators. Physical Samsung windowed/maximized and immersive full-screen checks confirm left clearance. Full-screen capture shows nine physical pixels (six points at 240 dpi) between both the left edge and header: `docs/pr-51/samsung-popover-left-gap.png`.
+
+### Menu covers audio controls during transitions
+
+- Keep AudioTrigger mounted when the scale menu opens. Put Menu/Header in a shared overlay above the independently rendered audio controls, retaining the Options drawer's matching viewport transform. Disable audio touch/accessibility targets while the menu is open; Audio Settings still replaces its trigger pair separately.
+- All 139 tests and Android/iOS bundled Release builds pass. Refreshed physical Samsung/Pixel and SE/iPhone 16/iPad simulators. Native Samsung menu open/close and subsequent Audio Settings access work; SE Options still scales the header, neck and audio controls together.
+- Recorded the native SE menu transition and decoded its closing frames. At 37.970 seconds the menu covers both controls; at 37.987 seconds only their lower edges are revealed; at 38.003 seconds the controls are fully revealed below the menu edge. Proof frame: `docs/pr-51/menu-closing-audio-cover.png`. This verifies actual animated occlusion rather than delayed show/hide timing.

@@ -38,10 +38,15 @@ export const AudioTrigger = () => {
   const { left, top } = audioControlPlacement(dimensions, insets);
 
   // The settings card replaces both controls until it is dismissed.
-  if (showMenu || popoverOpen) return null;
+  if (popoverOpen) return null;
 
   return (
-    <View style={[styles.triggerGroup, { left, top }]}>
+    <View
+      accessibilityElementsHidden={showMenu}
+      importantForAccessibility={showMenu ? "no-hide-descendants" : "auto"}
+      pointerEvents={showMenu ? "none" : "auto"}
+      style={[styles.triggerGroup, { left, top }]}
+    >
       <Pressable
         android_disableSound
         accessibilityLabel={isPlaying ? "Stop audio" : isLoading ? "Cancel audio loading" : "Play audio"}

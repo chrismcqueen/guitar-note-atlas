@@ -137,8 +137,6 @@ const AppContent = () => {
         ]}
       >
         <Main />
-        <Menu />
-        <Header />
       </Animated.View>
       <Animated.View
         accessibilityElementsHidden={popoverOpen}
@@ -152,6 +150,22 @@ const AppContent = () => {
         ]}
       >
         <AudioTrigger />
+      </Animated.View>
+      <Animated.View
+        accessibilityElementsHidden={popoverOpen}
+        importantForAccessibility={popoverOpen ? "no-hide-descendants" : "auto"}
+        pointerEvents={popoverOpen ? "none" : "box-none"}
+        renderToHardwareTextureAndroid={optionsMounted}
+        shouldRasterizeIOS={optionsMounted}
+        style={[
+          styles.menuLayer,
+          !optionsMounted && styles.navigationScreenIdle,
+          screenBounds,
+          animatedViewportStyle,
+        ]}
+      >
+        <Menu />
+        <Header />
       </Animated.View>
       <Options interactionDisabled={popoverOpen} mounted={optionsMounted} transition={optionsTransition} viewport={dimensions} />
       <AudioPopover />
@@ -220,6 +234,11 @@ const styles = StyleSheet.create({
   audioTriggerLayer: {
     position: "absolute",
     zIndex: 350,
+  },
+  // Keep the sliding menu above the independently rendered audio controls.
+  menuLayer: {
+    position: "absolute",
+    zIndex: 1000,
   },
   navigationScreen: {
     position: "absolute",
