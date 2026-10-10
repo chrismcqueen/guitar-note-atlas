@@ -10,6 +10,7 @@ import { withPressedOpacity } from "../utils/pressable";
 import { useRepeatPress } from "../utils/useRepeatPress";
 import { getMenuVisualCenterX } from "./Header";
 import { getPracticeHeaderLayout } from "../utils/practiceLayout.mjs";
+import { getAudioPopoverLayout } from "../utils/audioPopoverLayout.mjs";
 import { AudioPlaybackStore } from "./AudioPlaybackProvider";
 import DegreeLabel from "./Neck/DegreeLabel";
 import AudioSettingsScroll from "./AudioSettingsScroll";
@@ -94,7 +95,7 @@ const MixerIcon = ({ filled }) => (
 );
 
 export const AudioPopover = () => {
-  const { dimensions, navigationInsets: insets, obstructions } = useContext(Store);
+  const { dimensions, navigationInsets: insets, safeAreaInsets, obstructions } = useContext(Store);
   const { showPositionOverview } = useContext(PositionVisibilityStore);
   const {
     accompaniment,
@@ -165,21 +166,16 @@ export const AudioPopover = () => {
   useEffect(() => setTempoText(String(tempo)), [tempo]);
   if (!popoverOpen) return null;
 
-  const cardWidth = isTablet ? 330 : 292;
-  // Replace both buttons and leave a small gap below the app header,
-  // including short phone layouts whose key row sits close to it.
-  const cardTop = Math.max(headerBottom + 6, triggerTop - 6);
-  // Match the header gap instead of clamping flush to square tablet edges.
-  const cardLeft = Math.max(6, triggerLeft - 14);
-  const viewportHeight = dimensions.height;
-  const obstructionTop = (obstructions ?? []).filter(rect =>
-    rect.x < cardLeft + cardWidth + 6 && rect.x + rect.width > cardLeft - 6 && rect.y >= cardTop
-  ).reduce((bottom, rect) => Math.min(bottom, rect.y - 6), viewportHeight - 12);
-  const cardMaxHeight = Math.max(0, obstructionTop - cardTop);
+  const cardFrame = getAudioPopoverLayout({
+    dimensions, insets: safeAreaInsets, obstructions,
+    left: triggerLeft - 14,
+    top: Math.max(headerBottom + 6, triggerTop - 6),
+    width: isTablet ? 330 : 292,
+  });
   // Reserve padding (28) and the fixed header plus gap (38). Native
   // ScrollView needs a bounded height; maxHeight/flex shrink alone can leave
   // its viewport as tall as the content inside the rotated Android shell.
-  const scrollHeight = Math.min(settingsContentHeight ?? 300, Math.max(0, cardMaxHeight - 66));
+  const scrollHeight = Math.min(settingsContentHeight ?? 300, Math.max(0, cardFrame.maxHeight - 66));
   const commitTempo = () => {
     setTempo(tempoText);
     setTempoText(String(Math.max(MIN_TEMPO, Math.min(MAX_TEMPO, Math.round(Number(tempoText) || tempo)))));
@@ -197,7 +193,7 @@ export const AudioPopover = () => {
         onPress={() => setPopoverOpen(false)}
         style={[styles.dismissLayer, { height: dimensions.height, width: dimensions.width }]}
       />
-      <View style={[styles.card, { left: cardLeft, top: cardTop, width: cardWidth, maxHeight: cardMaxHeight }]}>
+      <View style={[styles.card, cardFrame]}>
         <View style={styles.titleRow}>
           <Pressable android_disableSound accessibilityLabel="Close audio settings" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
             <Text style={styles.closeText}>×</Text>
