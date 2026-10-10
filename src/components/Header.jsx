@@ -4,12 +4,13 @@ import { Platform, Text, View, StyleSheet, Pressable } from "react-native";
 import { OverlayStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
-import { TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
+import { getPhoneNavigationLayout, TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
 
 const phoneMenuTextWidth = 52;
 const tabletMenuTextWidth = 62;
 export const getMenuVisualCenterX = (insets, isTablet) => {
-  const menuInset = isTablet ? insets.left : Math.max(insets.left, 59);
+  if (!isTablet) return getPhoneNavigationLayout(insets).menuCenter;
+  const menuInset = insets.left;
   const textWidth = isTablet ? tabletMenuTextWidth : phoneMenuTextWidth;
   return menuInset + 24 + textWidth / 2;
 };
@@ -26,6 +27,7 @@ const Header = () => {
   const { dimensions, globalState, insets } = useContext(Store);
   const { showMenu, setShowMenu, showOptions, setShowOptions } = useContext(OverlayStore);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const phoneNavigation = getPhoneNavigationLayout(insets);
   const activeHeaderHeight = isTablet ? tabletHeaderHeight : phoneHeaderHeight;
   const fullScreen = { height: "100%", width: "100%" };
   // Android's portrait-native shell reports the physical display-cutout inset
@@ -34,10 +36,8 @@ const Header = () => {
   // stretches the phone header after a standalone rebuild.
   const headerInset = isTablet || Platform.OS === "android" ? 0 : insets.top;
   const controlTop = headerInset;
-  const menuInset = isTablet ? insets.left : Math.max(insets.left, 59);
-  const optionsInset = isTablet
-    ? insets.right
-    : Math.max(84, Platform.OS === "android" ? Math.max(insets.right, 24) : insets.right);
+  const menuInset = insets.left;
+  const optionsInset = insets.right;
   // The released iPad build was laid out inside an approximately 4:3 UIKit
   // canvas. Keep its navigation-item scale when immersive mode exposes a
   // wider modern iPad viewport.
@@ -49,10 +49,7 @@ const Header = () => {
   const title = isTablet ? globalState?.scale.long_title : globalState?.scale.title;
   // Center the title on the screen, with matching space on both sides for
   // the wider navigation control and its hit slop, even with uneven insets.
-  const titleSideInset = isTablet ? 0 : Math.max(
-    menuInset + 120,
-    optionsInset + (Platform.OS === "android" ? 120 : 75),
-  ) + 12;
+  const titleSideInset = isTablet ? 0 : phoneNavigation.titleInset;
 
   return (
     <View style={[styles.container, { height: activeHeaderHeight + headerInset }]}>
@@ -69,7 +66,7 @@ const Header = () => {
           accessibilityLabel="Menu"
           accessibilityRole="button"
           hitSlop={12}
-          style={withPressedOpacity([styles.headerControl, styles.menuButton, { height: activeHeaderHeight, left: menuInset, top: controlTop }])}
+          style={withPressedOpacity([styles.headerControl, styles.menuButton, !isTablet && styles.phoneControl, { height: activeHeaderHeight, left: menuInset, top: controlTop }])}
           onPress={() => setShowMenu(!showMenu)}
         >
           <Text
@@ -126,6 +123,7 @@ const Header = () => {
             styles.headerControl,
             styles.settingsButtonContainer,
             Platform.OS === "android" && styles.androidSettingsButtonContainer,
+            !isTablet && styles.phoneControl,
             { height: activeHeaderHeight, right: optionsInset, top: controlTop },
           ])}
           onPress={() => setShowOptions(!showOptions)}
@@ -204,5 +202,8 @@ const styles = StyleSheet.create({
   },
   androidSettingsButtonContainer: {
     width: 120,
+  },
+  phoneControl: {
+    width: 100,
   },
 });

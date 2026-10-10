@@ -116,3 +116,9 @@ Native device timing, pitch shifting, and layout still require device listening/
 
 - Allocate tablet body space between the position title, zoom neck and full-neck overview after reserving the header/footer. Preserve neck proportions in wide, short windows instead of letting fixed offsets overlap navigation. The overview may become narrower to fit vertically.
 - Apply the same available-body sizing on phones: reserve the fixed title/key/audio row and footer before sizing full or zoomed necks. Use a short key label in extremely narrow windows; keep both overview/zoom headers anchored consistently.
+
+## Phone display bounds — October 9
+
+- Use each phone's reported safe-area insets for Menu and Options. Reserve notch/corner space only where the device reports it; an iPhone SE must not inherit modern iPhone margins. Keep the audio pair centered beneath Menu and the title centered on the screen.
+- Give short, square-corner phone displays enough title width to retain the intentionally oversized, vertically cropped scale heading. Fit longer titles within the available space without overlapping navigation.
+- Keep the footer at its reserved height and draw scale-degree numbers/accidentals within explicit bounds. Single and stacked labels must remain fully visible on SE-sized screens and Android phones, including selected alternate degrees.

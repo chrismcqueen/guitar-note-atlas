@@ -52,13 +52,13 @@ const styles = StyleSheet.create({
     height: 45,
     justifyContent: "center",
     width: 100,
+    flexShrink: 0,
   },
   label: {
     fontFamily: "blackout",
     fontSize: 23,
     color: theme.colors.lightBlue,
     textAlign: "center",
-    transform: [{ translateY: 4 }],
     width: 100,
   },
   tabletButton: {

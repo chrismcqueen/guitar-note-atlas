@@ -1,8 +1,9 @@
 import React, { useContext } from "react";
-import { Text, View, StyleSheet, Pressable } from "react-native";
+import { Pressable } from "react-native";
+import Svg from "react-native-svg";
 import { Store } from "../../../Store";
 
-import { Accidental } from "./Accidental";
+import DegreeLabel from "../Neck/DegreeLabel";
 import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
 import { getFooterGeometry } from "../../utils/footerSelection.mjs";
@@ -11,16 +12,17 @@ export const ScaleDegreeButton = (props) => {
   const { dimensions, insets, globalState, setGlobalState } = useContext(Store);
   const { selected, altSelected, d, e, onTouchStart } = props;
   const { getScaleDegree, getMatchingScale } = useFooter();
-  const [accidental, degree] = getScaleDegree(d).length === 2 ? getScaleDegree(d).split("") : [undefined, getScaleDegree(d)];
-  const [altAccidental, altDegree] = e === undefined ? [] : getScaleDegree(e).split("");
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const { degreeWidth, scale } = getFooterGeometry(dimensions, insets);
-  const degreeSize = { width: degreeWidth };
-  const degreeContainerSize = { height: isTablet ? TABLET_DEGREE_HEIGHT : SCALE_DEGREE_HEIGHT, width: degreeWidth };
-  const degreeTextStyle = [isTablet && styles.tabletScaleDegree, { fontSize: (isTablet ? 49 : 33) * scale }];
-  const degreeSmallStyle = [isTablet && styles.tabletScaleDegreeSmall, { fontSize: (isTablet ? 36 : 25) * scale }];
-  const degreeSmallTopStyle = isTablet ? styles.tabletScaleDegreeSmallTop : styles.scaleDegreeSmallTop;
-  const degreeSmallBottomStyle = isTablet ? styles.tabletScaleDegreeSmallBottom : styles.scaleDegreeSmallBottom;
+  const height = isTablet ? 79 : 45;
+  const selectedLabel = altSelected ? getScaleDegree(e) : selected ? getScaleDegree(d) : null;
+  const stacked = e !== undefined && !selectedLabel;
+  const fontSize = (isTablet ? (stacked ? 36 : 49) : (stacked ? 25 : 33)) * scale;
+  const fill = selectedLabel ? theme.colors.white : theme.colors.lightBlue;
+  // Basic Manual's digit ink is about 65% of its em. Center that ink inside
+  // each lane instead of translating a fixed-height native text box downward.
+  const laneHeight = stacked ? height / 2 : height;
+  const baseline = (laneHeight + fontSize * 0.65) / 2;
 
   const onPressScaleDegree = () => {
     const currentDegrees = globalState.scale.degrees;
@@ -42,130 +44,20 @@ export const ScaleDegreeButton = (props) => {
     setGlobalState({ ...globalState, scale });
   };
 
-  if (altDegree) {
-    if (altSelected) {
-      return (
-        <Pressable android_disableSound onPress={onPressScaleDegree} onTouchStart={onTouchStart}>
-          <View style={[styles.scaleDegreeSelected, degreeContainerSize]}>
-            <Text style={[styles.scaleDegree, degreeTextStyle, degreeContainerSize, styles.scaleDegreeSelectedText]}>
-              {altAccidental && <Accidental>{altAccidental}</Accidental>}
-              {altDegree}
-            </Text>
-          </View>
-        </Pressable>
-      );
-    }
-
-    if (selected) {
-      return (
-        <Pressable android_disableSound onPress={onPressScaleDegree} onTouchStart={onTouchStart}>
-          <View style={[styles.scaleDegreeSelected, degreeContainerSize]}>
-            <Text style={[styles.scaleDegree, degreeTextStyle, degreeContainerSize, styles.scaleDegreeSelectedText, !accidental && styles.accidentalOffset]}>
-              {accidental && <Accidental>{accidental}</Accidental>}
-              {degree}
-            </Text>
-          </View>
-        </Pressable>
-      );
-    }
-
-    return (
-      <Pressable android_disableSound onPress={onPressScaleDegree} onTouchStart={onTouchStart}>
-        <View style={degreeContainerSize}>
-          <Text style={[styles.scaleDegreeSmall, degreeSmallStyle, degreeSize, degreeSmallTopStyle, selected && styles.scaleDegreeSelected]}>
-            <Text style={styles.accidental}>
-              <Accidental />
-              {accidental}
-            </Text>
-            {degree}
-          </Text>
-          <Text style={[styles.scaleDegreeSmall, degreeSmallStyle, degreeSize, degreeSmallBottomStyle, selected && styles.scaleDegreeSelected]}>
-            <Text style={styles.accidental}>
-              <Accidental />
-              {altAccidental}
-            </Text>
-            {altDegree}
-          </Text>
-        </View>
-      </Pressable>
-    );
-  }
-
   return (
-    <Pressable android_disableSound onPress={onPressScaleDegree} onTouchStart={onTouchStart}>
-      <View style={[degreeContainerSize, selected && styles.scaleDegreeSelected]}>
-        <Text style={[styles.scaleDegree, degreeTextStyle, degreeContainerSize, selected && styles.scaleDegreeSelectedText, !accidental && styles.accidentalOffset]}>
-          {accidental && <Accidental>{accidental}</Accidental>}
-          {degree}
-        </Text>
-      </View>
+    <Pressable
+      android_disableSound
+      accessibilityRole="button"
+      accessibilityLabel={e === undefined ? getScaleDegree(d) : `${getScaleDegree(d)} or ${getScaleDegree(e)}`}
+      accessibilityState={{ selected: Boolean(selectedLabel) }}
+      onPress={onPressScaleDegree}
+      onTouchStart={onTouchStart}
+      style={{ flexShrink: 0, height, width: degreeWidth, backgroundColor: selectedLabel ? theme.colors.blue : theme.colors.white }}
+    >
+      <Svg accessible={false} pointerEvents="none" width={degreeWidth} height={height} viewBox={`0 0 ${degreeWidth} ${height}`}>
+        <DegreeLabel label={selectedLabel || getScaleDegree(d)} fill={fill} fontSize={fontSize} x={degreeWidth / 2} y={baseline} />
+        {stacked && <DegreeLabel label={getScaleDegree(e)} fill={fill} fontSize={fontSize} x={degreeWidth / 2} y={baseline + laneHeight} />}
+      </Svg>
     </Pressable>
   );
 };
-
-const SCALE_DEGREE_HEIGHT = 45;
-const TABLET_DEGREE_HEIGHT = 79;
-
-const styles = StyleSheet.create({
-  label: {
-    fontFamily: "blackout",
-    fontSize: 25,
-    color: theme.colors.lightBlue,
-    transform: [{ translateY: 8 }],
-  },
-
-  scaleDegree: {
-    fontSize: 33,
-    display: "flex",
-    color: theme.colors.lightBlue,
-    fontFamily: "basicManual",
-    width: 52,
-    height: SCALE_DEGREE_HEIGHT,
-    textAlign: "center",
-    paddingTop: 7,
-  },
-  scaleDegreeSelected: {
-    backgroundColor: theme.colors.blue,
-    color: theme.colors.white,
-  },
-  scaleDegreeSelectedText: {
-    color: theme.colors.white,
-  },
-  scaleDegreeSmall: {
-    position: "absolute",
-    fontSize: 25,
-    lineHeight: 28,
-    color: theme.colors.lightBlue,
-    fontFamily: "basicManual",
-    width: 52,
-    textAlign: "center",
-    height: 28,
-  },
-  accidental: {
-    fontFamily: "opus",
-  },
-  accidentalOffset: {
-    transform: [{ translateY: 4 }],
-  },
-  scaleDegreeSmallTop: {
-    top: 1,
-  },
-  scaleDegreeSmallBottom: {
-    top: 17,
-  },
-  tabletScaleDegree: {
-    fontSize: 49,
-    paddingTop: 10,
-  },
-  tabletScaleDegreeSmall: {
-    fontSize: 36,
-    lineHeight: 42,
-    height: 42,
-  },
-  tabletScaleDegreeSmallTop: {
-    top: 2,
-  },
-  tabletScaleDegreeSmallBottom: {
-    top: 35,
-  },
-});

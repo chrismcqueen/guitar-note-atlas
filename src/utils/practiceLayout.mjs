@@ -4,6 +4,14 @@ export const PHONE_FOOTER_HEIGHT = 53;
 export const TABLET_POSITION_TITLE_HEIGHT = 64;
 export const TABLET_BODY_GAP = 8;
 
+export const getPhoneNavigationLayout = (insets) => ({
+  menuLeft: insets.left,
+  optionsRight: insets.right,
+  controlWidth: 100,
+  menuCenter: insets.left + 50,
+  titleInset: Math.max(insets.left, insets.right) + 112,
+});
+
 // Allocate the usable body between the zoom neck and overview. Both SVGs
 // preserve their proportions, and neither can borrow space from navigation.
 export const getTabletPracticeLayout = ({ width, height }, insets) => {

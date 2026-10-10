@@ -122,6 +122,7 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.blue,
     borderBottomWidth: 8,
     flexDirection: "row",
+    flexShrink: 0,
     justifyContent: "center",
     alignItems: "center",
     minHeight: PHONE_FOOTER_HEIGHT,
