@@ -22,7 +22,7 @@ export const getPhonePracticeHeaderLayout = (insets) => {
 };
 
 const Header = () => {
-  const { dimensions, globalState, insets } = useContext(Store);
+  const { dimensions, globalState, navigationInsets: insets } = useContext(Store);
   const { showMenu, setShowMenu, showOptions, setShowOptions } = useContext(OverlayStore);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const phoneNavigation = getPhoneNavigationLayout(insets, Platform.OS);

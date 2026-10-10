@@ -6,7 +6,7 @@ import { theme } from "../../utils/theme";
 import { getFooterGeometry } from "../../utils/footerSelection.mjs";
 
 export const FooterButton = ({ children, onPress }) => {
-  const { dimensions, insets, globalState, setGlobalState } = useContext(Store);
+  const { dimensions, footerInsets: insets, globalState, setGlobalState } = useContext(Store);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const { actionWidth, scale } = getFooterGeometry(dimensions, insets);
   const buttonStyle = [styles.button, isTablet && styles.tabletButton, { width: actionWidth }];

@@ -19,7 +19,7 @@ const LINE_WIDTH = 3;
 const ACTIVE_CLIP_OVERDRAW = LINE_WIDTH;
 
 const Neck = React.memo(({ maxHeight = Infinity }) => {
-  const { dimensions, globalState, insets } = useContext(Store);
+  const { dimensions, globalState, insets, obstructions } = useContext(Store);
   const { setPositionSelection, setShowPositionOverview } = useContext(PositionActionsStore);
   const [pressedPositionId, setPressedPositionId] = useState(null);
   const [pressedPositionFret, setPressedPositionFret] = useState(null);
@@ -27,7 +27,9 @@ const Neck = React.memo(({ maxHeight = Infinity }) => {
   const frets = [...Array(17).keys()];
   const standardTuning = globalState.options.bassMode ? globalState.strings.slice(-4) : globalState.strings;
   const tuning = globalState.options.upsideDown ? [...standardTuning].reverse() : standardTuning;
-  const safeWidth = dimensions.width - insets.left - insets.right;
+  const safeWidth = dimensions.width - (obstructions === null
+    ? insets.left + insets.right
+    : Math.max(insets.left, insets.right) * 2);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const horizontalMargin = 8;
   const heightRatio = isTablet ? 0.38 : 0.56;

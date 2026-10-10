@@ -52,7 +52,7 @@ const phoneLeftPages = [
 const IOS_LANDSCAPE_CUTOUT_INSET = 72;
 
 const Tutorial = () => {
-  const { dimensions, globalState, insets, setShowTutorial } = useContext(Store);
+  const { dimensions, globalState, overlayInsets: insets, setShowTutorial } = useContext(Store);
   const [page, setPage] = useState(0);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const reportedSideInset = isTablet

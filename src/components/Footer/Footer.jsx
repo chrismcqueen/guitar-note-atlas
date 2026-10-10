@@ -9,6 +9,7 @@ import { useFooter } from "./useFooter";
 import { theme } from "../../utils/theme";
 import { PHONE_FOOTER_HEIGHT, TABLET_FOOTER_HEIGHT } from "../../utils/practiceLayout.mjs";
 import {
+  getFooterGeometry,
   footerDegreeIndexFromGestureX,
   footerGestureDistance,
   toggleDegreeRange,
@@ -16,9 +17,10 @@ import {
 
 export const Footer = () => {
   const { rotated, scale } = useContext(ViewportContext);
-  const { dimensions, globalState, insets, setGlobalState } = useContext(Store);
+  const { dimensions, globalState, footerInsets: insets, setGlobalState } = useContext(Store);
   const { degrees, getMatchingScale, handleClear, handleAll } = useFooter();
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const { paddingLeft, paddingRight } = getFooterGeometry(dimensions, insets);
   const degreeRowWidth = useRef(0);
   const dragInitialDegrees = useRef([]);
   const dragStartIndex = useRef(0);
@@ -65,7 +67,7 @@ export const Footer = () => {
       style={[
         styles.container,
         isTablet && styles.tabletContainer,
-        { paddingLeft: insets.left, paddingRight: insets.right },
+        { paddingLeft, paddingRight },
       ]}
     >
       <FooterButton onPress={handleClear}>Clear</FooterButton>

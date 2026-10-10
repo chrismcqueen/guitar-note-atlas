@@ -126,3 +126,11 @@ Native device timing, pitch shifting, and layout still require device listening/
 - Keep the audio control buttons mounted beneath the sliding scale menu. Opening/closing the menu must physically cover/reveal them along its moving edge, without toggling their visibility at the start of the transition. Disable their touch/accessibility targets while the menu is open.
 - On Android phones and tablets, add 24 logical points of visual left padding beyond the reported safe area. Move Menu and its centered audio pair together; let Audio Settings follow that anchor and reserve enough centered phone-title space to avoid overlap. Retain the approved Menu positions on iPhone SE, iPhone 12, iPhone 16 and iPad.
 - On both iOS and Android, always mirror Menu's center from the opposite edge for Options (…), using the Menu position set for that view. Apply this to phones/tablets, full-neck/zoom and resized windows. Account for the tablet Menu label's offset within its touch target. Share one side inset; if an unusually large right cutout requires extra space, move both centers together to preserve symmetry.
+
+
+## Android display cutouts — October 9
+
+- Read Android's actual cutout rectangles in the app window, then map them through the shared canvas rotation, scaling and letterboxing. Check navigation/audio, neck/open strings, footer and overlays independently; a camera in one band must not reserve that side throughout the app.
+- Handle corner and centered cameras on either side, multiple cutouts, visible system bars and changing tablet windows. Upright tablet top/bottom safe areas remain outside the practice canvas. Preserve the approved iOS safe-area geometry.
+- Keep footer buttons intact. Use existing outer whitespace before moving the footer, shift only enough to clear a reported obstruction plus six points, and scale the row only when it cannot fit in the remaining safe width. On the connected Pixel, the footer needs a six-point shift from its normal centered position.
+- Keep Audio Settings anchored over its buttons. If a cutout intersects its lower area, shorten the scrolling body above it while retaining the fixed header.

@@ -13,13 +13,14 @@ import { getPhonePracticeHeaderLayout } from "./Header";
 import { getPhonePracticeBodyHeight, getTabletPracticeLayout, TABLET_BODY_GAP, TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
 
 export const Main = React.memo(() => {
-  const { dimensions, insets, globalState } = useContext(Store);
+  const { dimensions, insets, navigationInsets, globalState } = useContext(Store);
   const { positionId } = useContext(PositionStore);
   const { showPositionOverview } = useContext(PositionVisibilityStore);
   const fullScreen = { height: "100%", width: "100%" };
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const safeSideInset = Math.max(insets.left, insets.right);
-  const phoneHeader = getPhonePracticeHeaderLayout(insets);
+  const phoneHeader = getPhonePracticeHeaderLayout(navigationInsets);
+  const navigationSideInset = Math.max(navigationInsets.left, navigationInsets.right);
   const phoneBodyHeight = getPhonePracticeBodyHeight(dimensions.height, phoneHeader);
   const position = getPosition(positionId);
   const positionTitle = globalState.options?.bassMode ? position.bassTitle : position.title;
@@ -53,7 +54,7 @@ export const Main = React.memo(() => {
           )}
         </View>
         {!isTablet && (
-          <View pointerEvents="box-none" style={{ position: "absolute", top: phoneHeader.top, height: phoneHeader.height, left: safeSideInset, right: safeSideInset }}>
+          <View pointerEvents="box-none" style={{ position: "absolute", top: phoneHeader.top, height: phoneHeader.height, left: navigationSideInset, right: navigationSideInset }}>
             <KeySelector positionTitle={showPositionOverview ? undefined : positionTitle} />
           </View>
         )}

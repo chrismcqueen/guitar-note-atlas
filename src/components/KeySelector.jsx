@@ -25,7 +25,7 @@ const TabletKeyTitle = ({ title }) => (
 );
 
 const KeySelector = ({ compact = false, positionTitle }) => {
-  const { dimensions, insets, globalState, setGlobalState } = useContext(Store);
+  const { dimensions, navigationInsets: insets, globalState, setGlobalState } = useContext(Store);
 
   const handlePressArrow = (direction) => {
     const offset = nextKeyOffset(

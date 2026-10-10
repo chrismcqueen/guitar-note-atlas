@@ -32,7 +32,7 @@ const audioControlPlacement = (dimensions, insets) => {
 };
 
 export const AudioTrigger = () => {
-  const { dimensions, insets } = useContext(Store);
+  const { dimensions, navigationInsets: insets } = useContext(Store);
   const { showMenu } = useContext(OverlayStore);
   const { canPlay, countInBeat, isLoading, isPlaying, openPopover, play, popoverOpen, error } = useContext(AudioPlaybackStore);
   const { left, top } = audioControlPlacement(dimensions, insets);
@@ -93,7 +93,7 @@ const MixerIcon = ({ filled }) => (
 );
 
 export const AudioPopover = () => {
-  const { dimensions, insets } = useContext(Store);
+  const { dimensions, navigationInsets: insets, obstructions } = useContext(Store);
   const { showPositionOverview } = useContext(PositionVisibilityStore);
   const {
     accompaniment,
@@ -171,7 +171,10 @@ export const AudioPopover = () => {
   // Match the header gap instead of clamping flush to square tablet edges.
   const cardLeft = Math.max(6, triggerLeft - 14);
   const viewportHeight = dimensions.height;
-  const cardMaxHeight = Math.max(0, viewportHeight - cardTop - 12);
+  const obstructionTop = (obstructions ?? []).filter(rect =>
+    rect.x < cardLeft + cardWidth + 6 && rect.x + rect.width > cardLeft - 6 && rect.y >= cardTop
+  ).reduce((bottom, rect) => Math.min(bottom, rect.y - 6), viewportHeight - 12);
+  const cardMaxHeight = Math.max(0, obstructionTop - cardTop);
   // Reserve padding (28) and the fixed header plus gap (38). Native
   // ScrollView needs a bounded height; maxHeight/flex shrink alone can leave
   // its viewport as tall as the content inside the rotated Android shell.

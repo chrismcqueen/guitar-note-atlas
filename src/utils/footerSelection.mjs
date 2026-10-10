@@ -1,8 +1,17 @@
 export const getFooterGeometry = ({ width, height }, insets) => {
   const tablet = width >= 1000 && height >= 550;
-  const safeWidth = width - insets.left - insets.right;
-  const scale = Math.min(1, safeWidth / (tablet ? 1240 : 752));
-  return { scale, degreeWidth: (tablet ? 80 : 46) * scale, actionWidth: (tablet ? 140 : 100) * scale };
+  const baseWidth = tablet ? 1240 : 752;
+  const scale = Math.min(1, (width - insets.left - insets.right) / baseWidth);
+  const geometry = { scale, degreeWidth: (tablet ? 80 : 46) * scale, actionWidth: (tablet ? 140 : 100) * scale };
+  if (!insets.avoidObstructions) return { ...geometry, paddingLeft: insets.left, paddingRight: insets.right };
+
+  // Use the row's existing outer space first. Shift intact buttons only as
+  // far as needed, and scale them only when the safe area cannot fit the row.
+  const rowWidth = baseWidth * scale;
+  const centeredLeft = (width - rowWidth) / 2;
+  const rowLeft = Math.max(insets.left, Math.min(centeredLeft, width - insets.right - rowWidth));
+  const shift = rowLeft - centeredLeft;
+  return { ...geometry, paddingLeft: Math.max(0, 2 * shift), paddingRight: Math.max(0, -2 * shift) };
 };
 
 export const isDegreeChoiceSelected = (selectedDegrees, choice) => (

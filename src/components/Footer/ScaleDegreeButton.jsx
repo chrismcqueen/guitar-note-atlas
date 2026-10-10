@@ -9,7 +9,7 @@ import { theme } from "../../utils/theme";
 import { getFooterGeometry } from "../../utils/footerSelection.mjs";
 
 export const ScaleDegreeButton = (props) => {
-  const { dimensions, insets, globalState, setGlobalState } = useContext(Store);
+  const { dimensions, footerInsets: insets, globalState, setGlobalState } = useContext(Store);
   const { selected, altSelected, d, e, onTouchStart } = props;
   const { getScaleDegree, getMatchingScale } = useFooter();
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
