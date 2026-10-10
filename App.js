@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useFonts } from "expo-font";
 import { useKeepAwake } from "expo-keep-awake";
-import * as ScreenOrientation from "expo-screen-orientation";
-import { Alert, Animated, Dimensions, Easing, StatusBar, StyleSheet, View } from "react-native";
+import { Animated, Easing, Pressable, StatusBar, StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import Header from "./src/components/Header";
@@ -11,9 +10,13 @@ import Options from "./src/components/Options";
 import Main from "./src/components/Main";
 import Tutorial from "./src/components/Tutorial";
 import { Splash } from "./src/components/Splash";
+import RotatedViewport from "./src/components/RotatedViewport";
+import { AudioPopover, AudioTrigger } from "./src/components/AudioControls";
+import { AudioPlaybackProvider, AudioPlaybackStore } from "./src/components/AudioPlaybackProvider";
 import { OverlayStore, Store, StoreProvider } from "./Store";
 import { storeGlobalState } from "./src/utils/functions";
-import { getOptionsDrawerWidth, orientScreenBounds } from "./src/utils/screenBounds.mjs";
+import { getOptionsDrawerWidth } from "./src/utils/screenBounds.mjs";
+import { theme } from "./src/utils/theme";
 import {
   getWelcomeMessage,
   WELCOME_ACCEPT_LABEL,
@@ -24,10 +27,6 @@ import {
 export default function App() {
   useKeepAwake();
 
-  useEffect(() => {
-    void ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
-  }, []);
-
   let [fontsLoaded] = useFonts({
     blackout: require("./src/utils/fonts/Blackout-Midnight.ttf"),
     basicManual: require("./src/utils/fonts/SVBasicManual-Bold.ttf"),
@@ -36,31 +35,37 @@ export default function App() {
     opusChords: require("./src/utils/fonts/OpusChordsSansStd.otf"),
     proletarsk: require("./src/utils/fonts/Proletarsk.ttf"),
   });
-  const [loading, setLoading] = useState(true);
 
   return (
     <SafeAreaProvider style={styles.safeAreaProvider}>
       <StatusBar hidden />
-      <StoreProvider>
-        {!fontsLoaded || loading ? (
-          <Splash setLoading={setLoading} />
-        ) : (
-          <AppContent />
-        )}
-      </StoreProvider>
+      <RotatedViewport>
+        <StoreProvider>
+          <AudioPlaybackProvider><AppStartup fontsLoaded={fontsLoaded} /></AudioPlaybackProvider>
+        </StoreProvider>
+      </RotatedViewport>
     </SafeAreaProvider>
   );
 }
 
+const AppStartup = ({ fontsLoaded }) => {
+  const [loading, setLoading] = useState(true);
+  const { audioReady, startupError, retryAudioLoad } = React.useContext(AudioPlaybackStore);
+  if (!fontsLoaded || loading || !audioReady) {
+    return <Splash setLoading={setLoading} error={startupError} onRetry={retryAudioLoad} />;
+  }
+  return <AppContent />;
+};
+
 const AppContent = () => {
   const { dimensions } = React.useContext(Store);
   const { showOptions } = React.useContext(OverlayStore);
-  const screenBounds = orientScreenBounds(Dimensions.get("screen"), dimensions);
+  const { popoverOpen } = React.useContext(AudioPlaybackStore);
+  const screenBounds = dimensions;
   const optionsTransition = useRef(new Animated.Value(0)).current;
   const [optionsMounted, setOptionsMounted] = useState(false);
-  const [viewport, setViewport] = useState(dimensions);
-  const viewportWidth = viewport.width || dimensions.width;
-  const viewportHeight = viewport.height || dimensions.height;
+  const viewportWidth = dimensions.width;
+  const viewportHeight = dimensions.height;
   const optionsWidth = getOptionsDrawerWidth(viewportWidth);
 
   useEffect(() => {
@@ -104,13 +109,14 @@ const AppContent = () => {
     inputRange: [0, 1],
     outputRange: [0, -optionsWidth / 2],
   });
+  const animatedViewportStyle = optionsMounted && {
+    height: viewportHeight,
+    width: viewportWidth,
+    transform: [{ translateX: appTranslateX }, { scale: appScale }],
+  };
 
   return (
     <View
-      onLayout={({ nativeEvent }) => {
-        const { height, width } = nativeEvent.layout;
-        if (width !== viewport.width || height !== viewport.height) setViewport({ height, width });
-      }}
       style={[
         styles.app,
         screenBounds,
@@ -118,24 +124,51 @@ const AppContent = () => {
       ]}
     >
       <Animated.View
+        accessibilityElementsHidden={popoverOpen}
+        importantForAccessibility={popoverOpen ? "no-hide-descendants" : "auto"}
+        pointerEvents={popoverOpen ? "none" : "auto"}
         renderToHardwareTextureAndroid={optionsMounted}
         shouldRasterizeIOS={optionsMounted}
         style={[
           styles.navigationScreen,
           !optionsMounted && styles.navigationScreenIdle,
           screenBounds,
-          optionsMounted && {
-            height: viewportHeight,
-            width: viewportWidth,
-            transform: [{ translateX: appTranslateX }, { scale: appScale }],
-          },
+          animatedViewportStyle,
         ]}
       >
         <Main />
+      </Animated.View>
+      <Animated.View
+        accessibilityElementsHidden={popoverOpen}
+        importantForAccessibility={popoverOpen ? "no-hide-descendants" : "auto"}
+        pointerEvents={popoverOpen ? "none" : "box-none"}
+        style={[
+          styles.audioTriggerLayer,
+          !optionsMounted && styles.navigationScreenIdle,
+          screenBounds,
+          animatedViewportStyle,
+        ]}
+      >
+        <AudioTrigger />
+      </Animated.View>
+      <Animated.View
+        accessibilityElementsHidden={popoverOpen}
+        importantForAccessibility={popoverOpen ? "no-hide-descendants" : "auto"}
+        pointerEvents={popoverOpen ? "none" : "box-none"}
+        renderToHardwareTextureAndroid={optionsMounted}
+        shouldRasterizeIOS={optionsMounted}
+        style={[
+          styles.menuLayer,
+          !optionsMounted && styles.navigationScreenIdle,
+          screenBounds,
+          animatedViewportStyle,
+        ]}
+      >
         <Menu />
         <Header />
       </Animated.View>
-      <Options mounted={optionsMounted} transition={optionsTransition} viewport={viewport} />
+      <Options interactionDisabled={popoverOpen} mounted={optionsMounted} transition={optionsTransition} viewport={dimensions} />
+      <AudioPopover />
       <TutorialGate />
       <TutorialPrompt />
     </View>
@@ -145,29 +178,41 @@ const AppContent = () => {
 const TutorialPrompt = () => {
   const { dimensions, globalState, setGlobalState, setShowTutorial, setShowTutorialPrompt, showTutorialPrompt } = React.useContext(Store);
 
-  useEffect(() => {
-    if (!showTutorialPrompt) return;
+  const finish = (openTutorial) => {
+    const nextState = { ...globalState, displayedTutorial: true };
+    setGlobalState(nextState);
+    storeGlobalState(nextState);
+    setShowTutorialPrompt(false);
+    if (openTutorial) setShowTutorial(true);
+  };
 
-    const finish = (openTutorial) => {
-      const nextState = { ...globalState, displayedTutorial: true };
-      setGlobalState(nextState);
-      storeGlobalState(nextState);
-      setShowTutorialPrompt(false);
-      if (openTutorial) setShowTutorial(true);
-    };
+  if (!showTutorialPrompt) return null;
 
-    Alert.alert(
-      WELCOME_TITLE,
-      getWelcomeMessage(dimensions),
-      [
-        { text: WELCOME_DECLINE_LABEL, onPress: () => finish(false), style: "cancel" },
-        { text: WELCOME_ACCEPT_LABEL, onPress: () => finish(true) },
-      ],
-      { cancelable: false },
-    );
-  }, [showTutorialPrompt]);
-
-  return null;
+  return (
+    <View
+      accessibilityViewIsModal
+      style={[
+        styles.promptOverlay,
+        {
+          height: dimensions.height,
+          width: dimensions.width,
+        },
+      ]}
+    >
+      <View style={styles.promptCard}>
+        <Text style={styles.promptTitle}>{WELCOME_TITLE}</Text>
+        <Text style={styles.promptMessage}>{getWelcomeMessage(dimensions)}</Text>
+        <View style={styles.promptActions}>
+          <Pressable android_disableSound accessibilityRole="button" onPress={() => finish(false)} style={styles.promptButton}>
+            <Text style={styles.promptButtonText}>{WELCOME_DECLINE_LABEL}</Text>
+          </Pressable>
+          <Pressable android_disableSound accessibilityRole="button" onPress={() => finish(true)} style={styles.promptButton}>
+            <Text style={styles.promptButtonText}>{WELCOME_ACCEPT_LABEL}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
 };
 
 const TutorialGate = () => {
@@ -186,10 +231,66 @@ const styles = StyleSheet.create({
   appIdle: {
     backgroundColor: "#F9F8EF",
   },
+  audioTriggerLayer: {
+    position: "absolute",
+    zIndex: 350,
+  },
+  // Keep the sliding menu above the independently rendered audio controls.
+  menuLayer: {
+    position: "absolute",
+    zIndex: 1000,
+  },
   navigationScreen: {
     position: "absolute",
   },
   navigationScreenIdle: {
     ...StyleSheet.absoluteFillObject,
+  },
+  promptActions: {
+    borderTopColor: "#3C3C434A",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+  },
+  promptButton: {
+    alignItems: "center",
+    borderRightColor: "#3C3C434A",
+    borderRightWidth: StyleSheet.hairlineWidth,
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 44,
+  },
+  promptButtonText: {
+    color: "#007AFF",
+    fontSize: 17,
+  },
+  promptCard: {
+    backgroundColor: "#F2F2F7F2",
+    borderRadius: 14,
+    overflow: "hidden",
+    width: 320,
+  },
+  promptMessage: {
+    color: theme.colors.black,
+    fontSize: 13,
+    lineHeight: 18,
+    paddingBottom: 18,
+    paddingHorizontal: 18,
+    textAlign: "center",
+  },
+  promptOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    backgroundColor: theme.colors.overlay,
+    justifyContent: "center",
+    zIndex: 5000,
+  },
+  promptTitle: {
+    color: theme.colors.black,
+    fontSize: 17,
+    fontWeight: "600",
+    paddingBottom: 4,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    textAlign: "center",
   },
 });

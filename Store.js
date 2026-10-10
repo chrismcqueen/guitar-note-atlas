@@ -1,6 +1,11 @@
-import React, { useState, createContext, useMemo } from "react";
-import { Dimensions, Platform, useWindowDimensions } from "react-native";
+import React, { useContext, useState, createContext, useMemo } from "react";
+import { Platform, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { getViewportInsets } from "./src/utils/orientation.mjs";
+import { ViewportContext } from "./src/components/ViewportContext";
+import { getPracticeSectionInsets, getViewportObstructions } from "./src/utils/displayGeometry.mjs";
+import { useAndroidDisplayGeometry } from "./src/utils/useAndroidDisplayGeometry";
 
 export const Store = createContext(null);
 export const OverlayStore = createContext(null);
@@ -13,27 +18,46 @@ export const StoreProvider = ({ children }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showTutorialPrompt, setShowTutorialPrompt] = useState(false);
-  const [positionId, setPositionId] = useState(0);
+  const [positionSelection, setPositionSelection] = useState({ fret: null, id: 0 });
   const [showPositionOverview, setShowPositionOverview] = useState(true);
   const [globalState, setGlobalState] = useState({});
 
   const windowDimensions = useWindowDimensions();
-  const insets = useSafeAreaInsets();
-  const dimensions = useMemo(
-    () => Platform.OS === "android" ? Dimensions.get("screen") : windowDimensions,
-    [windowDimensions.height, windowDimensions.width],
+  const viewport = useContext(ViewportContext);
+  const physicalInsets = useSafeAreaInsets();
+  const displayGeometry = useAndroidDisplayGeometry();
+  const dimensions = viewport.dimensions;
+  const fallbackInsets = useMemo(
+    () => getViewportInsets(physicalInsets, windowDimensions, viewport),
+    [viewport, windowDimensions.height, windowDimensions.width, physicalInsets.bottom, physicalInsets.left, physicalInsets.right, physicalInsets.top],
   );
+  const obstructions = useMemo(() => getViewportObstructions(displayGeometry, viewport), [displayGeometry, viewport]);
+  const sections = useMemo(() => getPracticeSectionInsets(dimensions,
+    obstructions, fallbackInsets), [obstructions, fallbackInsets, dimensions]);
+  const insets = sections.body;
+  const navigationInsets = sections.navigation;
+  const footerInsets = sections.footer;
+  // Keep a thin blue band around the iPad indicator rather than reserving its
+  // entire gesture zone. The existing 8-point footer border counts toward it.
+  const footerBottomInset = Platform.OS === "ios" && Platform.isPad ? Math.max(0, Math.min(18, fallbackInsets.bottom) - 8) : 0;
+  const overlayInsets = sections.overlay;
 
   const value = useMemo(() => ({
     dimensions,
+    safeAreaInsets: fallbackInsets,
     insets,
+    navigationInsets,
+    footerInsets,
+    footerBottomInset,
+    overlayInsets,
+    obstructions,
     showTutorial,
     setShowTutorial,
     showTutorialPrompt,
     setShowTutorialPrompt,
     globalState,
     setGlobalState,
-  }), [dimensions, globalState, insets, showTutorial, showTutorialPrompt]);
+  }), [dimensions, fallbackInsets, globalState, insets, navigationInsets, footerInsets, footerBottomInset, overlayInsets, obstructions, showTutorial, showTutorialPrompt]);
 
   const overlayValue = useMemo(() => ({
     showMenu,
@@ -43,10 +67,11 @@ export const StoreProvider = ({ children }) => {
   }), [showMenu, showOptions]);
 
   const positionValue = useMemo(() => ({
-    positionId,
-  }), [positionId]);
+    positionFret: positionSelection.fret,
+    positionId: positionSelection.id,
+  }), [positionSelection]);
   const positionVisibilityValue = useMemo(() => ({ showPositionOverview }), [showPositionOverview]);
-  const positionActions = useMemo(() => ({ setPositionId, setShowPositionOverview }), []);
+  const positionActions = useMemo(() => ({ setPositionSelection, setShowPositionOverview }), []);
 
   return (
     <Store.Provider value={value}>

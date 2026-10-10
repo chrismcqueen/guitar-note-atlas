@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "guitar-note-atlas",
+    "name": "Guitar Atlas",
     "slug": "guitar-note-atlas",
     "version": "1.0.0",
-    "orientation": "landscape",
+    "orientation": "portrait",
     "icon": "./assets/icon.png",
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -17,8 +17,12 @@
       "bundleIdentifier": "dev.com.guitar-note-atlas",
       "buildNumber": "1.0.0",
       "infoPlist": {
+        "CFBundleDisplayName": "Guitar Atlas",
+        "LSApplicationCategoryType": "public.app-category.music",
+        "UIStatusBarHidden": true,
+        "UIStatusBarHidden~ipad": true,
         "UISupportedInterfaceOrientations": [
-          "UIInterfaceOrientationLandscapeRight"
+          "UIInterfaceOrientationPortrait"
         ],
         "UISupportedInterfaceOrientations~ipad": [
           "UIInterfaceOrientationLandscapeRight"
@@ -30,6 +34,7 @@
     },
     "android": {
       "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
@@ -40,12 +45,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      [
-        "expo-screen-orientation",
-        {
-          "initialOrientation": "LANDSCAPE_RIGHT"
-        }
-      ],
+      "expo-screen-orientation",
       "./plugins/withAndroidImmersiveMode",
       "expo-font",
       [
@@ -59,9 +59,22 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#3E69AF"
+          "backgroundColor": "#3E69AF",
+          "image": "./assets/splash.png"
         }
-      ]
+      ],
+      [
+        "react-native-audio-api",
+        {
+          "iosBackgroundMode": false,
+          "androidPermissions": [],
+          "androidForegroundService": false,
+          "disableFFmpeg": true,
+          "disableStaticExternalLibs": true
+        }
+      ],
+      "expo-audio",
+      "expo-asset"
     ]
   }
 }

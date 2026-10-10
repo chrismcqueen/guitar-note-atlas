@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { StyleSheet, Text, View, Animated, Platform, Pressable, ScrollView, useWindowDimensions } from "react-native";
+import { StyleSheet, Text, View, Animated, Platform, Pressable, ScrollView } from "react-native";
 import * as Linking from "expo-linking";
 
 import { OverlayStore, Store } from "../../Store";
@@ -7,16 +7,17 @@ import { theme } from "../utils/theme";
 import { storeGlobalState } from "../utils/functions";
 import { pressedOpacity } from "../utils/pressable";
 import { getOptionsDrawerWidth } from "../utils/screenBounds.mjs";
+import { KEY_NAVIGATION_MODES } from "../utils/keyNavigation.mjs";
 
-const Options = ({ mounted, transition, viewport }) => {
+const Options = ({ interactionDisabled = false, mounted, transition, viewport }) => {
   const { dimensions, insets, setShowTutorial, globalState, setGlobalState } = useContext(Store);
   const { setShowOptions, showOptions } = useContext(OverlayStore);
-  const usableWindow = useWindowDimensions();
   const viewportWidth = viewport?.width || dimensions.width;
   const viewportHeight = viewport?.height || dimensions.height;
-  const scrollViewportHeight = Math.min(viewportHeight, usableWindow.height);
+  const scrollViewportHeight = viewportHeight;
   const width = getOptionsDrawerWidth(viewportWidth);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const useCompactStars = !isTablet && width < 300;
   const isShortViewport = scrollViewportHeight < 500;
   const bottomScrollPadding = Platform.OS === "android" && !isTablet
     ? Math.max(insets.bottom + 16, 44)
@@ -24,12 +25,25 @@ const Options = ({ mounted, transition, viewport }) => {
       ? Math.max(insets.bottom + 16, 44)
       : Math.max(insets.bottom, 16);
 
-  const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Flip Upside Down", "Hide Anchor Frets", "Rate Us", "Give Us Feedback"];
+  const options = ["View Tutorial", "Show Scale Degrees", "Enable Bass Mode", "Enable Left Hand", "Enable 4ths/5ths Mode", "Hide Anchor Frets", "Flip Upside Down", "Rate Us", "Give Us Feedback"];
 
   const updateOption = (name) => {
     const nextState = {
       ...globalState,
       options: { ...globalState.options, [name]: !globalState.options[name] },
+    };
+    setGlobalState(nextState);
+    storeGlobalState(nextState);
+  };
+
+  const toggleCircleNavigation = () => {
+    const circleEnabled = globalState.options.keyNavigation === KEY_NAVIGATION_MODES.CIRCLE;
+    const nextState = {
+      ...globalState,
+      options: {
+        ...globalState.options,
+        keyNavigation: circleEnabled ? KEY_NAVIGATION_MODES.CHROMATIC : KEY_NAVIGATION_MODES.CIRCLE,
+      },
     };
     setGlobalState(nextState);
     storeGlobalState(nextState);
@@ -47,6 +61,8 @@ const Options = ({ mounted, transition, viewport }) => {
         return globalState.options.upsideDown;
       case "Hide Anchor Frets":
         return globalState.options.hideAnchorFrets;
+      case "Enable 4ths/5ths Mode":
+        return globalState.options.keyNavigation === KEY_NAVIGATION_MODES.CIRCLE;
       default:
         return false;
     }
@@ -73,6 +89,9 @@ const Options = ({ mounted, transition, viewport }) => {
       case "Hide Anchor Frets":
         updateOption("hideAnchorFrets");
         break;
+      case "Enable 4ths/5ths Mode":
+        toggleCircleNavigation();
+        break;
       case "Rate Us":
         Linking.openURL("https://apps.apple.com/us/app/guitar-note-atlas/id971847390");
         // TODO: android/google play url
@@ -85,7 +104,12 @@ const Options = ({ mounted, transition, viewport }) => {
   if (!mounted) return null;
 
   return (
-      <View style={styles.modalContainer}>
+      <View
+        accessibilityElementsHidden={interactionDisabled}
+        importantForAccessibility={interactionDisabled ? "no-hide-descendants" : "auto"}
+        pointerEvents={interactionDisabled ? "none" : "auto"}
+        style={styles.modalContainer}
+      >
       {showOptions ? (
         <View
           pointerEvents="none"
@@ -133,7 +157,13 @@ const Options = ({ mounted, transition, viewport }) => {
                   <View style={[styles.itemRow, isTablet && styles.tabletItemRow]}>
                     <Text style={styles.item}>{option}</Text>
                     {option === "Rate Us" ? (
-                      <Text accessibilityLabel="five stars" style={styles.stars}>★★★★★</Text>
+                      <Text
+                        accessibilityLabel="five stars"
+                        numberOfLines={1}
+                        style={[styles.stars, useCompactStars && styles.compactStars]}
+                      >
+                        ★★★★★
+                      </Text>
                     ) : (
                       <Text
                         accessibilityElementsHidden={!selected}
@@ -224,5 +254,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     letterSpacing: 1,
     textAlign: "right",
+  },
+  compactStars: {
+    flexShrink: 0,
+    fontSize: 13,
+    letterSpacing: 0,
+    marginLeft: 8,
   },
 });

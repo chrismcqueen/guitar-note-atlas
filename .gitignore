@@ -14,3 +14,7 @@ dist/
 
 # macOS
 .DS_Store
+
+# Local Expo module build products
+/modules/display-geometry/android/build/
+/modules/display-geometry/android/.gradle/

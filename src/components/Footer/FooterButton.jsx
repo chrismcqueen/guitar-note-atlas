@@ -3,11 +3,15 @@ import { Text, StyleSheet, Pressable } from "react-native";
 import { Store } from "../../../Store";
 
 import { theme } from "../../utils/theme";
-import { withPressedOpacity } from "../../utils/pressable";
+import { getFooterGeometry } from "../../utils/footerSelection.mjs";
+import { TABLET_FOOTER_BUTTON_HEIGHT } from "../../utils/practiceLayout.mjs";
 
 export const FooterButton = ({ children, onPress }) => {
-  const { dimensions, globalState, setGlobalState } = useContext(Store);
+  const { dimensions, footerInsets: insets, globalState, setGlobalState } = useContext(Store);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
+  const { actionWidth, scale } = getFooterGeometry(dimensions, insets);
+  const buttonStyle = [styles.button, isTablet && styles.tabletButton, { width: actionWidth }];
+  const labelStyle = [styles.label, isTablet && styles.tabletLabel, { width: actionWidth, fontSize: (isTablet ? 32 : 23) * scale }];
 
   const [prevScale, setPrevScale] = useState();
   const [undo, setUndo] = useState(false);
@@ -28,15 +32,15 @@ export const FooterButton = ({ children, onPress }) => {
 
   if (undo) {
     return (
-      <Pressable android_disableSound accessibilityRole="button" hitSlop={FOOTER_ACTION_HIT_SLOP} onPress={handleUndo} style={withPressedOpacity([styles.button, isTablet && styles.tabletButton])}>
-        <Text style={[styles.label, isTablet && styles.tabletLabel]}>Undo</Text>
+      <Pressable android_disableSound accessibilityRole="button" hitSlop={FOOTER_ACTION_HIT_SLOP} onPress={handleUndo} style={buttonStyle}>
+        <Text numberOfLines={1} adjustsFontSizeToFit style={labelStyle}>Undo</Text>
       </Pressable>
     );
   }
 
   return (
-    <Pressable android_disableSound accessibilityRole="button" hitSlop={FOOTER_ACTION_HIT_SLOP} onPress={handlePress} style={withPressedOpacity([styles.button, isTablet && styles.tabletButton])}>
-      <Text style={[styles.label, isTablet && styles.tabletLabel]}>{children}</Text>
+    <Pressable android_disableSound accessibilityRole="button" hitSlop={FOOTER_ACTION_HIT_SLOP} onPress={handlePress} style={buttonStyle}>
+      <Text numberOfLines={1} adjustsFontSizeToFit style={labelStyle}>{children}</Text>
     </Pressable>
   );
 };
@@ -49,17 +53,17 @@ const styles = StyleSheet.create({
     height: 45,
     justifyContent: "center",
     width: 100,
+    flexShrink: 0,
   },
   label: {
     fontFamily: "blackout",
     fontSize: 23,
     color: theme.colors.lightBlue,
     textAlign: "center",
-    transform: [{ translateY: 4 }],
     width: 100,
   },
   tabletButton: {
-    height: 79,
+    height: TABLET_FOOTER_BUTTON_HEIGHT,
     width: 140,
   },
   tabletLabel: {

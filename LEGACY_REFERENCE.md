@@ -5,6 +5,8 @@ The behavior and visuals used for parity work in this repository come from the r
 - Public repository: `eboebo/guitar-scales`
 - Branch: `scrolling-view3`
 - Released commit: `4113b24`
+- Home-screen display name: `Guitar Atlas` (`CFBundleDisplayName` in the released target’s Info.plist). Product/welcome name remains Guitar Note Atlas.
+- iOS application category: Music; native status bar hidden on phone and iPad.
 - Bundle identifier: `com.chrismcqueen.GuitarNoteAtlas`
 - Local reference checkout: `~/Downloads/Guitar Note Atlas 3.0`
 

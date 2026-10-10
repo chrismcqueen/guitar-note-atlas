@@ -52,7 +52,7 @@ const phoneLeftPages = [
 const IOS_LANDSCAPE_CUTOUT_INSET = 72;
 
 const Tutorial = () => {
-  const { dimensions, globalState, insets, setShowTutorial } = useContext(Store);
+  const { dimensions, globalState, overlayInsets: insets, setShowTutorial } = useContext(Store);
   const [page, setPage] = useState(0);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const reportedSideInset = isTablet
@@ -80,6 +80,10 @@ const Tutorial = () => {
     setPage((currentPage) => currentPage + 1);
   };
 
+  const goBack = () => {
+    setPage((currentPage) => Math.max(0, currentPage - 1));
+  };
+
   return (
     <View style={styles.container}>
       <Pressable
@@ -104,6 +108,27 @@ const Tutorial = () => {
       >
         <Text style={styles.exitText}>Exit</Text>
       </Pressable>
+      {page > 0 ? (
+        <Pressable
+          android_disableSound
+          accessibilityLabel="Previous tutorial page"
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={(event) => {
+            event.stopPropagation();
+            goBack();
+          }}
+          style={[
+            styles.back,
+            {
+              bottom: Math.max(insets.bottom, isTablet ? 12 : 18),
+              left: sideInset + 12,
+            },
+          ]}
+        >
+          <Text style={styles.backText}>Back</Text>
+        </Pressable>
+      ) : null}
       <View
         pointerEvents="none"
         style={[
@@ -137,6 +162,17 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   exitText: {
+    color: theme.colors.lightBlue,
+    fontFamily: "blackout",
+    fontSize: 18,
+    textTransform: "uppercase",
+  },
+  back: {
+    padding: 12,
+    position: "absolute",
+    zIndex: 1,
+  },
+  backText: {
     color: theme.colors.lightBlue,
     fontFamily: "blackout",
     fontSize: 18,

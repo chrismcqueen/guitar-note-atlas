@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { getPosition, POSITION_ORDER, positionBandFrets, positionBandVerticalGeometry, positionForFret, positionStartFret, positionTargets, stepPosition } from "../src/utils/positions.mjs";
+import { fretForNeckX, getPosition, POSITION_ORDER, positionBandFrets, positionBandVerticalGeometry, positionDisplayFret, positionForFret, positionSelectionTargets, positionStartFret, positionTargetForFret, positionTargets, resolvedPositionFret, stepPosition, stepPositionTarget } from "../src/utils/positions.mjs";
 
 test("positions follow the released seven-position order and wrap", () => {
   assert.deepEqual(POSITION_ORDER, [0, 2, 4, 6, 1, 3, 5]);
@@ -31,7 +31,7 @@ test("position starts transpose with the selected key", () => {
   assert.equal(positionStartFret(5, 3), 5);
 });
 
-test("phone fret targets follow the released A-based position anchors", () => {
+test("position anchors repeat visually while touch selection stops after one cycle", () => {
   assert.deepEqual(positionTargets(0), [
     { fret: 0, id: 3 },
     { fret: 2, id: 5 },
@@ -48,15 +48,49 @@ test("phone fret targets follow the released A-based position anchors", () => {
   assert.equal(positionForFret(3, 0), 0);
   assert.equal(positionForFret(7, 0), 4);
   assert.equal(positionForFret(9, 0), 6);
-  assert.equal(positionForFret(14, 0), 5);
+  assert.equal(positionForFret(14, 0), 1);
 });
 
-test("every visible color band opens its matching index position in every key", () => {
+test("overview neck touch coordinates map to frets in either handedness", () => {
+  assert.equal(fretForNeckX(40, 864), 0);
+  assert.equal(fretForNeckX(40 + 7 * 49 + 1, 864), 7);
+  assert.equal(fretForNeckX(40 + 7 * 49 + 1, 864, true), 9);
+  assert.equal(fretForNeckX(-100, 864), 0);
+  assert.equal(fretForNeckX(1000, 864), 16);
+});
+
+test("full-neck selection stops after one complete position cycle", () => {
+  assert.deepEqual(positionTargetForFret(0, 0), { fret: 0, id: 3, distance: 0 });
+  assert.deepEqual(positionTargetForFret(12, 0), { fret: 10, id: 1, distance: 2 });
+  assert.deepEqual(positionTargetForFret(16, 0), { fret: 10, id: 1, distance: 6 });
+  assert.equal(resolvedPositionFret(3, 12, 0), 0);
+  assert.equal(resolvedPositionFret(3, 99, 0), 0);
+});
+
+test("position navigation moves linearly and stops at visible neck ends", () => {
+  assert.deepEqual(stepPositionTarget(3, 0, -1, 0), { fret: 0, id: 3 });
+  assert.deepEqual(stepPositionTarget(3, 0, 1, 0), { fret: 2, id: 5 });
+  assert.deepEqual(stepPositionTarget(1, 10, 1, 0), { fret: 10, id: 1 });
+
+  for (let keyOffset = 0; keyOffset < 12; keyOffset += 1) {
+    const targets = positionSelectionTargets(keyOffset);
+    const visibleIds = new Set(targets.map(({ id }) => id));
+    assert.equal(targets.length, POSITION_ORDER.length, `key ${keyOffset} target count`);
+    assert.equal(POSITION_ORDER.every((id) => visibleIds.has(id)), true, `key ${keyOffset}`);
+  }
+});
+
+test("selected position windows stay fully inside the visible neck", () => {
+  assert.equal(positionDisplayFret(1, 11, 1), 10);
+  assert.equal(positionDisplayFret(4, 11, 4), 11);
+  assert.equal(positionDisplayFret(3, 0, 0), 0);
+});
+
+test("every primary color band opens its matching index position in every key", () => {
   for (let keyOffset = 0; keyOffset < 12; keyOffset += 1) {
     for (const [pitch, positionId] of [[4, 4], [6, 6], [11, 5]]) {
-      for (const fret of positionBandFrets(pitch, keyOffset)) {
-        assert.equal(positionForFret(fret, keyOffset), positionId, `key ${keyOffset}, fret ${fret}`);
-      }
+      const primaryFret = positionBandFrets(pitch, keyOffset).find((fret) => positionSelectionTargets(keyOffset).some((target) => target.fret === fret));
+      if (primaryFret !== undefined) assert.equal(positionForFret(primaryFret, keyOffset), positionId, `key ${keyOffset}, fret ${primaryFret}`);
     }
   }
 });
@@ -102,4 +136,36 @@ test("position color bands preserve released vertical sizing", () => {
   assert.deepEqual(positionBandVerticalGeometry({ height: 4, stringGap: 36, upsideDown: true, verticalOffset: 14 }), { height: 172, y: 36 });
   assert.deepEqual(positionBandVerticalGeometry({ height: 3, stringGap: 36, upsideDown: true, verticalOffset: 14 }), { height: 136, y: 72 });
   assert.deepEqual(positionBandVerticalGeometry({ bassMode: true, height: 5, stringGap: 52, verticalOffset: 20 }), { height: 175, y: 22.36 });
+});
+
+test("bass overview bands surround the correct strings like released FullStringView", () => {
+  for (const span of [120, 180]) {
+    const gap = span / 3;
+    const releasedInset = gap / 1.3 / 2 * 2.1;
+    for (const height of [3, 4, 5]) {
+      for (const upsideDown of [false, true]) {
+        const band = positionBandVerticalGeometry({ bassMode: true, height, stringGap: gap, upsideDown, verticalOffset: releasedInset, stringOriginY: 14 });
+        const firstString = upsideDown ? 5 - height : 0;
+        const lastString = firstString + height - 2;
+        const topOverhang = releasedInset - gap * 0.43;
+        const bottomOverhang = gap * 0.43 - releasedInset * 0.05;
+        assert.ok(Math.abs(band.y - (14 + firstString * gap - topOverhang)) < 1e-9);
+        assert.ok(Math.abs(band.y + band.height - (14 + lastString * gap + bottomOverhang)) < 1e-9);
+      }
+    }
+  }
+});
+
+test("bass zoom bands use the adjusted string inset from released StringView", () => {
+  const bassInset = 20 * 2.1;
+  for (const height of [3, 4, 5]) {
+    for (const upsideDown of [false, true]) {
+      const band = positionBandVerticalGeometry({ bassMode: true, height, stringGap: 52, upsideDown, verticalOffset: bassInset });
+      const firstString = upsideDown ? 5 - height : 0;
+      assert.equal(band.y, firstString * 52 + 52 * 0.43);
+      assert.equal(band.height, (height - 2) * 52 + bassInset * 0.95);
+      assert.ok(band.y < bassInset + firstString * 52);
+      assert.ok(band.y + band.height > bassInset + (firstString + height - 2) * 52);
+    }
+  }
 });

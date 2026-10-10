@@ -1,16 +1,19 @@
 import React, { useContext } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Svg, { Circle, Defs, Line, LinearGradient, Rect, Stop, Text as SvgText } from "react-native-svg";
 
 import { PositionActionsStore, PositionStore, Store } from "../../Store";
 import coordinates from "../../data/positionCoordinates.json";
 import DegreeLabel from "./Neck/DegreeLabel";
 import { getScaleDegreeLabel } from "../utils/music.mjs";
-import { getPosition, positionBandVerticalGeometry, stepPosition } from "../utils/positions.mjs";
+import { getPosition, positionBandVerticalGeometry, positionFingerLabelY, positionStartFret, stepPosition } from "../utils/positions.mjs";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
+import { useRepeatPress } from "../utils/useRepeatPress";
+import { getPositionNotes } from "../utils/positionPlayback.mjs";
+import { AudioPlaybackStore } from "./AudioPlaybackProvider";
+import { getPositionNeckSize } from "../utils/practiceLayout.mjs";
 
-const LEGACY_DEGREE_ID = { 0: 0, 1: 1, 2: 2, 3: 3, 3.1: 12, 4: 4, 5: 5, 6: 6, 6.1: 13, 7: 7, 8: 8, 8.1: 14, 9: 9, 10: 10, 11: 11 };
 const WIDTH = 642;
 const SPACING_X = 100;
 const OFFSET_X = 21;
@@ -52,10 +55,11 @@ const PhoneNeckBackdrop = ({ bassMode, height, neckWidth, short, stringCount, wi
   );
 };
 
-const PositionZoom = ({ compact = false }) => {
+const PositionZoom = ({ compact = false, height }) => {
   const { dimensions, globalState, insets } = useContext(Store);
-  const { positionId } = useContext(PositionStore);
-  const { setPositionId, setShowPositionOverview } = useContext(PositionActionsStore);
+  const { activeNote } = useContext(AudioPlaybackStore);
+  const { positionFret, positionId } = useContext(PositionStore);
+  const { setPositionSelection, setShowPositionOverview } = useContext(PositionActionsStore);
   if (!globalState.options || !globalState.strings) return null;
 
   const position = getPosition(positionId);
@@ -67,16 +71,13 @@ const PositionZoom = ({ compact = false }) => {
   const labels = position.short ? ["1", "2", "3", "4", "(4)"] : ["(1)", "1", "2", "3", "4", "(4)"];
   const safeSideInset = Math.max(insets.left, insets.right);
   const safeWidth = dimensions.width - safeSideInset * 2;
-  const compactNeckWidth = safeWidth * 0.505;
-  const compactNeckHeight = dimensions.height * 0.53;
+  const { width: compactNeckWidth, height: compactNeckHeight } = getPositionNeckSize(dimensions, { compact: true, sideInset: safeSideInset, maxHeight: height });
   const compactArrowRegionWidth = (safeWidth - compactNeckWidth) / 2;
   const compactArrowHeight = dimensions.height * 0.295;
   // The released iPad app drew into a narrower compatibility canvas. Using
   // that observed width preserves the original gap between the neck and its
   // position arrows on modern full-screen iPads.
-  const tabletNeckWidth = dimensions.width * 0.46;
-  const tabletNeckHeight = dimensions.height * 0.45;
-  const tabletArrowOffsetY = -tabletNeckHeight * 0.08 + 11;
+  const { width: tabletNeckWidth, height: tabletNeckHeight } = getPositionNeckSize(dimensions, { compact: false, zoomHeight: height ?? dimensions.height * 0.53 });
   const displayNeckWidth = compact ? compactNeckWidth : tabletNeckWidth;
   const displayNeckHeight = compact ? compactNeckHeight : tabletNeckHeight;
   const viewBoxHeight = WIDTH * (displayNeckHeight / displayNeckWidth);
@@ -100,28 +101,33 @@ const PositionZoom = ({ compact = false }) => {
   const baseVerticalOffset = initialVerticalSpacing / 3.2;
   const verticalOffset = baseVerticalOffset * (bassMode ? 2.1 : 1);
   const tabletGridOffset = compact ? 0 : 20;
+  const fingerLabelY = positionFingerLabelY({
+    stringOriginY: verticalOffset + tabletGridOffset,
+    stringCount,
+    stringGap: renderedStringGap,
+    noteRadius,
+    noteStrokeWidth,
+    fontSize: fingerLabelFontSize,
+  });
   const compactScale = compactNeckWidth / WIDTH;
   const compactGridCenter = (verticalOffset + ((stringCount - 1) * stringGap) / 2) * compactScale;
   const compactArrowOffsetY = compactGridCenter - compactNeckHeight / 2;
+  const tabletGridCenter = (verticalOffset + tabletGridOffset + (stringCount - 1) * renderedStringGap / 2) * tabletNeckWidth / WIDTH;
+  const tabletArrowOffsetY = tabletGridCenter - tabletNeckHeight / 2;
   const bandFret = globalState.options.leftHand ? fretCount - 1 - position.baseFret : position.baseFret;
   const band = positionBandVerticalGeometry({
     bassMode,
     height: position.height,
     stringGap: renderedStringGap,
     upsideDown: globalState.options.upsideDown,
-    verticalOffset: baseVerticalOffset,
+    verticalOffset,
   });
 
-  const notes = globalState.scale.degrees.flatMap((degree) => {
-    const legacyId = LEGACY_DEGREE_ID[degree];
-    return (coordinates[legacyId]?.[positionId] ?? []).flatMap((coordinate, index) => {
-      if ((!bassMode && coordinate.y === 6) || (bassMode && coordinate.y < 2)) return [];
-      let string = bassMode ? (coordinate.y === 6 ? 0 : coordinate.y - 2) : coordinate.y;
-      if (globalState.options.upsideDown) string = stringCount - 1 - string;
-      const xIndex = globalState.options.leftHand ? fretCount - coordinate.x : coordinate.x;
-      return [{ ...coordinate, degree, key: `${degree}-${index}`, string, xIndex }];
-    });
-  });
+  const notes = getPositionNotes(coordinates, globalState.scale.degrees, globalState.key.key_offset, positionId, positionFret, bassMode).map((note) => ({
+    ...note,
+    string: globalState.options.upsideDown ? stringCount - 1 - note.stringIndex : note.stringIndex,
+    xIndex: globalState.options.leftHand ? fretCount - note.x : note.x,
+  }));
 
   const neck = (
     <Svg width="100%" height="100%" viewBox={`0 0 ${WIDTH} ${viewBoxHeight}`}>
@@ -145,11 +151,13 @@ const PositionZoom = ({ compact = false }) => {
         const y = verticalOffset + tabletGridOffset + note.string * renderedStringGap;
         const gray = note.color === "gray";
         const white = note.color === "white";
-        const fill = gray ? theme.colors.neckLightGray : white ? theme.colors.white : theme.colors.black;
-        const stroke = gray ? theme.colors.neckDarkGray : theme.colors.black;
-        const text = gray ? theme.colors.neckDarkGray : white ? theme.colors.black : theme.colors.white;
+        const highlighted = activeNote?.location === note.location && activeNote.midi === note.midi;
+        const fill = highlighted ? "#FFD84D" : gray ? theme.colors.neckLightGray : white ? theme.colors.white : theme.colors.black;
+        const stroke = highlighted ? "#FFD84D" : gray ? theme.colors.neckDarkGray : theme.colors.black;
+        const text = highlighted ? theme.colors.black : gray ? theme.colors.neckDarkGray : white ? theme.colors.black : theme.colors.white;
         return (
           <React.Fragment key={note.key}>
+            {highlighted && <Circle cx={x} cy={y} r={noteRadius + 4} fill="none" stroke="#FFD84D" strokeWidth={3} />}
             <Circle cx={x} cy={y} r={noteRadius} fill={fill} stroke={stroke} strokeWidth={gray ? Math.max(1, noteStrokeWidth - 1) : noteStrokeWidth} />
             {globalState.options.showScaleDegree && (
               <DegreeLabel
@@ -164,18 +172,24 @@ const PositionZoom = ({ compact = false }) => {
         );
       })}
       {labels.map((label, index) => (
-        <SvgText key={label + index} x={horizontalOffset + (globalState.options.leftHand ? labels.length - 1 - index : index) * SPACING_X + SPACING_X / 2} y={verticalOffset + 5.45 * baseStringGap + fingerLabelFontSize * 0.75 + (compact ? 0 : 6)} textAnchor="middle" fontFamily="jrHand" fontSize={fingerLabelFontSize} fill={theme.colors.black}>
+        <SvgText key={label + index} x={horizontalOffset + (globalState.options.leftHand ? labels.length - 1 - index : index) * SPACING_X + SPACING_X / 2} y={fingerLabelY} textAnchor="middle" fontFamily="jrHand" fontSize={fingerLabelFontSize} fill={theme.colors.black}>
           {label}
         </SvgText>
       ))}
     </Svg>
   );
 
-  const previous = () => setPositionId((id) => stepPosition(id, -1));
-  const next = () => setPositionId((id) => stepPosition(id, 1));
+  const stepSelection = (amount) => {
+    const nextId = stepPosition(positionId, amount);
+    setPositionSelection({ id: nextId, fret: positionStartFret(nextId, globalState.key.key_offset) });
+  };
+  const previous = () => stepSelection(-1);
+  const next = () => stepSelection(1);
+  const previousPress = useRepeatPress(previous);
+  const nextPress = useRepeatPress(next);
   return (
-    <View style={[styles.container, !compact && { height: dimensions.height * 0.53 }, compact && styles.phoneContainer]}>
-      <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.title, compact && styles.phoneTitle]}>{title}</Text>
+    <View style={[styles.container, !compact && [styles.tabletContainer, { height: height ?? dimensions.height * 0.53 }], compact && [styles.phoneContainer, height !== undefined && { height }]]}>
+      {compact && height === undefined && <View style={styles.phoneTitleSpace} />}
       <View style={[styles.row, compact && styles.phoneRow]}>
         {compact && (
           <View pointerEvents="none" style={[styles.phoneBackdrop, { height: compactNeckHeight, transform: [{ translateY: -compactNeckHeight / 2 }], width: safeWidth }]}>
@@ -185,7 +199,7 @@ const PositionZoom = ({ compact = false }) => {
         <Pressable
           android_disableSound
           accessibilityLabel="Previous position"
-          onPress={previous}
+          {...previousPress}
           style={withPressedOpacity([styles.arrowButton, !compact && styles.tabletArrowButton, !compact && { height: tabletNeckHeight * 0.5, left: safeWidth * 0.133, transform: [{ translateY: tabletArrowOffsetY }], width: tabletNeckHeight * 0.25 }, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, transform: [{ translateY: compactArrowOffsetY }], width: compactArrowRegionWidth }])}
         >
           <View style={[styles.arrow, styles.arrowLeft, !compact && { borderBottomWidth: tabletNeckHeight * 0.232, borderRightWidth: tabletNeckHeight * 0.232, borderTopWidth: tabletNeckHeight * 0.232 }, compact && { borderBottomWidth: compactArrowHeight / 2, borderRightWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
@@ -203,7 +217,7 @@ const PositionZoom = ({ compact = false }) => {
         <Pressable
           android_disableSound
           accessibilityLabel="Next position"
-          onPress={next}
+          {...nextPress}
           style={withPressedOpacity([styles.arrowButton, !compact && styles.tabletArrowButton, !compact && { height: tabletNeckHeight * 0.5, right: safeWidth * 0.133, transform: [{ translateY: tabletArrowOffsetY }], width: tabletNeckHeight * 0.25 }, compact && styles.phoneArrowButton, compact && { height: compactNeckHeight, transform: [{ translateY: compactArrowOffsetY }], width: compactArrowRegionWidth }])}
         >
           <View style={[styles.arrow, styles.arrowRight, !compact && { borderBottomWidth: tabletNeckHeight * 0.232, borderLeftWidth: tabletNeckHeight * 0.232, borderTopWidth: tabletNeckHeight * 0.232 }, compact && { borderBottomWidth: compactArrowHeight / 2, borderLeftWidth: compactArrowHeight / 2, borderTopWidth: compactArrowHeight / 2 }]} />
@@ -217,9 +231,9 @@ export default PositionZoom;
 
 const styles = StyleSheet.create({
   container: { alignItems: "center", height: 370, marginBottom: 35, transform: [{ translateY: 20 }], width: "100%" },
-  phoneContainer: { height: 292, marginBottom: 0, transform: [{ translateY: 30 }] },
-  title: { fontFamily: "proletarsk", fontSize: 40, letterSpacing: 6, marginBottom: 12, textAlign: "center" },
-  phoneTitle: { fontSize: 31, letterSpacing: 5, lineHeight: 38, marginBottom: 18, transform: [{ translateY: 12 }], width: "62%" },
+  tabletContainer: { marginBottom: 0, transform: [{ translateY: 0 }] },
+  phoneContainer: { height: 292, marginBottom: 0, transform: [{ translateY: 0 }] },
+  phoneTitleSpace: { height: 38, marginBottom: 18 },
   row: { alignItems: "center", flex: 1, flexDirection: "row", justifyContent: "center", width: "100%" },
   phoneRow: { justifyContent: "center" },
   phoneBackdrop: { position: "absolute", top: "50%" },
