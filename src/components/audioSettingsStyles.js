@@ -5,9 +5,11 @@ export const audioSettingsStyles = StyleSheet.create({
   label: {
     color: theme.colors.black,
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'proletarsk',
+    fontWeight: '400',
     lineHeight: 24,
     includeFontPadding: false,
     textAlign: 'left',
   },
+  sectionLabel: { fontWeight: '700' },
 });

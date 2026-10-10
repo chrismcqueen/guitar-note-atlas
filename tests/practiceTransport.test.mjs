@@ -4,6 +4,7 @@ import { NativeAudioTransport } from '../src/utils/practiceTransport.mjs';
 import { buildPositionSequence } from '../src/utils/positionPlayback.mjs';
 import { NOTE_RATES } from '../src/utils/audioSequence.mjs';
 import { NOTE_LEVEL } from '../src/utils/audioMix.mjs';
+import { getTransportIndicator } from '../src/utils/transportIndicator.mjs';
 
 class Context {
   currentTime = 0;
@@ -52,6 +53,29 @@ const display = () => {
     frame() { const ready=[...pending.values()];pending.clear();ready.forEach(callback=>callback()); },
   };
 };
+
+test('transport indicator stays blank before the first audible count, then counts on the audio clock', async t => {
+  const frames = display();
+  const { transport, counts } = await make(t, {}, frames);
+  const indicator = () => getTransportIndicator({ count: counts.at(-1) ?? 0, pending: !counts.some(n => n > 0), playing: true });
+  assert.equal(getTransportIndicator({ pending: true, loading: true }), 'blank');
+  transport.start();
+  transport.context.currentTime = 0.099;
+  frames.frame();
+  assert.equal(indicator(), 'blank');
+  for (const [index, time] of [0.1, 0.6, 1.1, 1.6].entries()) {
+    transport.context.currentTime = time;
+    transport.tick();
+    frames.frame();
+    assert.equal(counts.at(-1), index + 1);
+    assert.equal(indicator(), 'count');
+  }
+  transport.context.currentTime = 2.1;
+  transport.tick(); frames.frame();
+  assert.equal(indicator(), 'stop');
+  transport.stop();
+  assert.equal(getTransportIndicator({ count: counts.at(-1) }), 'play');
+});
 
 test('tap tempo click wakes idle output, sounds immediately, and returns to idle without starting practice',async t=>{
   const {transport,heard,counts}=await make(t);
