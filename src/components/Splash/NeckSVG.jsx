@@ -3,10 +3,13 @@ import Svg, { Line, Defs, ClipPath, G, Path, Circle, Rect } from "react-native-s
 
 import { theme } from "../../utils/theme";
 
-const NeckSVG = ({ dimensions }) => {
+const NeckSVG = () => {
   const { colors } = theme;
   return (
-    <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox={`0 0 2208.018 ${dimensions.height / 2}`}>
+    // Keep the phone composition on every aspect ratio: fill the lower fifth
+    // with two strings and crop the continuing neck at the screen edge.
+    // Slice preserves note proportions while taller windows crop the right.
+    <Svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 2208.018 196.5" preserveAspectRatio="xMinYMin slice">
       <Defs>
         <ClipPath id="clip-path">
           <Rect id="Rectangle_1" dataName="Rectangle 1" width="88" height="55" transform="translate(796 1187)" fill={colors.pureWhite} />

@@ -74,9 +74,7 @@ const Splash = ({ setLoading, error, onRetry }) => {
           <TitleSVG />
         </View>
         <View style={styles.neck}>
-          <View style={styles.neckContent}>
-            <NeckSVG dimensions={dimensions} />
-          </View>
+          <NeckSVG />
         </View>
         {!!error && <View style={styles.loadError}>
           <Text style={styles.errorText}>{error}</Text>
@@ -98,17 +96,19 @@ const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: theme.colors.blue,
+    overflow: "hidden",
   },
 
   neck: {
-    flex: 0.4,
-    justifyContent: "flex-end",
-  },
-  neckContent: {
-    justifyContent: "flex-end",
+    bottom: 0,
+    height: "20%",
+    left: 0,
+    overflow: "hidden",
+    position: "absolute",
+    right: 0,
   },
   title: {
-    flex: 0.6,
+    height: "60%",
     justifyContent: "center",
   },
 });

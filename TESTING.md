@@ -387,3 +387,10 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - All 153 tests pass. Regressions cover bounded gaps, short/large phone/tablet windows, safe areas, complete body budgets, bass/guitar finger-label bounds, and minimum control-to-neck clearance. Web export and Android/iOS bundled Release builds pass.
 - Browser checks at phone/tablet and shortest supported sizes confirm fit. At 851 × 392, overview and zoom both measure Play at x=4.121/y=60.547 (43.994 square), Settings at x=58.115/y=62.539, and title at x=210.625/y=63.545 (430 × 37.998). Both neck containers begin at y=130.557, more than 26 points below the Play circle. No title/control movement between views.
 - Refreshed and launched physical Pixel 4a/Samsung Tab A11+ plus iPhone SE/iPhone 12/iPhone 16/iPad Pro M4 simulators. Final native captures verify visible row-to-neck clearance, complete footers and safe areas on all six; Samsung checked in its maximized desktop window. Proof: `docs/pr-51/pixel-responsive-title-row.png` and `docs/pr-51/ipad-responsive-title-row.png`.
+
+
+### Responsive splash artwork — October 9
+
+- Replace the device-height-dependent neck viewBox and intrinsic nested sizing with a fixed composition filling a bottom-anchored 20%-height region. Uniform SVG slice scaling preserves circles, fills width, and crops the continuing neck at the bottom on phones/tablets. The title retains its existing upper-60% placement.
+- Held-splash browser previews at 567 × 320, 851 × 393, 1000 × 550 and 1194 × 834 confirm full-width strings, round notes, and bottom cropping with no blue strip beneath the graphic. Preview-only startup holds were removed before native builds. Installed iPad launch-frame capture confirms the same composition; proof: `docs/pr-51/ipad-responsive-splash.png`.
+- All 153 existing tests, production web export and Android/iOS bundled Release builds pass. Refreshed and launched SE/iPhone 12/iPhone 16/iPad simulators. Pixel/Samsung installation is waiting for their Play Protect security-check prompts to be dismissed. Audio/font/settings readiness and Retry behavior are unchanged.

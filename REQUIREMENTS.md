@@ -148,3 +148,8 @@ Native device timing, pitch shifting, and layout still require device listening/
 - Place audio controls, title and applicable key arrows on the same shared vertical centerline. Derive their spacing below the blue header from available height, with minimum/maximum gaps so short phones fit and tall tablets do not push the title too low. Follow the released app's breathing room while adapting to the current window.
 - Reserve a minimum 20-point gap below the 56-point row before allocating neck space, then fit the necks into the remaining area above the footer. Reduce neck size slightly on constrained screens rather than crowding controls or overlapping the footer.
 - Keep phone title bounds, audio-button coordinates and key-arrow row fixed between full-neck and zoomed views. Position selection, title length, bass mode and handedness must not alter this anchor. Preserve existing horizontal navigation symmetry, safe areas, and per-section cutout clearance.
+
+
+## Responsive splash artwork — October 9
+
+- Give tablets the same bottom-cropped neck composition as phones. Anchor the decorative neck to the bottom fifth of the current canvas, filling its width and preserving note/fret proportions with a fixed viewBox and uniform cover scaling. Crop excess artwork at the right/bottom instead of leaving blue beneath the frets. Keep the title in the upper 60% and retain startup loading/retry behavior.
