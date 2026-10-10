@@ -46,6 +46,16 @@ test("native tablet landscape request survives multi-window transitions and repe
   assert.match(generated, /onMultiWindowModeChanged[\s\S]*super.onMultiWindowModeChanged[^\n]*\n    applyOrientationPolicy\(\)/);
 });
 
+test("folding reclassifies the active display without an activity restart", async () => {
+  const generated = await generateActivity(freshActivity);
+  const previous = generated.replace(/\n  override fun onConfigurationChanged\(newConfig: Configuration\) \{[\s\S]*?\n  \}\n/, "");
+  assert.notEqual(previous, generated);
+  assert.equal(await generateActivity(previous), generated);
+  assert.equal(await generateActivity(generated), generated);
+  assert.equal((generated.match(/override fun onConfigurationChanged/g) || []).length, 1);
+  assert.match(generated, /super.onConfigurationChanged\(newConfig\)[\s\S]*?applyOrientationPolicy\(\)/);
+});
+
 test("keeping tablet orientation fixed preserves Android window resizing", async () => {
   const config = withAndroidImmersiveMode({});
   const apply = async (modResults) => (await config.mods.android.manifest({ modRequest: {}, modResults })).modResults;

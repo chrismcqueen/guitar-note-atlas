@@ -1,5 +1,11 @@
 # Device testing
 
+## Foldable inner-screen tablet layout and expanded lab — October 10, 2026
+
+- Fit the tablet canvas into tablet windows at least 800 × 440 usable points, down to 80% scale. The Pixel Fold inner display now shows both necks, while its outer display and narrow tablet windows retain compact layouts. Existing full-size iPad/Android tablet geometry and phone shells are preserved. Insets, sliders and scrolling share the canvas transform.
+- Reapply Android orientation policy on configuration changes and clear viewport measurements when switching physical display class. Verified live open → closed → open on Pixel Fold with the app process retained, correct tablet/phone layouts and no recurrence of the earlier black screen. Saved native captures in `docs/feature-polish/pixel-fold-{inner-tablet,outer-phone}.png`. Playback/popover continuity across folds remains a manual check.
+- All 167 tests, web export and bundled Android/iOS Release builds pass. Refreshed six iOS simulators, the connected Samsung tablet and four Android AVDs. Samsung retains its fixed landscape request. See [the lab inventory and tooling limitations](docs/test-lab.md), including custom stock-Android phone profiles and pending iPhone Duo tooling.
+
 ## Android tablet landscape request and footer seam — October 10, 2026
 
 - Reproduced the Samsung app reporting `SCREEN_ORIENTATION_UNSPECIFIED` in its maximized desktop window. The activity deliberately released the tablet lock whenever Android reported multi-window mode. Keep requesting fixed landscape for tablets in every window mode, using maximum display bounds for device identity; phones retain portrait. Keep the activity resizable and the existing window-based tablet/compact breakpoint and upright tablet gestures. Add the supported orientation-override opt-out without changing iPad configuration.
@@ -11,17 +17,25 @@ Run these checks before releasing changes that affect layout, navigation, music 
 
 ## Active manual-test builds
 
-Lane requested on October 8 that each app refresh include the iPhone, iPad and connected Pixel, then added the iPhone SE and physical Samsung tablet for testing. Install and reopen the current bundled Release build on the available targets below after app changes; preserve each device's saved preferences. All iOS simulators can use the universal app built in `/tmp/gna-bundled-ipad/Build/Products/Release-iphonesimulator/guitarnoteatlas.app`.
+Install and reopen the current bundled Release build on the available targets below after app changes; preserve each device's saved preferences. Lane expanded the lab on October 10 with small/standard iPads, a flagship-size Android phone, a Samsung-size phone, Pixel Tablet and Pixel Fold. All iOS simulators can use the universal app built in `/tmp/gna-bundled-ipad/Build/Products/Release-iphonesimulator/guitarnoteatlas.app`; Android uses `android/app/build/outputs/apk/release/app-release.apk`. See [test-lab setup and limitations](docs/test-lab.md).
 
 | Target | Device identity | App |
 | --- | --- | --- |
 | iPhone 16, iOS 18.4 | `6FC22721-D615-459C-A2E9-D28CCFDE4B0A` | `dev.com.guitar-note-atlas` |
 | iPhone SE (3rd generation), iOS 18.4 | `581D67C8-78BA-4ADF-B81B-A25C055DFC9B` | `dev.com.guitar-note-atlas` |
+| iPhone 12, iOS 18.4 | `4C76C9C5-F0F8-4C5E-93D1-746FAF56C321` | `dev.com.guitar-note-atlas` |
 | iPad Pro 11-inch (M4), iOS 18.4 | `497648CB-7BFE-4972-BDE7-29C43C849A7A` | `dev.com.guitar-note-atlas` |
+| iPad mini (A17 Pro), iPadOS 26.5 | `476417BC-4369-48A1-A485-81AABB807F01` | `dev.com.guitar-note-atlas` |
+| iPad (A16), iPadOS 26.5 | `958D60F1-509A-47E5-96B7-C4532B05686C` | `dev.com.guitar-note-atlas` |
+| Pixel 11 Pro XL layout approximation, API 37.1 | AVD `GNA_Pixel_11_Pro_XL` | `dev.com.guitarnoteatlas` |
+| Galaxy S26 layout approximation, stock Android API 37.1 | AVD `GNA_Galaxy_S26` | `dev.com.guitarnoteatlas` |
+| Pixel Tablet, API 37.1 | AVD `Pixel_Tablet` | `dev.com.guitarnoteatlas` |
+| Pixel Fold, API 37.1 | AVD `GNA_Pixel_Fold` | `dev.com.guitarnoteatlas` |
 | Physical Pixel 4a, Android 13 | `08281JEC229228` | `dev.com.guitarnoteatlas` |
 | Physical Samsung Galaxy Tab A11+, SM-X230 | `R5GL7221G8R` | `dev.com.guitarnoteatlas` |
+| Physical Pixel 8 | Arriving October 12; USB identity pending | `dev.com.guitarnoteatlas` |
 
-The iPhone simulator is booted with the current bundled Release build. Its first-run tutorial prompt has been dismissed; Audio Player is always available. The app was left stopped in full-neck overview with the simulator upright in landscape. Native UI inspection confirms the fretboard, key header and audio controls are visible. Keep the testing simulators running and refresh them alongside connected physical devices. Other project simulators are separate.
+Keep the iOS testing simulators available and refresh them alongside connected physical devices. Start Android emulators in small batches from Android Studio's Running Devices + or Device Manager; the host has 24 GB RAM and audio should be checked with only one emulator playing. An AVD name is stable; its `emulator-5554`-style adb serial can change between launches. Match it with `adb -s <serial> emu avd name` before installing. Other project simulators remain separate. iPhone Duo is pending compatible macOS/Xcode tooling, as described in the setup notes.
 
 ## Automated checks
 

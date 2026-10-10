@@ -19,7 +19,15 @@ const RotatedViewport = ({ children }) => {
   const tablet = Platform.OS === "ios" ? Platform.isPad : isTabletDisplay(screen);
   const portraitShell = (Platform.OS === "ios" || Platform.OS === "android") && !tablet;
   const lastPortraitWindow = useRef(null);
+  const lastTablet = useRef(tablet);
   const [contentWindow, setContentWindow] = useState(null);
+
+  // Folding changes the physical display class without remounting the app.
+  // Never carry the old display's measured canvas into the new shell.
+  if (lastTablet.current !== tablet) {
+    lastPortraitWindow.current = null;
+    lastTablet.current = tablet;
+  }
 
   // Expo Go can briefly report its own landscape-shaped host window while it
   // hands off to this project's portrait lock. Never let that transient host
@@ -27,7 +35,8 @@ const RotatedViewport = ({ children }) => {
   // portrait window immediately, while Expo Go gets a black frame until its
   // intended window is ready.
   if (portraitWindow) lastPortraitWindow.current = window;
-  const activeWindow = portraitShell ? (lastPortraitWindow.current ?? window) : (contentWindow ?? window);
+  const activeWindow = portraitShell ? (lastPortraitWindow.current ?? window)
+    : (contentWindow?.tablet === tablet ? contentWindow : window);
   const viewport = useMemo(() => getAppViewport({ window: activeWindow, screen, platform: Platform.OS, insets, tablet }),
     [activeWindow.height, activeWindow.width, screen.height, screen.width, insets.top, insets.bottom, tablet]);
   if (portraitShell && !lastPortraitWindow.current) return <View style={styles.screen} />;
@@ -37,8 +46,8 @@ const RotatedViewport = ({ children }) => {
       <View
         onLayout={portraitShell ? undefined : ({ nativeEvent: { layout } }) => {
           if (layout.width > 0 && layout.height > 0) {
-            setContentWindow(previous => previous?.width === layout.width && previous?.height === layout.height
-              ? previous : { width: layout.width, height: layout.height });
+            setContentWindow(previous => previous?.tablet === tablet && previous?.width === layout.width && previous?.height === layout.height
+              ? previous : { width: layout.width, height: layout.height, tablet });
           }
         }}
         style={[styles.screen, { paddingTop: viewport.padding.top, paddingBottom: viewport.padding.bottom }]}>

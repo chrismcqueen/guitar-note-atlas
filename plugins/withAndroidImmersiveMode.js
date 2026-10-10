@@ -72,6 +72,15 @@ const CAPTION_METHOD = `
   }
 `;
 
+const CONFIGURATION_METHOD = `
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    super.onConfigurationChanged(newConfig)
+    // Fold/unfold can replace the active display without recreating the activity.
+    applyOrientationPolicy()
+    hideSystemBars()
+  }
+`;
+
 const METHODS = `
   private fun hideSystemBars() {
     WindowInsetsControllerCompat(window, window.decorView).apply {
@@ -177,6 +186,10 @@ module.exports = function withAndroidImmersiveMode(config) {
         "\n  /**\n   * Returns the name of the main component",
         `${METHODS}\n  /**\n   * Returns the name of the main component`,
       );
+    }
+
+    if (!source.includes("override fun onConfigurationChanged")) {
+      source = source.replace("\n  /**\n   * Returns the name of the main component", `${CONFIGURATION_METHOD}\n  /**\n   * Returns the name of the main component`);
     }
 
     mainActivityConfig.modResults.contents = source;

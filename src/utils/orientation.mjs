@@ -33,10 +33,17 @@ export const getAppViewport = ({ window, screen = window, platform, insets = {},
     width: window.width,
     height: Math.min(usableHeight, window.width * 0.75),
   };
-  // Keep the compact controls usable even in a very small desktop window.
-  const scale = portraitShell ? 1 : Math.min(1, available.width / 568, available.height / 320);
+  // Small tablets and unfolded phones can fit the two-neck tablet canvas at
+  // 80% scale. Choose by usable space so folding or narrowing a window returns
+  // to compact mode; a phone's rotated shell never opts into tablet mode.
+  const tabletCanvas = tablet && !portraitShell && available.width >= 800 && available.height >= 440;
+  const minimum = tabletCanvas ? { width: 1000, height: 550 } : { width: 568, height: 320 };
+  const scale = portraitShell ? 1 : Math.min(1, available.width / minimum.width, available.height / minimum.height);
   return {
-    dimensions: { width: available.width / scale, height: available.height / scale },
+    dimensions: {
+      width: tabletCanvas ? Math.max(1000, available.width / scale) : available.width / scale,
+      height: tabletCanvas ? Math.max(550, available.height / scale) : available.height / scale,
+    },
     rotated,
     scale,
     padding,
