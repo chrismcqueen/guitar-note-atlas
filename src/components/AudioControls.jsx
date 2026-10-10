@@ -220,7 +220,7 @@ export const AudioPopover = () => {
             </Pressable>
           </View>
           <View style={styles.controlCluster}>
-            <VerticalStepButtons upLabel="Increase tempo" downLabel="Decrease tempo" upHandlers={fasterTempoPress} downHandlers={slowerTempoPress} upDisabled={tempo >= MAX_TEMPO} downDisabled={tempo <= MIN_TEMPO} />
+            <VerticalStepButtons color={theme.colors.blue} upLabel="Increase tempo" downLabel="Decrease tempo" upHandlers={fasterTempoPress} downHandlers={slowerTempoPress} upDisabled={tempo >= MAX_TEMPO} downDisabled={tempo <= MIN_TEMPO} />
             <View style={styles.tempoValue}>
               <TextInput
                 accessibilityLabel="Tempo in beats per minute"
@@ -252,7 +252,7 @@ export const AudioPopover = () => {
         <View style={styles.noteRateRow}>
           <Text style={[audioSettingsStyles.label, styles.label]}>SUBDIVISION</Text>
           <View style={styles.controlCluster}>
-            <VerticalStepButtons upLabel="Select shorter subdivision" downLabel="Select longer subdivision" upHandlers={shorterSubdivisionPress} downHandlers={longerSubdivisionPress} upDisabled={!canSelectShorterRate} downDisabled={!canSelectLongerRate} />
+            <VerticalStepButtons color={theme.colors.blue} upLabel="Select shorter subdivision" downLabel="Select longer subdivision" upHandlers={shorterSubdivisionPress} downHandlers={longerSubdivisionPress} upDisabled={!canSelectShorterRate} downDisabled={!canSelectLongerRate} />
             <View accessible accessibilityLabel={`Subdivision: ${selectedNoteRate.name}`} style={styles.rateValue}>
               <Text accessible={false} style={styles.rateLabel}>{selectedNoteRate.label}</Text>
               <Svg accessible={false} pointerEvents="none" width={30} height={24} viewBox="0 0 30 24">
