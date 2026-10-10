@@ -4,21 +4,21 @@ export const PHONE_FOOTER_HEIGHT = 53;
 export const TABLET_POSITION_TITLE_HEIGHT = 64;
 export const TABLET_BODY_GAP = 8;
 
-export const getMenuLeftInset = (insets, platform = "ios") =>
-  insets.left + (platform === "android" ? 24 : 0);
+export const getNavigationSideInset = (insets, platform = "ios", centerOffset = 50) =>
+  // Mirror both control centers, moving both inward if a right-side cutout
+  // needs extra clearance for the visible dots (24 points).
+  Math.max(insets.left + (platform === "android" ? 24 : 0), insets.right + 12 - centerOffset);
 
-export const getOptionsRightInset = (insets, platform = "ios", centerOffset = 50) =>
-  // Clear the visible dots (24 points), rather than reserving the entire
-  // touch target beyond a cutout and pushing Options farther in than Menu.
-  platform === "android" ? Math.max(getMenuLeftInset(insets, platform), insets.right + 12 - centerOffset) : insets.right;
-
-export const getPhoneNavigationLayout = (insets, platform = "ios") => ({
-  menuLeft: getMenuLeftInset(insets, platform),
-  optionsRight: getOptionsRightInset(insets, platform),
-  controlWidth: 100,
-  menuCenter: getMenuLeftInset(insets, platform) + 50,
-  titleInset: Math.max(getMenuLeftInset(insets, platform), insets.right) + 112,
-});
+export const getPhoneNavigationLayout = (insets, platform = "ios") => {
+  const sideInset = getNavigationSideInset(insets, platform);
+  return {
+    menuLeft: sideInset,
+    optionsRight: sideInset,
+    controlWidth: 100,
+    menuCenter: sideInset + 50,
+    titleInset: Math.max(sideInset, insets.right) + 112,
+  };
+};
 
 // Allocate the usable body between the zoom neck and overview. Both SVGs
 // preserve their proportions, and neither can borrow space from navigation.

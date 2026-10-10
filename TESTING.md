@@ -356,3 +356,9 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 
 - Mirror Menu's visible center for the Android Options dots. Tablet Options uses a 55-point center offset matching Menu's label, while compact layouts use 50 points on each side. Clear the actual dots from right-side cutouts instead of adding the whole touch target beyond the inset; preserve iOS offsets.
 - All 140 tests pass, including Pixel-style asymmetric safe areas and unusually large cutouts. Bundled Android/iOS Release builds pass; all five test devices are refreshed. Native captures confirm matching center distances on Samsung and Pixel: `docs/pr-51/samsung-menu-options-symmetry.png` and `docs/pr-51/pixel-menu-options-symmetry.png`.
+
+### Matching Menu/Options on both platforms
+
+- Apply the shared Menu/Options side inset to iOS as well as Android, including the tablet label-center correction. Keep the established Menu positions on SE, iPhone 12, iPhone 16 and iPad; mirror Options from the opposite edge. An unusually large right cutout moves both centers together, preserving symmetry and dot clearance.
+- All 141 tests and Android/iOS bundled Release builds pass. Refreshed both physical Android devices and all four iOS simulators, including the newly added iPhone 12 (iOS 18.4, `4C76C9C5-F0F8-4C5E-93D1-746FAF56C321`).
+- Native SE/iPhone 12/iPhone 16 overview and iPad zoom captures confirm matching center distances. iPhone 16 overview-to-zoom keeps navigation fixed; the moved Options target opens/closes its drawer correctly. Proof: `docs/pr-51/iphone12-menu-options-symmetry.png` and `docs/pr-51/ipad-menu-options-symmetry.png`.

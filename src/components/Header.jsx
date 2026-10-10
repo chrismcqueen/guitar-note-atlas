@@ -4,13 +4,13 @@ import { Platform, Text, View, StyleSheet, Pressable } from "react-native";
 import { OverlayStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
-import { getMenuLeftInset, getOptionsRightInset, getPhoneNavigationLayout, TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
+import { getNavigationSideInset, getPhoneNavigationLayout, TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
 
 const phoneMenuTextWidth = 52;
 const tabletMenuTextWidth = 62;
 export const getMenuVisualCenterX = (insets, isTablet) => {
   if (!isTablet) return getPhoneNavigationLayout(insets, Platform.OS).menuCenter;
-  return getMenuLeftInset(insets, Platform.OS) + 24 + tabletMenuTextWidth / 2;
+  return getNavigationSideInset(insets, Platform.OS, 55) + 24 + tabletMenuTextWidth / 2;
 };
 
 // Anchor the phone practice row to the blue header, independent of neck layout.
@@ -30,12 +30,11 @@ const Header = () => {
   const fullScreen = { height: "100%", width: "100%" };
   // Android's portrait-native shell reports the physical display-cutout inset
   // before this view is rotated. That inset belongs on the landscape side,
-  // which is already handled by menuInset/optionsInset; applying it vertically
+  // which is already handled by navigationInset; applying it vertically
   // stretches the phone header after a standalone rebuild.
   const headerInset = isTablet || Platform.OS === "android" ? 0 : insets.top;
   const controlTop = headerInset;
-  const menuInset = getMenuLeftInset(insets, Platform.OS);
-  const optionsInset = getOptionsRightInset(insets, Platform.OS, isTablet ? 55 : 50);
+  const navigationInset = getNavigationSideInset(insets, Platform.OS, isTablet ? 55 : 50);
   // The released iPad build was laid out inside an approximately 4:3 UIKit
   // canvas. Keep its navigation-item scale when immersive mode exposes a
   // wider modern iPad viewport.
@@ -64,7 +63,7 @@ const Header = () => {
           accessibilityLabel="Menu"
           accessibilityRole="button"
           hitSlop={12}
-          style={withPressedOpacity([styles.headerControl, styles.menuButton, !isTablet && styles.phoneControl, { height: activeHeaderHeight, left: menuInset, top: controlTop }])}
+          style={withPressedOpacity([styles.headerControl, styles.menuButton, !isTablet && styles.phoneControl, { height: activeHeaderHeight, left: navigationInset, top: controlTop }])}
           onPress={() => setShowMenu(!showMenu)}
         >
           <Text
@@ -120,9 +119,8 @@ const Header = () => {
           style={withPressedOpacity([
             styles.headerControl,
             styles.settingsButtonContainer,
-            Platform.OS === "android" && styles.androidSettingsButtonContainer,
             !isTablet && styles.phoneControl,
-            { height: activeHeaderHeight, right: optionsInset, top: controlTop },
+            { height: activeHeaderHeight, right: navigationInset, top: controlTop },
           ])}
           onPress={() => setShowOptions(!showOptions)}
         >
@@ -196,9 +194,6 @@ const styles = StyleSheet.create({
   },
   settingsButtonContainer: {
     alignItems: "center",
-    width: 75,
-  },
-  androidSettingsButtonContainer: {
     // Menu's tablet label center is 24 + 62 / 2 = 55 points.
     // Mirror that center from the right edge rather than the hit area's center.
     width: 110,

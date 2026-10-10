@@ -5,13 +5,13 @@ import { positionFingerLabelY } from '../src/utils/positions.mjs';
 import { getFooterGeometry } from '../src/utils/footerSelection.mjs';
 import { settingsOffsetForGesture } from '../src/utils/settingsScroll.mjs';
 import { sliderPositionForGesture } from '../src/utils/volumeSlider.mjs';
-import { getMenuLeftInset, getPhoneNavigationLayout, getPhonePracticeBodyHeight, getPositionNeckSize, getTabletPracticeLayout, TABLET_BODY_GAP, TABLET_HEADER_HEIGHT, TABLET_FOOTER_HEIGHT, PHONE_FOOTER_HEIGHT } from '../src/utils/practiceLayout.mjs';
+import { getNavigationSideInset, getPhoneNavigationLayout, getPhonePracticeBodyHeight, getPositionNeckSize, getTabletPracticeLayout, TABLET_BODY_GAP, TABLET_HEADER_HEIGHT, TABLET_FOOTER_HEIGHT, PHONE_FOOTER_HEIGHT } from '../src/utils/practiceLayout.mjs';
 
 test('phone navigation reserves actual safe areas without adding notched-phone margins to the SE', () => {
   for (const insets of [{ left: 0, right: 0 }, { left: 27, right: 0 }, { left: 59, right: 34 }]) {
     const layout = getPhoneNavigationLayout(insets);
     assert.equal(layout.menuCenter - insets.left, 50);
-    assert.equal(layout.optionsRight, insets.right);
+    assert.equal(layout.optionsRight, layout.menuLeft);
     assert.ok(layout.titleInset >= Math.max(insets.left, insets.right) + layout.controlWidth);
   }
   const se = getPhoneNavigationLayout({ left: 0, right: 0 });
@@ -20,7 +20,7 @@ test('phone navigation reserves actual safe areas without adding notched-phone m
   assert.ok(667 - se.titleInset * 2 >= 58 * 6.494);
 });
 
-test('Android Menu/audio alignment adds breathing room without moving iOS controls', () => {
+test('Android Menu/audio alignment retains extra breathing room', () => {
   for (const insets of [{ left: 0, right: 0 }, { left: 27, right: 0 }, { left: 59, right: 34 }]) {
     const ios = getPhoneNavigationLayout(insets, 'ios');
     const android = getPhoneNavigationLayout(insets, 'android');
@@ -32,14 +32,24 @@ test('Android Menu/audio alignment adds breathing room without moving iOS contro
     assert.ok(android.titleInset >= android.menuLeft + android.controlWidth + 12);
     assert.equal(android.optionsRight, android.menuLeft);
     assert.equal(android.optionsRight + android.controlWidth / 2, android.menuCenter);
-    assert.equal(getMenuLeftInset(insets, 'android'), android.menuLeft);
+    assert.equal(getNavigationSideInset(insets, 'android'), android.menuLeft);
   }
-  // A larger right-side cutout still takes precedence over visual symmetry.
-  const pixel = getPhoneNavigationLayout({ left: 0, right: 51 }, 'android');
-  assert.equal(pixel.optionsRight + 50, pixel.menuCenter);
-  const cutout = getPhoneNavigationLayout({ left: 0, right: 80 }, 'android');
-  assert.equal(cutout.optionsRight + 50 - 12, 80);
-  assert.ok(cutout.titleInset >= cutout.optionsRight + cutout.controlWidth);
+});
+
+test('Menu and Options centers mirror each other on both platforms and layout sizes', () => {
+  for (const platform of ['ios', 'android']) {
+    for (const insets of [{ left: 0, right: 0 }, { left: 34, right: 47 }, { left: 34, right: 59 }, { left: 0, right: 51 }, { left: 0, right: 80 }]) {
+      const phone = getPhoneNavigationLayout(insets, platform);
+      assert.equal(phone.menuCenter, phone.optionsRight + phone.controlWidth / 2);
+      assert.ok(phone.menuCenter - 12 >= insets.right);
+      assert.ok(phone.titleInset >= phone.optionsRight + phone.controlWidth);
+      // Tablet Menu is centered at 55 points, matching the 110-point
+      // Options target; both controls use the very same side inset.
+      const tabletInset = getNavigationSideInset(insets, platform, 55);
+      assert.equal(tabletInset + 24 + 62 / 2, tabletInset + 110 / 2);
+      assert.ok(tabletInset + 55 - 12 >= insets.right);
+    }
+  }
 });
 
 const screen = { width: 1280, height: 800 };
