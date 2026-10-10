@@ -5,7 +5,7 @@ import { positionFingerLabelY } from '../src/utils/positions.mjs';
 import { getFooterGeometry } from '../src/utils/footerSelection.mjs';
 import { settingsOffsetForGesture } from '../src/utils/settingsScroll.mjs';
 import { sliderPositionForGesture } from '../src/utils/volumeSlider.mjs';
-import { getPhoneNavigationLayout, getPhonePracticeBodyHeight, getPositionNeckSize, getTabletPracticeLayout, TABLET_BODY_GAP, TABLET_HEADER_HEIGHT, TABLET_FOOTER_HEIGHT, PHONE_FOOTER_HEIGHT } from '../src/utils/practiceLayout.mjs';
+import { getMenuLeftInset, getPhoneNavigationLayout, getPhonePracticeBodyHeight, getPositionNeckSize, getTabletPracticeLayout, TABLET_BODY_GAP, TABLET_HEADER_HEIGHT, TABLET_FOOTER_HEIGHT, PHONE_FOOTER_HEIGHT } from '../src/utils/practiceLayout.mjs';
 
 test('phone navigation reserves actual safe areas without adding notched-phone margins to the SE', () => {
   for (const insets of [{ left: 0, right: 0 }, { left: 27, right: 0 }, { left: 59, right: 34 }]) {
@@ -18,6 +18,21 @@ test('phone navigation reserves actual safe areas without adding notched-phone m
   // At the bundled Blackout font's 6.494-em advance, Major Scale can retain
   // its oversized 58-point font instead of shrinking to fit old side reserves.
   assert.ok(667 - se.titleInset * 2 >= 58 * 6.494);
+});
+
+test('Android Menu/audio alignment adds breathing room without moving iOS controls', () => {
+  for (const insets of [{ left: 0, right: 0 }, { left: 27, right: 0 }, { left: 59, right: 34 }]) {
+    const ios = getPhoneNavigationLayout(insets, 'ios');
+    const android = getPhoneNavigationLayout(insets, 'android');
+    assert.equal(ios.menuLeft, insets.left);
+    assert.equal(android.menuCenter - ios.menuCenter, android.menuLeft - ios.menuLeft);
+    // The 92-point audio pair has room beyond the safe edge, and the title
+    // clears the shifted navigation target without changing its midpoint.
+    assert.ok(android.menuCenter - 92 / 2 - insets.left >= 24);
+    assert.ok(android.titleInset >= android.menuLeft + android.controlWidth + 12);
+    assert.equal(android.optionsRight, ios.optionsRight);
+    assert.equal(getMenuLeftInset(insets, 'android'), android.menuLeft);
+  }
 });
 
 const screen = { width: 1280, height: 800 };

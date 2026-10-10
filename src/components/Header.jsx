@@ -4,15 +4,13 @@ import { Platform, Text, View, StyleSheet, Pressable } from "react-native";
 import { OverlayStore, Store } from "../../Store";
 import { theme } from "../utils/theme";
 import { withPressedOpacity } from "../utils/pressable";
-import { getPhoneNavigationLayout, TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
+import { getMenuLeftInset, getPhoneNavigationLayout, TABLET_HEADER_HEIGHT } from "../utils/practiceLayout.mjs";
 
 const phoneMenuTextWidth = 52;
 const tabletMenuTextWidth = 62;
 export const getMenuVisualCenterX = (insets, isTablet) => {
-  if (!isTablet) return getPhoneNavigationLayout(insets).menuCenter;
-  const menuInset = insets.left;
-  const textWidth = isTablet ? tabletMenuTextWidth : phoneMenuTextWidth;
-  return menuInset + 24 + textWidth / 2;
+  if (!isTablet) return getPhoneNavigationLayout(insets, Platform.OS).menuCenter;
+  return getMenuLeftInset(insets, Platform.OS) + 24 + tabletMenuTextWidth / 2;
 };
 
 // Anchor the phone practice row to the blue header, independent of neck layout.
@@ -27,7 +25,7 @@ const Header = () => {
   const { dimensions, globalState, insets } = useContext(Store);
   const { showMenu, setShowMenu, showOptions, setShowOptions } = useContext(OverlayStore);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const phoneNavigation = getPhoneNavigationLayout(insets);
+  const phoneNavigation = getPhoneNavigationLayout(insets, Platform.OS);
   const activeHeaderHeight = isTablet ? tabletHeaderHeight : phoneHeaderHeight;
   const fullScreen = { height: "100%", width: "100%" };
   // Android's portrait-native shell reports the physical display-cutout inset
@@ -36,7 +34,7 @@ const Header = () => {
   // stretches the phone header after a standalone rebuild.
   const headerInset = isTablet || Platform.OS === "android" ? 0 : insets.top;
   const controlTop = headerInset;
-  const menuInset = insets.left;
+  const menuInset = getMenuLeftInset(insets, Platform.OS);
   const optionsInset = insets.right;
   // The released iPad build was laid out inside an approximately 4:3 UIKit
   // canvas. Keep its navigation-item scale when immersive mode exposes a
