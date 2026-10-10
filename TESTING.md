@@ -417,3 +417,11 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Keep the iPad canvas full height with its blue footer reaching the screen bottom; do not reserve an extra home-indicator strip. Safe-area information remains available to the popover and splash. Unrotated iPad settings use native vertical scrolling and horizontal slider/neck/footer gestures.
 - All 163 tests pass. Regression checks cover native iPad layout, smaller tablet windows, preserved phone rotation, native vertical scrolling/horizontal slider coordinates, full-height iPad canvas and retained safe-area insets. Expo config introspection confirms phone Portrait, iPad Landscape Right and no global startup mask.
 - Final production web export and bundled iOS/Android Release builds pass. All six devices installed and launched successfully. Native iPad verification confirms Landscape Right, ordinary audio settings placement, full footer and blue extending to the screen bottom; proof: `docs/pr-51/ipad-native-landscape.png`. iPhones retain their portrait-native orientation masks and rotated interface.
+
+
+### Released app identity and audio backdrop — October 9
+
+- Read the released target's Info.plist to confirm its launcher name is Guitar Atlas, its iOS category is Music and its native status bar is hidden on phone/iPad. Match those settings while preserving the established Guitar Note Atlas welcome copy and restored icon artwork.
+- Expo config introspection and the compiled iOS app confirm Guitar Atlas; APK badging confirms the same default and localized Android application labels. The production web page title also reads Guitar Atlas.
+- Audio Settings uses the shared Options overlay color, black at 50% opacity. Browser measurements confirm identical underlying Clear bounds before/after opening, an undimmed card, and outside dismissal without changing key/position. Native iPad capture confirms full-screen dimming without shrinking: `docs/pr-51/ipad-audio-dark-backdrop.png`.
+- All 163 tests, production web export and bundled iOS/Android Release builds pass. Installed and launched both physical Android devices and all four iOS simulators successfully.

@@ -153,3 +153,9 @@ Native device timing, pitch shifting, and layout still require device listening/
 ## Responsive splash artwork — October 9
 
 - Give tablets the same relative neck composition as phones, preserving note/fret proportions with uniform cover scaling. Raise the neck 3% of usable height, bounded to 12–24 points above the bottom safe area, and fade its lower half smoothly into the blue background. Retain a 20%-height neck region and the title in the upper 60% of usable height. Keep title, artwork and loading/Retry clear of device cutouts, rounded corners and visible system controls: use symmetric iOS safe sides and exact Android cutout/bar rectangles per splash region. Avoid shifting unrelated regions for a camera elsewhere on Android. Keep at least 12 points of extra side clearance. Retain startup readiness behavior.
+
+
+## Released app identity and audio backdrop — October 9
+
+- Match the released app's user-visible name: Guitar Atlas on iOS and Android launchers/system app labels and the web page title. Preserve Guitar Note Atlas in the established product/welcome copy. Keep the restored original icon artwork and the released iOS Music category; hide the native startup status bar on phone and iPad.
+- Opening Audio Settings dims the entire underlying app with the same shared black 50%-opacity overlay as Options. Keep the card undimmed and the screen at its existing size/position. Retain tap-outside dismissal and block underlying controls while open.

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "guitar-note-atlas",
+    "name": "Guitar Atlas",
     "slug": "guitar-note-atlas",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,6 +17,10 @@
       "bundleIdentifier": "dev.com.guitar-note-atlas",
       "buildNumber": "1.0.0",
       "infoPlist": {
+        "CFBundleDisplayName": "Guitar Atlas",
+        "LSApplicationCategoryType": "public.app-category.music",
+        "UIStatusBarHidden": true,
+        "UIStatusBarHidden~ipad": true,
         "UISupportedInterfaceOrientations": [
           "UIInterfaceOrientationPortrait"
         ],

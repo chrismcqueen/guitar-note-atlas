@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   closeText: { color: theme.colors.blue, fontSize: 29, lineHeight: 30 },
   controlCluster: { alignItems: "center", flexDirection: "row", gap: 12, justifyContent: "flex-end", width: 136 },
   controlLead: { alignItems: "center", flex: 1, flexDirection: "row" },
-  dismissLayer: { backgroundColor: "rgba(0, 0, 0, 0.001)", left: 0, position: "absolute", top: 0, zIndex: 0 },
+  dismissLayer: { backgroundColor: theme.colors.overlay, left: 0, position: "absolute", top: 0, zIndex: 0 },
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
   label: { flex: 1, height: 24 },
   mobileHint: { color: theme.colors.grey, fontSize: 12, lineHeight: 16, textAlign: "center" },
