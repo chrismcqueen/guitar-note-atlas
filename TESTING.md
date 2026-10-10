@@ -334,3 +334,8 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Replace the footer's fixed-height, downward-shifted native scale-degree text with the existing vector DegreeLabel renderer. Center digit ink inside separate single/stacked lanes; preserve the existing degree-selection handlers. Native SE checks confirm b2 selection/deselection and stacked accidental labels render without clipping. Footer container/buttons do not shrink into the neck layout.
 - All 139 tests pass, including SE/Pixel/modern-iPhone navigation-safe-area cases. Web export and Android/iOS bundled Release builds pass. Updated builds installed/launched on physical Pixel 4a and Samsung Tab A11+, plus iPhone SE, iPhone 16 and iPad Pro simulators.
 - Pixel native overview confirms edge spacing and complete footer labels; modern iPhone native capture retains notch/home-indicator clearance. Samsung capture confirms the updated compact floating window opens with its complete footer. Proof: `docs/pr-51/iphone-se-bounds-fixed.png` and `docs/pr-51/pixel-bounds-fixed.png`.
+
+### Audio Settings left-edge gap
+
+- Clamp the card's left position to at least six canvas points instead of zero, matching its minimum gap below the header. Preserve the existing Menu/audio anchor when it gives a larger inset.
+- Android/iOS bundled Release builds pass; refreshed Samsung, Pixel and all three iOS simulators. Physical Samsung windowed/maximized and immersive full-screen checks confirm left clearance. Full-screen capture shows nine physical pixels (six points at 240 dpi) between both the left edge and header: `docs/pr-51/samsung-popover-left-gap.png`.

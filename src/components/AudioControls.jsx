@@ -163,7 +163,8 @@ export const AudioPopover = () => {
   // Replace both buttons and leave a small gap below the app header,
   // including short phone layouts whose key row sits close to it.
   const cardTop = Math.max(headerBottom + 6, triggerTop - 6);
-  const cardLeft = Math.max(0, triggerLeft - 14);
+  // Match the header gap instead of clamping flush to square tablet edges.
+  const cardLeft = Math.max(6, triggerLeft - 14);
   const viewportHeight = dimensions.height;
   const cardMaxHeight = Math.max(0, viewportHeight - cardTop - 12);
   // Reserve padding (28) and the fixed header plus gap (38). Native
