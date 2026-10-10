@@ -1,5 +1,5 @@
 import React, { useContext, useState, createContext, useMemo } from "react";
-import { useWindowDimensions } from "react-native";
+import { Platform, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { getViewportInsets } from "./src/utils/orientation.mjs";
@@ -37,6 +37,9 @@ export const StoreProvider = ({ children }) => {
   const insets = sections.body;
   const navigationInsets = sections.navigation;
   const footerInsets = sections.footer;
+  // Extend the footer's blue baseline behind the iPad home indicator while
+  // keeping its buttons and cream edge above that system gesture area.
+  const footerBottomInset = Platform.OS === "ios" && Platform.isPad ? fallbackInsets.bottom : 0;
   const overlayInsets = sections.overlay;
 
   const value = useMemo(() => ({
@@ -45,6 +48,7 @@ export const StoreProvider = ({ children }) => {
     insets,
     navigationInsets,
     footerInsets,
+    footerBottomInset,
     overlayInsets,
     obstructions,
     showTutorial,
@@ -53,7 +57,7 @@ export const StoreProvider = ({ children }) => {
     setShowTutorialPrompt,
     globalState,
     setGlobalState,
-  }), [dimensions, fallbackInsets, globalState, insets, navigationInsets, footerInsets, overlayInsets, obstructions, showTutorial, showTutorialPrompt]);
+  }), [dimensions, fallbackInsets, globalState, insets, navigationInsets, footerInsets, footerBottomInset, overlayInsets, obstructions, showTutorial, showTutorialPrompt]);
 
   const overlayValue = useMemo(() => ({
     showMenu,

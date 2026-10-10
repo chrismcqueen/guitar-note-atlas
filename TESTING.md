@@ -425,3 +425,10 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Expo config introspection and the compiled iOS app confirm Guitar Atlas; APK badging confirms the same default and localized Android application labels. The production web page title also reads Guitar Atlas.
 - Audio Settings uses the shared Options overlay color, black at 50% opacity. Browser measurements confirm identical underlying Clear bounds before/after opening, an undimmed card, and outside dismissal without changing key/position. Native iPad capture confirms full-screen dimming without shrinking: `docs/pr-51/ipad-audio-dark-backdrop.png`.
 - All 163 tests, production web export and bundled iOS/Android Release builds pass. Installed and launched both physical Android devices and all four iOS simulators successfully.
+
+
+### iPad blue footer behind the home indicator — October 9
+
+- Refine the full-height iPad footer: keep blue extending to the screen bottom and raise its cream-to-blue horizontal edge and buttons above the actual mapped home-indicator inset. Reserve that height in the neck body budget and align the open scale menu with the raised footer. Keep the title/audio row at its existing position.
+- This changes only native iPad footer content clearance; phone and Android layouts retain their existing geometry. The app canvas, popover and splash still use the full viewport.
+- All 163 tests, production web export and bundled iOS/Android Release builds pass. Native iPad verification shows a continuous blue band behind the home indicator and complete footer labels: `docs/pr-51/ipad-blue-home-indicator.png`. The open scale menu ends at the raised footer; closing it restores the practice view. All six test devices installed and launched successfully.

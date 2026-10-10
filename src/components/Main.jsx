@@ -14,18 +14,19 @@ import { getPosition } from "../utils/positions.mjs";
 import { getPhonePracticeBodyHeight, getPracticeHeaderLayout, getTabletPracticeLayout, PRACTICE_NECK_GAP, TABLET_BODY_GAP } from "../utils/practiceLayout.mjs";
 
 export const Main = React.memo(() => {
-  const { dimensions, insets, navigationInsets, globalState } = useContext(Store);
+  const { dimensions, insets, navigationInsets, footerBottomInset, globalState } = useContext(Store);
   const { positionId } = useContext(PositionStore);
   const { showPositionOverview } = useContext(PositionVisibilityStore);
-  const fullScreen = { height: "100%", width: "100%" };
+  const fullScreen = { height: "100%", width: "100%", paddingBottom: footerBottomInset, backgroundColor: theme.colors.blue };
+  const contentDimensions = { ...dimensions, height: dimensions.height - footerBottomInset };
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const safeSideInset = Math.max(insets.left, insets.right);
   const practiceHeader = getPracticeHeaderLayout(dimensions, navigationInsets, Platform.OS);
   const navigationSideInset = Math.max(navigationInsets.left, navigationInsets.right);
-  const phoneBodyHeight = getPhonePracticeBodyHeight(dimensions.height, practiceHeader);
+  const phoneBodyHeight = getPhonePracticeBodyHeight(contentDimensions.height, practiceHeader);
   const position = getPosition(positionId);
   const positionTitle = globalState.options?.bassMode ? position.bassTitle : position.title;
-  const tabletLayout = getTabletPracticeLayout(dimensions, insets, practiceHeader);
+  const tabletLayout = getTabletPracticeLayout(contentDimensions, insets, practiceHeader);
   const tabletTitleWidth = dimensions.width - 2 * (getMenuVisualCenterX(navigationInsets, true) + AUDIO_CONTROL_GROUP_WIDTH / 2 + 12);
   const contentInsets = isTablet
     ? { paddingLeft: insets.left, paddingRight: insets.right }
@@ -78,6 +79,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    backgroundColor: theme.colors.white,
     alignItems: "center",
     flex: 1,
     justifyContent: "center",

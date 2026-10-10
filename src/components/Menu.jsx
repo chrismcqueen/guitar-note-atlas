@@ -23,13 +23,13 @@ const harmonicMinorModes = splitToColumns(data.scales["Harmonic Minor"]);
 const harmonicMajorModes = splitToColumns(data.scales["Harmonic Major"]);
 
 const Menu = () => {
-  const { dimensions, insets, globalState, setGlobalState } = useContext(Store);
+  const { dimensions, insets, footerBottomInset, globalState, setGlobalState } = useContext(Store);
   const { showMenu } = useContext(OverlayStore);
   const menuAnim = useRef(new Animated.Value(1)).current;
   const [mounted, setMounted] = useState(false);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const menuTop = (isTablet ? tabletHeaderHeight : phoneHeaderHeight) + (isTablet ? 0 : insets.top);
-  const footerHeight = isTablet ? 87 : 53;
+  const footerHeight = (isTablet ? 87 : 53) + footerBottomInset;
   const menuItemFontSize = isTablet ? dimensions.width / 40 : 19;
   const menuRowHeight = isTablet ? dimensions.width / 27 : 28;
   const sectionHeaderFontSize = isTablet ? dimensions.width / 36 : 21;
