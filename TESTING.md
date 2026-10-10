@@ -1,5 +1,12 @@
 # Device testing
 
+## Larger native touch margins — October 10, 2026
+
+- Expand Play/Stop and Audio Settings touch margins by eight points outward, limiting their facing edges to four points each so the ten-point visual gap retains a neutral lane. Pad their absolute parent and offset its anchor equally, preserving visible positions while preventing native parent bounds from clipping the added area.
+- Add outward-only slop to the paired tempo/subdivision/tablet-key arrows, six-point slop to the settings close button, and room in settings row parents for the existing Tap/toggle slop and enlarged tempo-input target. Add tutorial Exit and splash Retry slop. Preserve visible geometry, hold behavior, scroll bounds, modal interception and existing large/full-row targets; no horizontal expansion across adjacent footer choices or vertical expansion across contiguous menu rows.
+- All 168 tests, production web export, bundled ARM64 Android Release and iOS simulator Release builds pass. Compared every labeled button's original/current rectangle at 667 × 320 and 1600 × 900: visual dimensions/positions unchanged apart from less than 0.01 point of rounding; main audio buttons and tablet key arrows match exactly. React Native Web omits `hitSlop`, so this comparison checks layout rather than expanded browser hit areas.
+- Installed/launched on the running Pixel Fold and connected Samsung. Native clicks outside the Settings rectangle and Play circle successfully opened the popover and started count-in, respectively; stopped playback afterward. Other simulators stayed closed, with their latest iOS build ready for the next testing session.
+
 ## Foldable inner-screen tablet layout and expanded lab — October 10, 2026
 
 - Fit the tablet canvas into tablet windows at least 800 × 440 usable points, down to 80% scale. The Pixel Fold inner display now shows both necks, while its outer display and narrow tablet windows retain compact layouts. Existing full-size iPad/Android tablet geometry and phone shells are preserved. Insets, sliders and scrolling share the canvas transform.

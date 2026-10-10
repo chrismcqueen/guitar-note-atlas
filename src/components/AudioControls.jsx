@@ -22,6 +22,10 @@ const CONTROL_HIT_SLOP = 3;
 const TAP_TEMPO_RESET_MS = 2000;
 const AUDIO_BUTTON_SIZE = 44;
 const AUDIO_BUTTON_GAP = 10;
+const AUDIO_TARGET_PADDING = 8;
+// Leave a two-point neutral lane between the neighboring touch targets.
+const PLAY_HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 4 };
+const SETTINGS_HIT_SLOP = { top: 10, bottom: 10, left: 4, right: 8 };
 export const AUDIO_CONTROL_GROUP_WIDTH = AUDIO_BUTTON_SIZE + AUDIO_BUTTON_GAP + 38;
 
 const audioControlPlacement = (dimensions, insets) => {
@@ -46,8 +50,8 @@ export const AudioTrigger = () => {
     <View
       accessibilityElementsHidden={showMenu}
       importantForAccessibility={showMenu ? "no-hide-descendants" : "auto"}
-      pointerEvents={showMenu ? "none" : "auto"}
-      style={[styles.triggerGroup, { left, top }]}
+      pointerEvents={showMenu ? "none" : "box-none"}
+      style={[styles.triggerGroup, { left: left - AUDIO_TARGET_PADDING, top: top - AUDIO_TARGET_PADDING }]}
     >
       <Pressable
         android_disableSound
@@ -56,12 +60,13 @@ export const AudioTrigger = () => {
         accessibilityValue={countInBeat > 0 ? { text: `Count in ${countInBeat} of 4` } : undefined}
         accessibilityState={{ busy: isLoading, disabled: !canPlay && !isPlaying }}
         disabled={!canPlay && !isPlaying}
+        hitSlop={PLAY_HIT_SLOP}
         onPress={play}
         style={withPressedOpacity([styles.trigger, !isPlaying && styles.triggerIdle])}
       >
         <TransportIcon count={countInBeat} loading={isLoading} playing={isPlaying} color={isPlaying ? theme.colors.white : theme.colors.blue} />
       </Pressable>
-      <Pressable android_disableSound accessibilityLabel="Expand audio settings" accessibilityRole="button" onPress={openPopover} style={withPressedOpacity([styles.trigger, styles.triggerIdle, styles.settingsTrigger])}>
+      <Pressable android_disableSound accessibilityLabel="Expand audio settings" accessibilityRole="button" hitSlop={SETTINGS_HIT_SLOP} onPress={openPopover} style={withPressedOpacity([styles.trigger, styles.triggerIdle, styles.settingsTrigger])}>
         <MixerIcon filled={false} />
         {!!error && <View style={styles.errorDot} />}
       </Pressable>
@@ -195,7 +200,7 @@ export const AudioPopover = () => {
       />
       <View style={[styles.card, cardFrame]}>
         <View style={styles.titleRow}>
-          <Pressable android_disableSound accessibilityLabel="Close audio settings" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
+          <Pressable android_disableSound accessibilityLabel="Close audio settings" accessibilityRole="button" hitSlop={6} onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
             <Text style={styles.closeText}>×</Text>
           </Pressable>
           <Text style={styles.title}>Audio Settings</Text>
@@ -225,7 +230,7 @@ export const AudioPopover = () => {
               <TextInput
                 accessibilityLabel="Tempo in beats per minute"
                 keyboardType="number-pad"
-                hitSlop={CONTROL_HIT_SLOP}
+                hitSlop={{ top: 10, bottom: 10, left: 3, right: 3 }}
                 maxLength={3}
                 onBlur={commitTempo}
                 onChangeText={setTempoText}
@@ -303,13 +308,13 @@ const styles = StyleSheet.create({
   closeButton: { alignItems: "center", height: 32, justifyContent: "center", width: 32 },
   closeText: { color: theme.colors.blue, fontSize: 29, lineHeight: 30 },
   controlCluster: { alignItems: "center", flexDirection: "row", gap: 12, justifyContent: "flex-end", width: 136 },
-  controlLead: { alignItems: "center", flex: 1, flexDirection: "row" },
+  controlLead: { alignItems: "center", flex: 1, flexDirection: "row", paddingVertical: 3, marginVertical: -3 },
   dismissLayer: { backgroundColor: theme.colors.overlay, left: 0, position: "absolute", top: 0, zIndex: 0 },
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
   label: { flex: 1, height: 24 },
   mobileHint: { color: theme.colors.grey, fontSize: 12, lineHeight: 16, textAlign: "center" },
   sectionLabel: { marginTop: 12 },
-  sectionRow: { marginTop: 6 },
+  sectionRow: { marginTop: 3 },
   mixerIcon: { gap: 5, width: 24 },
   mixerKnob: { backgroundColor: theme.colors.white, borderRadius: 3, height: 6, position: "absolute", top: -2, width: 6 },
   mixerKnobIdle: { backgroundColor: theme.colors.blue },
@@ -325,15 +330,18 @@ const styles = StyleSheet.create({
   tempoInput: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 19, height: 24, lineHeight: 24, includeFontPadding: false, padding: 0, textAlign: "right", width: 30 },
   tempoWithoutHint: { marginTop: 0 },
   tempoRow: { alignItems: "center", flexDirection: "row", marginTop: 12 },
-  tempoValue: { alignItems: "center", flexDirection: "row", justifyContent: "center", width: 74 },
+  tempoValue: { alignItems: "center", flexDirection: "row", justifyContent: "center", width: 74, paddingVertical: 10, marginVertical: -10 },
   title: { color: theme.colors.blue, flex: 1, fontFamily: "blackout", fontSize: 20, textAlign: "center" },
-  titleRow: { alignItems: "center", backgroundColor: theme.colors.white, flexDirection: "row", flexShrink: 0, height: 32, marginBottom: 6, zIndex: 1 },
+  // Expand parent hit bounds without moving header ink or the scroll viewport.
+  titleRow: { alignItems: "center", backgroundColor: theme.colors.white, flexDirection: "row", flexShrink: 0, height: 44, marginTop: -6, marginBottom: 0, zIndex: 1 },
   toggle: { alignItems: "center", borderColor: theme.colors.lightBlue, borderRadius: 5, borderWidth: 1.5, flex: 1, justifyContent: "center", minHeight: 38 },
   toggleIcon: { height: 27, resizeMode: "contain", tintColor: theme.colors.blue, width: 41 },
   toggleIconSelected: { tintColor: theme.colors.white },
-  toggleRow: { flexDirection: "row", gap: 8, marginTop: 12 },
+  toggleRow: { flexDirection: "row", gap: 8, marginTop: 9, marginBottom: -3, paddingVertical: 3 },
   toggleSelected: { backgroundColor: theme.colors.blue, borderColor: theme.colors.blue },
-  triggerGroup: { position: "absolute", alignItems: "center", flexDirection: "row", gap: AUDIO_BUTTON_GAP, zIndex: 300 },
+  // Native hitSlop stops at parent bounds. Padding makes the invisible margin
+  // hittable; the equal anchor offset preserves both visible button positions.
+  triggerGroup: { position: "absolute", alignItems: "center", flexDirection: "row", gap: AUDIO_BUTTON_GAP, padding: AUDIO_TARGET_PADDING, zIndex: 300 },
   settingsTrigger: { height: 40, width: 38, borderRadius: 8 },
   errorDot: { position: "absolute", right: 0, top: 0, width: 8, height: 8, borderRadius: 4, backgroundColor: "#A12622" },
   toggleLabel: { fontSize: 14, color: theme.colors.blue, fontFamily: "proletarsk" },
