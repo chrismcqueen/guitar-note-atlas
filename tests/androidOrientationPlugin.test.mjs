@@ -56,6 +56,18 @@ test("folding reclassifies the active display without an activity restart", asyn
   assert.match(generated, /super.onConfigurationChanged\(newConfig\)[\s\S]*?applyOrientationPolicy\(\)/);
 });
 
+test("fold transitions request a direct cut before native orientation changes", async () => {
+  const generated = await generateActivity(freshActivity);
+  const earlierActivity = generated.replace(/    \/\/ Configure the outgoing window[\s\S]*?(?=    \/\/ Use the display's maximum bounds)/, "");
+  assert.notEqual(earlierActivity, generated);
+  assert.equal(await generateActivity(earlierActivity), generated);
+  assert.equal(await generateActivity(generated), generated);
+  // Android honors the rotation preference only for opaque fullscreen windows.
+  // Keep it on the outgoing window, before requesting the next orientation.
+  assert.match(generated, /attributes.rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT[\s\S]*attributes.flags = attributes.flags or WindowManager.LayoutParams.FLAG_FULLSCREEN[\s\S]*window.attributes = attributes[\s\S]*requestedOrientation = orientation/);
+  assert.match(generated, /applyOrientationPolicy\(\)[\s\S]*super.onCreate\(null\)/);
+});
+
 test("keeping tablet orientation fixed preserves Android window resizing", async () => {
   const config = withAndroidImmersiveMode({});
   const apply = async (modResults) => (await config.mods.android.manifest({ modRequest: {}, modResults })).modResults;

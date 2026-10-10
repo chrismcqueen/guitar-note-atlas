@@ -31,6 +31,17 @@ const AFTER_SUPER = `
 
 const ORIENTATION_METHODS = `
   private fun applyOrientationPolicy() {
+    // Configure the outgoing window too: waiting for a fold configuration
+    // callback is too late to prevent Android rotating the previous frame.
+    // This changes presentation only; the native orientation policy and
+    // responsive tablet/phone layouts remain independent of animation.
+    val attributes = window.attributes
+    if (attributes.rotationAnimation != WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT ||
+        attributes.flags and WindowManager.LayoutParams.FLAG_FULLSCREEN == 0) {
+      attributes.rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT
+      attributes.flags = attributes.flags or WindowManager.LayoutParams.FLAG_FULLSCREEN
+      window.attributes = attributes
+    }
     // Use the display's maximum bounds, not the current freeform window size.
     val density = resources.displayMetrics.density
     val shortestDisplayDp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
