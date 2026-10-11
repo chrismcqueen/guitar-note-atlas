@@ -494,3 +494,10 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Track the pending count-in separately from playback/loading. The button remains blank until the audio-clock callback supplies 1, then shows 1–4 and Stop at playback onset. A clock-driven transport test verifies the blank interval before the first scheduled click and each subsequent indicator state.
 - All 170 tests, production web export and bundled Android/iOS simulator Release builds pass. Checked the scrolling phone panel at 667 × 320 and complete tablet panel at 1600 × 900, including dotted subdivision and computed font weights. Native Fold verification confirms black/aligned heading, section weights, spacing and the first count indicator. Screenshot: `docs/feature-polish/audio-settings-polish.png`.
 - Latest bundled Android build installed and launched successfully on both Fold and the physical Samsung; its earlier Play Protect installation wait is resolved. Playback stopped after testing. Other simulators remain intentionally closed; the latest iOS bundle is ready.
+
+## Menu reveal below the header — October 10, 2026
+
+- Wrap the animated scale menu in a stationary clipping viewport bounded by the shared header bottom and footer top. Translate the panel by its own available height, preserving the existing 200 ms easing and sliding coverage of the mounted audio buttons. Closed menu content is excluded from native accessibility.
+- Browser phone/tablet verification confirms the clip starts at y=38/y=51, respectively, matching the header bottom. The open menu remains scrollable beneath the header, and closing reveals the audio controls.
+- Recorded the native Fold cover-screen menu opening/closing. Sampled intermediate frames show the panel confined below the blue bar on both transitions; Menu, scale title and Options remain visible. Contact sheet: `docs/feature-polish/menu-header-reveal.png`.
+- All 170 tests, production web export, bundled ARM64 Android Release and iOS simulator Release builds pass. Updated and launched the physical Samsung and Fold; closed iOS simulators remain closed.
