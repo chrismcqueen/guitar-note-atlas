@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.blue,
   },
   menuContent: {
-    paddingBottom: 0,
+    paddingBottom: 6,
   },
   menuHeader: {
     fontFamily: "proletarsk",

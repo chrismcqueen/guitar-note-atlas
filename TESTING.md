@@ -501,3 +501,7 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Browser phone/tablet verification confirms the clip starts at y=38/y=51, respectively, matching the header bottom. The open menu remains scrollable beneath the header, and closing reveals the audio controls.
 - Recorded the native Fold cover-screen menu opening/closing. Sampled intermediate frames show the panel confined below the blue bar on both transitions; Menu, scale title and Options remain visible. Contact sheet: `docs/feature-polish/menu-header-reveal.png`.
 - All 170 tests, production web export, bundled ARM64 Android Release and iOS simulator Release builds pass. Updated and launched the physical Samsung and Fold; closed iOS simulators remain closed.
+
+### Menu bottom breathing room — October 10, 2026
+
+- Add six points of bottom content padding after the final scale-menu section. Browser checks at the scroll limit confirm six-pixel content padding with the last row ending at y=261 above the y=267 footer boundary on a 667 × 320 phone, and y=815.18 above y=821 on a 1600 × 900 tablet (fractional row rasterization). Production web export and bundled Android/iOS simulator Release builds pass.
