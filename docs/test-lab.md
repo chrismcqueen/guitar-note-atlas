@@ -4,11 +4,13 @@ Configured October 10, 2026. Device identities and the refresh matrix are in [TE
 
 ## Apple
 
-The installed Xcode is 26.5 (17F42), on macOS 26.5.1. Reused the existing iPad mini (A17 Pro) and iPad (A16) simulators with iPadOS 26.5 rather than creating duplicates. Both have the current app installed and launch in the native tablet landscape layout. The existing iPhone SE, iPhone 12, iPhone 16 and iPad Pro 11-inch remain in the refresh matrix.
+The host now runs macOS 27.0.1. Xcode 27.1 RC (27A9275) is installed at `/Applications/Xcode-27.1-RC.app` alongside Xcode 26.5 (17F42), which remains the default developer directory. Use `DEVELOPER_DIR=/Applications/Xcode-27.1-RC.app/Contents/Developer` for Duo builds and simctl commands. Reused the existing iPad mini (A17 Pro) and iPad (A16) simulators with iPadOS 26.5 rather than creating duplicates. The existing iPhone SE, iPhone 12, iPhone 16 and iPad Pro 11-inch remain in the refresh matrix.
 
 In Simulator, choose a device from Window. Set the iPads' physical orientation through Device > Orientation > Landscape Right. Phones use the existing portrait-native/rotated app shell; tablet UI is unrotated.
 
-iPhone Duo is not available in the installed simulator device types. [Apple's Xcode 27.1 RC release notes](https://developer.apple.com/documentation/xcode-release-notes/xcode-27_1-release-notes) include the Duo simulator and require macOS Tahoe 26.6 or later. Update macOS and install compatible Xcode/runtime tooling before adding that target. No host OS update or restart was performed for this setup.
+iPhone Duo is installed with iOS 27.1 (24A94232), identity `B3B3E73F-B9E6-4F83-8EED-690D968EA85A`. Open `/Applications/Xcode-27.1-RC.app/Contents/Applications/DeviceHub.app`, select Duo, and use Open / Partially Open / Closed to change posture. The bundled Release build is in `/tmp/gna-bundled-duo/Build/Products/Release-iphonesimulator/guitarnoteatlas.app` (temporary build output).
+
+The iOS 27 SDK rejects the old application-only startup. The `withIOSSceneLifecycle` config plugin registers Expo's scene delegate and gives it ownership of the window and React Native startup; generated native files remain reproducible. Initial launch and a fold/unfold smoke check pass. Duo's unfolded display still uses the rotated phone shell, sometimes letterboxed by the portrait-only native configuration; it does not yet have Pixel Fold's inner-screen tablet behavior. Treat this as a known layout gap, not a completed foldable regression pass. The outer screen can be viewed upright using Device Hub's Rotate Right control.
 
 ## Android
 

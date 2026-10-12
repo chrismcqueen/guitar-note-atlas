@@ -47,6 +47,7 @@
     "plugins": [
       "expo-screen-orientation",
       "./plugins/withAndroidImmersiveMode",
+      "./plugins/withIOSSceneLifecycle",
       "expo-font",
       [
         "expo-navigation-bar",

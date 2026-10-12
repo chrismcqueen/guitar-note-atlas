@@ -18,4 +18,5 @@ test("keeps phones portrait-only and iPad natively landscape while rendering ful
   ]);
   // A global Expo initial mask overrides the per-device supported orientations.
   assert.equal(appConfig.plugins[0], "expo-screen-orientation");
+  assert.ok(appConfig.plugins.includes("./plugins/withIOSSceneLifecycle"));
 });

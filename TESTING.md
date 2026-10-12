@@ -1,5 +1,12 @@
 # Device testing
 
+## iPhone Duo and iOS scene startup — October 11, 2026
+
+- Installed Xcode 27.1 RC alongside 26.5 after Lane's macOS update; added iOS 27.1 and reused the automatically created iPhone Duo simulator. Device Hub exposes Open / Partially Open / Closed posture controls.
+- The first bundled build crashed because the iOS 27 SDK requires scene lifecycle adoption. Register Expo's existing scene delegate through a reproducible config plugin, retain factory creation in AppDelegate, and let the scene create the window/start React Native exactly once. Preserve existing phone/iPad orientation, splash, links and audio configuration.
+- All 173 tests and the Xcode 27.1 bundled Release build pass. Duo renders the app and retains its running process across the initial fold/unfold check; the same build renders on iPhone SE and the native-landscape iPad Pro with iOS 18.4. Full audio and lifecycle regression remains manual.
+- Known Duo gap: the inner display still uses the rotated phone shell with portrait compatibility sizing, rather than the Android Fold's tablet canvas. The outer screen is usable at the appropriate simulator viewing angle. This setup verifies launch, not complete Apple foldable layout support.
+
 ## Larger native touch margins — October 10, 2026
 
 - Expand Play/Stop and Audio Settings touch margins by eight points outward, limiting their facing edges to four points each so the ten-point visual gap retains a neutral lane. Pad their absolute parent and offset its anchor equally, preserving visible positions while preventing native parent bounds from clipping the added area.
@@ -28,6 +35,7 @@ Install and reopen the current bundled Release build on the available targets be
 
 | Target | Device identity | App |
 | --- | --- | --- |
+| iPhone Duo, iOS 27.1 | `B3B3E73F-B9E6-4F83-8EED-690D968EA85A` | `dev.com.guitar-note-atlas` |
 | iPhone 16, iOS 18.4 | `6FC22721-D615-459C-A2E9-D28CCFDE4B0A` | `dev.com.guitar-note-atlas` |
 | iPhone SE (3rd generation), iOS 18.4 | `581D67C8-78BA-4ADF-B81B-A25C055DFC9B` | `dev.com.guitar-note-atlas` |
 | iPhone 12, iOS 18.4 | `4C76C9C5-F0F8-4C5E-93D1-746FAF56C321` | `dev.com.guitar-note-atlas` |
@@ -42,7 +50,7 @@ Install and reopen the current bundled Release build on the available targets be
 | Physical Samsung Galaxy Tab A11+, SM-X230 | `R5GL7221G8R` | `dev.com.guitarnoteatlas` |
 | Physical Pixel 8 | Arriving October 12; USB identity pending | `dev.com.guitarnoteatlas` |
 
-Keep the iOS testing simulators available and refresh them alongside connected physical devices. Start Android emulators in small batches from Android Studio's Running Devices + or Device Manager; the host has 24 GB RAM and audio should be checked with only one emulator playing. An AVD name is stable; its `emulator-5554`-style adb serial can change between launches. Match it with `adb -s <serial> emu avd name` before installing. Other project simulators remain separate. iPhone Duo is pending compatible macOS/Xcode tooling, as described in the setup notes.
+Keep the iOS testing simulators available and refresh them alongside connected physical devices. Start Android emulators in small batches from Android Studio's Running Devices + or Device Manager; the host has 24 GB RAM and audio should be checked with only one emulator playing. An AVD name is stable; its `emulator-5554`-style adb serial can change between launches. Match it with `adb -s <serial> emu avd name` before installing. Other project simulators remain separate. Use the Xcode 27.1 RC developer directory and `/tmp/gna-bundled-duo` build for Duo, as described in the setup notes; that build also runs on the older iOS targets.
 
 ## Automated checks
 
