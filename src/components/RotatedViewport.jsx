@@ -3,9 +3,9 @@ import { Dimensions, Platform, StyleSheet, useWindowDimensions, View } from "rea
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { getAppViewport, isPortraitWindow, isTabletDisplay } from "../utils/orientation.mjs";
+import { getAppViewport, isPortraitWindow, usesTabletShell } from "../utils/orientation.mjs";
 import { ViewportContext } from "./ViewportContext";
-import { completeDisplayTransition, useAndroidDisplayGeometry } from "../utils/useAndroidDisplayGeometry";
+import { completeDisplayTransition, useDisplayGeometry } from "../utils/useDisplayGeometry";
 
 /**
  * Only phones use the rotated portrait shell. Tablets render upright at their
@@ -13,16 +13,20 @@ import { completeDisplayTransition, useAndroidDisplayGeometry } from "../utils/u
  * Layout, overlays and gestures all share this canvas and its transform.
  */
 const RotatedViewport = ({ children }) => {
-  const window = useWindowDimensions();
+  const reportedWindow = useWindowDimensions();
+  const geometry = useDisplayGeometry();
+  // UIKit's scene-local bounds change as Duo moves between displays. The main
+  // screen and the device's permanent phone idiom cannot identify its canvas.
+  const window = Platform.OS === "ios" && geometry
+    ? { width: geometry.width, height: geometry.height } : reportedWindow;
   const insets = useSafeAreaInsets();
   const portraitWindow = isPortraitWindow(window);
   const screen = Dimensions.get("screen");
-  const tablet = Platform.OS === "ios" ? Platform.isPad : isTabletDisplay(screen);
+  const tablet = usesTabletShell({ platform: Platform.OS, window, screen, isPad: Platform.isPad });
   const portraitShell = (Platform.OS === "ios" || Platform.OS === "android") && !tablet;
   const lastPortraitWindow = useRef(null);
   const lastTablet = useRef(tablet);
   const [contentWindow, setContentWindow] = useState(null);
-  const geometry = useAndroidDisplayGeometry();
 
   // Folding changes the physical display class without remounting the app.
   // Never carry the old display's measured canvas into the new shell.
@@ -37,7 +41,7 @@ const RotatedViewport = ({ children }) => {
   // portrait window immediately, while Expo Go gets a black frame until its
   // intended window is ready.
   if (portraitWindow) lastPortraitWindow.current = window;
-  const activeWindow = portraitShell ? (lastPortraitWindow.current ?? window)
+  const activeWindow = Platform.OS === "ios" && geometry ? window : portraitShell ? (lastPortraitWindow.current ?? window)
     : (contentWindow?.tablet === tablet ? contentWindow : window);
   const viewport = useMemo(() => getAppViewport({ window: activeWindow, screen, platform: Platform.OS, insets, tablet }),
     [activeWindow.height, activeWindow.width, screen.height, screen.width, insets.top, insets.bottom, tablet]);

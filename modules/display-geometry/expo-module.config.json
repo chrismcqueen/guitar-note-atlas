@@ -1,1 +1,1 @@
-{"platforms":["android"],"android":{"modules":["expo.modules.atlasdisplay.AtlasDisplayGeometryModule"]}}
+{"platforms":["apple","android"],"apple":{"modules":["AtlasDisplayGeometryModule"]},"android":{"modules":["expo.modules.atlasdisplay.AtlasDisplayGeometryModule"]}}

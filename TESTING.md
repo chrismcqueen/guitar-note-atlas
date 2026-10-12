@@ -1,11 +1,18 @@
 # Device testing
 
+## Duo inner-screen tablet adaptation — October 11, 2026
+
+- Disable iPhone full-screen compatibility sizing while keeping the iPad-specific full-screen setting and native landscape orientation. Observe the actual iOS app window as it resizes and use that live size to choose the shell; Duo remains a phone by idiom on both displays, and its main-screen metrics can be stale.
+- Render the shared two-neck tablet canvas on the inner display, fitting its wider and narrower upright poses down to 600 points of width. Closing returns to the existing portrait-native, rotated phone shell. Keep providers mounted so the selected position and open settings survive folding. The iOS geometry observation leaves the existing safe-area path intact; Android retains its cutout rectangles and cover acknowledgements.
+- Removed the experimental iOS transition splash after comparing live fold cycles. UIKit handles Duo's display handoff directly; Android retains its separate splash cover. Verified a no-cover open → closed → open cycle with the Middle position and Audio Settings retained, and recorded each incoming display separately. No full playback or physical-Duo regression claim.
+- All 174 tests and the Xcode 27.1 bundled Release build pass. Includes live-scene versus stale-main-screen classification, inner rotation/fit, phone restoration and retained native iPad behavior. Installed the final build on iOS 18.4 iPhone SE and iPad Pro: the phone canvas and native-landscape two-neck tablet canvas render correctly. Closed those temporary compatibility simulators afterward; Duo remains running. Verified the narrow inner pose keeps both necks in a centered, fitted canvas and returned Duo to its wide inner pose.
+
 ## iPhone Duo and iOS scene startup — October 11, 2026
 
 - Installed Xcode 27.1 RC alongside 26.5 after Lane's macOS update; added iOS 27.1 and reused the automatically created iPhone Duo simulator. Device Hub exposes Open / Partially Open / Closed posture controls.
 - The first bundled build crashed because the iOS 27 SDK requires scene lifecycle adoption. Register Expo's existing scene delegate through a reproducible config plugin, retain factory creation in AppDelegate, and let the scene create the window/start React Native exactly once. Preserve existing phone/iPad orientation, splash, links and audio configuration.
 - All 173 tests and the Xcode 27.1 bundled Release build pass. Duo renders the app and retains its running process across the initial fold/unfold check; the same build renders on iPhone SE and the native-landscape iPad Pro with iOS 18.4. Full audio and lifecycle regression remains manual.
-- Known Duo gap: the inner display still uses the rotated phone shell with portrait compatibility sizing, rather than the Android Fold's tablet canvas. The outer screen is usable at the appropriate simulator viewing angle. This setup verifies launch, not complete Apple foldable layout support.
+- At this startup checkpoint, the inner display still used the rotated phone shell with portrait compatibility sizing. The Duo adaptation section above records the subsequent fix and fold-cycle checks.
 
 ## Larger native touch margins — October 10, 2026
 

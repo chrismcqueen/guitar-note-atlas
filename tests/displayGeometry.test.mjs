@@ -44,6 +44,9 @@ test('center and opposite-corner cameras protect only intersecting sections', ()
 
 test('uncut displays and approved iOS fallback keep existing geometry', () => {
   const iosInsets = { left: 34, right: 59, top: 0, bottom: 0 };
+  // iOS reports scene-local size without Android cutout rectangles. Keep the
+  // existing safe-area path instead of treating absent rectangles as empty.
+  assert.equal(getViewportObstructions({ width: 951, height: 669 }, pixelViewport), null);
   const fallback = getPracticeSectionInsets(pixelViewport.dimensions, null, iosInsets);
   assert.equal(fallback.body, iosInsets);
   assert.equal(fallback.navigation, iosInsets);

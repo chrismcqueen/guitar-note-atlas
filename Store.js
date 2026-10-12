@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getViewportInsets } from "./src/utils/orientation.mjs";
 import { ViewportContext } from "./src/components/ViewportContext";
 import { getPracticeSectionInsets, getViewportObstructions } from "./src/utils/displayGeometry.mjs";
-import { useAndroidDisplayGeometry } from "./src/utils/useAndroidDisplayGeometry";
+import { useDisplayGeometry } from "./src/utils/useDisplayGeometry";
 
 export const Store = createContext(null);
 export const OverlayStore = createContext(null);
@@ -25,7 +25,7 @@ export const StoreProvider = ({ children }) => {
   const windowDimensions = useWindowDimensions();
   const viewport = useContext(ViewportContext);
   const physicalInsets = useSafeAreaInsets();
-  const displayGeometry = useAndroidDisplayGeometry();
+  const displayGeometry = useDisplayGeometry();
   const dimensions = viewport.dimensions;
   const fallbackInsets = useMemo(
     () => getViewportInsets(physicalInsets, windowDimensions, viewport),

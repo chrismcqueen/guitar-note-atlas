@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getAppViewport, getViewportInsets } from '../src/utils/orientation.mjs';
+import { getAppViewport, getViewportInsets, usesTabletShell } from '../src/utils/orientation.mjs';
 import { positionFingerLabelY } from '../src/utils/positions.mjs';
 import { getFooterGeometry } from '../src/utils/footerSelection.mjs';
 import { settingsOffsetForGesture } from '../src/utils/settingsScroll.mjs';
@@ -53,6 +53,25 @@ test('Menu and Options centers mirror each other on both platforms and layout si
 });
 
 const screen = { width: 1280, height: 800 };
+
+test('Duo follows the live scene through open, rotate, close and reopen despite a stale main screen', () => {
+  const staleScreen = { width: 393, height: 852 };
+  for (const window of [{ width: 1024, height: 768 }, { width: 768, height: 1024 },
+    { width: 393, height: 852 }, { width: 1024, height: 768 }]) {
+    const tablet = usesTabletShell({ platform: 'ios', window, screen: staleScreen });
+    const viewport = getAppViewport({ platform: 'ios', window, screen: staleScreen, tablet });
+    const inner = Math.min(window.width, window.height) >= 600;
+    assert.equal(tablet, inner);
+    assert.equal(viewport.rotated, !inner);
+    assert.equal(viewport.dimensions.width >= 1000 && viewport.dimensions.height >= 550, inner);
+    const nativeWidth = (viewport.rotated ? viewport.dimensions.height : viewport.dimensions.width) * viewport.scale;
+    const nativeHeight = (viewport.rotated ? viewport.dimensions.width : viewport.dimensions.height) * viewport.scale;
+    assert.ok(nativeWidth <= window.width + 1e-8);
+    assert.ok(nativeHeight <= window.height + 1e-8);
+  }
+  assert.equal(usesTabletShell({ platform: 'ios', window: { width: 500, height: 700 }, isPad: true }), true);
+  assert.equal(usesTabletShell({ platform: 'android', window: { width: 500, height: 700 }, screen }), true);
+});
 
 test('tablet resizing uses the available window and never rotates a small portrait window', () => {
   for (const window of [screen, { width: 1100, height: 650 }, { width: 800, height: 550 }, { width: 500, height: 700 }, { width: 304, height: 400 }, { width: 900, height: 250 }]) {
