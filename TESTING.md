@@ -55,7 +55,7 @@ Install and reopen the current bundled Release build on the available targets be
 | Pixel Fold, API 37.1 | AVD `GNA_Pixel_Fold` | `dev.com.guitarnoteatlas` |
 | Physical Pixel 4a, Android 13 | `08281JEC229228` | `dev.com.guitarnoteatlas` |
 | Physical Samsung Galaxy Tab A11+, SM-X230 | `R5GL7221G8R` | `dev.com.guitarnoteatlas` |
-| Physical Pixel 8 | Arriving October 12; USB identity pending | `dev.com.guitarnoteatlas` |
+| Physical Pixel 8, Android 17 | `3A301FDJH0044R` | `dev.com.guitarnoteatlas` |
 
 Keep the iOS testing simulators available and refresh them alongside connected physical devices. Start Android emulators in small batches from Android Studio's Running Devices + or Device Manager; the host has 24 GB RAM and audio should be checked with only one emulator playing. An AVD name is stable; its `emulator-5554`-style adb serial can change between launches. Match it with `adb -s <serial> emu avd name` before installing. Other project simulators remain separate. Use the Xcode 27.1 RC developer directory and `/tmp/gna-bundled-duo` build for Duo, as described in the setup notes; that build also runs on the older iOS targets.
 

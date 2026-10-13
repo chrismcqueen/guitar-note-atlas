@@ -53,8 +53,10 @@ JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home' \
   ~/Library/Android/sdk/cmdline-tools/latest/bin/avdmanager list avd
 ```
 
+For bundled app builds, use the installed Java 17 toolchain (`/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home`) as `JAVA_HOME`. The newer Android Studio runtime produced a native Worklets/CMake configuration failure during the October 12 refresh; the same Release build passed with Java 17.
+
 ## Physical devices and next coverage
 
-Keep the Samsung Tab A11+ and Pixel 4a in USB refreshes whenever connected. The Pixel 8 is expected October 12; record its adb identity after USB debugging is authorized. Physical devices remain the best checks for audio artifacts, touch behavior, camera clearance and manufacturer window/orientation policies.
+Keep the Samsung Tab A11+, Pixel 4a and Pixel 8 in USB refreshes whenever connected. The physical Pixel 8 (shiba), running Android 17, was authorized over USB on October 12; its adb identity is `3A301FDJH0044R`. Physical devices remain the best checks for audio artifacts, touch behavior, camera clearance and manufacturer window/orientation policies.
 
 The existing large iPad Pro 13-inch profiles are useful for an occasional maximum-size tablet check. Next prioritize enlarged Android/iOS text, narrow resizable tablet windows, fold/unfold transitions while playing or with a popover open, and an older supported Android OS. More similarly sized modern phones add less coverage than these cases.
