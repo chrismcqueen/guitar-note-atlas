@@ -79,7 +79,7 @@ const Splash = ({ setLoading, error, onRetry }) => {
         </View>
         {!!error && <View style={[styles.loadError, layout.error]}>
           <Text style={styles.errorText}>{error}</Text>
-          <Pressable accessibilityRole="button" onPress={onRetry} style={styles.retryButton}>
+          <Pressable accessibilityRole="button" hitSlop={8} onPress={onRetry} style={styles.retryButton}>
             <Text style={styles.errorText}>Retry</Text>
           </Pressable>
         </View>}

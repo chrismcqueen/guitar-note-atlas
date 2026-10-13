@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import { AppState, Platform } from "react-native";
 import { requireOptionalNativeModule } from "expo";
 
-const displayGeometry = Platform.OS === "android" ? requireOptionalNativeModule("AtlasDisplayGeometry") : null;
+const displayGeometry = Platform.OS === "android" || Platform.OS === "ios" ? requireOptionalNativeModule("AtlasDisplayGeometry") : null;
 
-export const useAndroidDisplayGeometry = () => {
+export const completeDisplayTransition = (id, width, height) => {
+  if (displayGeometry?.completeTransition) void displayGeometry.completeTransition(id, width, height).catch(() => {});
+};
+
+export const useDisplayGeometry = () => {
   const [geometry, setGeometry] = useState(null);
   useEffect(() => {
     if (!displayGeometry) return;

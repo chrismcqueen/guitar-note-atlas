@@ -17,7 +17,9 @@ export const Main = React.memo(() => {
   const { dimensions, insets, navigationInsets, footerBottomInset, globalState } = useContext(Store);
   const { positionId } = useContext(PositionStore);
   const { showPositionOverview } = useContext(PositionVisibilityStore);
-  const fullScreen = { height: "100%", width: "100%", paddingBottom: footerBottomInset, backgroundColor: theme.colors.blue };
+  // Fractional Android window sizes can expose a pixel between the body and
+  // footer. Keep their backing cream; paint blue only in the bottom safe band.
+  const fullScreen = { height: "100%", width: "100%", paddingBottom: footerBottomInset, backgroundColor: theme.colors.white };
   const contentDimensions = { ...dimensions, height: dimensions.height - footerBottomInset };
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
   const safeSideInset = Math.max(insets.left, insets.right);
@@ -64,6 +66,7 @@ export const Main = React.memo(() => {
           )}
         </View>
         <Footer />
+        {footerBottomInset > 0 && <View pointerEvents="none" style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: footerBottomInset, backgroundColor: theme.colors.blue }} />}
       </View>
     </View>
   );

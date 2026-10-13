@@ -1,20 +1,63 @@
 # Device testing
 
+## Duo inner-screen tablet adaptation — October 11, 2026
+
+- Disable iPhone full-screen compatibility sizing while keeping the iPad-specific full-screen setting and native landscape orientation. Observe the actual iOS app window as it resizes and use that live size to choose the shell; Duo remains a phone by idiom on both displays, and its main-screen metrics can be stale.
+- Render the shared two-neck tablet canvas on the inner display, fitting its wider and narrower upright poses down to 600 points of width. Closing returns to the existing portrait-native, rotated phone shell. Keep providers mounted so the selected position and open settings survive folding. The iOS geometry observation leaves the existing safe-area path intact; Android retains its cutout rectangles and cover acknowledgements.
+- Removed the experimental iOS transition splash after comparing live fold cycles. UIKit handles Duo's display handoff directly; Android retains its separate splash cover. Verified a no-cover open → closed → open cycle with the Middle position and Audio Settings retained, and recorded each incoming display separately. No full playback or physical-Duo regression claim.
+- All 174 tests and the Xcode 27.1 bundled Release build pass. Includes live-scene versus stale-main-screen classification, inner rotation/fit, phone restoration and retained native iPad behavior. Installed the final build on iOS 18.4 iPhone SE and iPad Pro: the phone canvas and native-landscape two-neck tablet canvas render correctly. Closed those temporary compatibility simulators afterward; Duo remains running. Verified the narrow inner pose keeps both necks in a centered, fitted canvas and returned Duo to its wide inner pose.
+
+## iPhone Duo and iOS scene startup — October 11, 2026
+
+- Installed Xcode 27.1 RC alongside 26.5 after Lane's macOS update; added iOS 27.1 and reused the automatically created iPhone Duo simulator. Device Hub exposes Open / Partially Open / Closed posture controls.
+- The first bundled build crashed because the iOS 27 SDK requires scene lifecycle adoption. Register Expo's existing scene delegate through a reproducible config plugin, retain factory creation in AppDelegate, and let the scene create the window/start React Native exactly once. Preserve existing phone/iPad orientation, splash, links and audio configuration.
+- All 173 tests and the Xcode 27.1 bundled Release build pass. Duo renders the app and retains its running process across the initial fold/unfold check; the same build renders on iPhone SE and the native-landscape iPad Pro with iOS 18.4. Full audio and lifecycle regression remains manual.
+- At this startup checkpoint, the inner display still used the rotated phone shell with portrait compatibility sizing. The Duo adaptation section above records the subsequent fix and fold-cycle checks.
+
+## Larger native touch margins — October 10, 2026
+
+- Expand Play/Stop and Audio Settings touch margins by eight points outward, limiting their facing edges to four points each so the ten-point visual gap retains a neutral lane. Pad their absolute parent and offset its anchor equally, preserving visible positions while preventing native parent bounds from clipping the added area.
+- Add outward-only slop to the paired tempo/subdivision/tablet-key arrows, six-point slop to the settings close button, and room in settings row parents for the existing Tap/toggle slop and enlarged tempo-input target. Add tutorial Exit and splash Retry slop. Preserve visible geometry, hold behavior, scroll bounds, modal interception and existing large/full-row targets; no horizontal expansion across adjacent footer choices or vertical expansion across contiguous menu rows.
+- All 168 tests, production web export, bundled ARM64 Android Release and iOS simulator Release builds pass. Compared every labeled button's original/current rectangle at 667 × 320 and 1600 × 900: visual dimensions/positions unchanged apart from less than 0.01 point of rounding; main audio buttons and tablet key arrows match exactly. React Native Web omits `hitSlop`, so this comparison checks layout rather than expanded browser hit areas.
+- Installed/launched on the running Pixel Fold and connected Samsung. Native clicks outside the Settings rectangle and Play circle successfully opened the popover and started count-in, respectively; stopped playback afterward. Other simulators stayed closed, with their latest iOS build ready for the next testing session.
+
+## Foldable inner-screen tablet layout and expanded lab — October 10, 2026
+
+- Fit the tablet canvas into tablet windows at least 800 × 440 usable points, down to 80% scale. The Pixel Fold inner display now shows both necks, while its outer display and narrow tablet windows retain compact layouts. Existing full-size iPad/Android tablet geometry and phone shells are preserved. Insets, sliders and scrolling share the canvas transform.
+- Reapply Android orientation policy on configuration changes and clear viewport measurements when switching physical display class. Verified live open → closed → open on Pixel Fold with the app process retained, correct tablet/phone layouts and no recurrence of the earlier black screen. Saved native captures in `docs/feature-polish/pixel-fold-{inner-tablet,outer-phone}.png`. Playback/popover continuity across folds remains a manual check.
+- All 167 tests, web export and bundled Android/iOS Release builds pass. Refreshed six iOS simulators, the connected Samsung tablet and four Android AVDs. Samsung retains its fixed landscape request. See [the lab inventory and tooling limitations](docs/test-lab.md), including custom stock-Android phone profiles and pending iPhone Duo tooling.
+
+## Android tablet landscape request and footer seam — October 10, 2026
+
+- Reproduced the Samsung app reporting `SCREEN_ORIENTATION_UNSPECIFIED` in its maximized desktop window. The activity deliberately released the tablet lock whenever Android reported multi-window mode. Keep requesting fixed landscape for tablets in every window mode, using maximum display bounds for device identity; phones retain portrait. Keep the activity resizable and the existing window-based tablet/compact breakpoint and upright tablet gestures. Add the supported orientation-override opt-out without changing iPad configuration.
+- Upgrade already generated Android activities as well as fresh prebuilds. Two regression tests exercise fresh generation, upgrading the previous multi-window policy, repeated prebuilds and manifest resizability/compatibility properties. All 165 tests pass, including existing compact-window and iPad/phone orientation checks.
+- Reproduced a one-pixel blue hairline above the footer in Samsung's tall maximized window. Back the shared body/footer container with cream and paint the iPad's extra blue home-indicator band only at the bottom. Preserve all footer sizes and labels. Native updated Samsung, iPad and iPhone SE captures confirm the footer boundary and retained iPad home-bar placement: `docs/feature-polish/samsung-landscape-footer.png`, `docs/feature-polish/ipad-footer.png`, `docs/feature-polish/iphone-se-footer.png`.
+- Bundled Android and iOS Release builds pass. Installed and launched the Samsung and all four iOS simulators with saved preferences retained; Pixel was disconnected. The Samsung now reports `SCREEN_ORIENTATION_LANDSCAPE` with `mLastReportedMultiWindowMode=true` and `RESIZE_MODE_RESIZEABLE`, and its full-screen landscape layout renders correctly. Lane physically turned the tablet upright/sideways and confirmed it stays locked. Existing automated resizing checks pass; interactive window resizing after this update remains a manual check. Samsung/Android desktop modes can override app orientation requests on other configurations.
+
 Run these checks before releasing changes that affect layout, navigation, music data, or Expo dependencies.
 
 ## Active manual-test builds
 
-Lane requested on October 8 that each app refresh include the iPhone, iPad and connected Pixel, then added the iPhone SE and physical Samsung tablet for testing. Install and reopen the current bundled Release build on the available targets below after app changes; preserve each device's saved preferences. All iOS simulators can use the universal app built in `/tmp/gna-bundled-ipad/Build/Products/Release-iphonesimulator/guitarnoteatlas.app`.
+Install and reopen the current bundled Release build on the available targets below after app changes; preserve each device's saved preferences. Lane expanded the lab on October 10 with small/standard iPads, a flagship-size Android phone, a Samsung-size phone, Pixel Tablet and Pixel Fold. All iOS simulators can use the universal app built in `/tmp/gna-bundled-ipad/Build/Products/Release-iphonesimulator/guitarnoteatlas.app`; Android uses `android/app/build/outputs/apk/release/app-release.apk`. See [test-lab setup and limitations](docs/test-lab.md).
 
 | Target | Device identity | App |
 | --- | --- | --- |
+| iPhone Duo, iOS 27.1 | `B3B3E73F-B9E6-4F83-8EED-690D968EA85A` | `dev.com.guitar-note-atlas` |
 | iPhone 16, iOS 18.4 | `6FC22721-D615-459C-A2E9-D28CCFDE4B0A` | `dev.com.guitar-note-atlas` |
 | iPhone SE (3rd generation), iOS 18.4 | `581D67C8-78BA-4ADF-B81B-A25C055DFC9B` | `dev.com.guitar-note-atlas` |
+| iPhone 12, iOS 18.4 | `4C76C9C5-F0F8-4C5E-93D1-746FAF56C321` | `dev.com.guitar-note-atlas` |
 | iPad Pro 11-inch (M4), iOS 18.4 | `497648CB-7BFE-4972-BDE7-29C43C849A7A` | `dev.com.guitar-note-atlas` |
+| iPad mini (A17 Pro), iPadOS 26.5 | `476417BC-4369-48A1-A485-81AABB807F01` | `dev.com.guitar-note-atlas` |
+| iPad (A16), iPadOS 26.5 | `958D60F1-509A-47E5-96B7-C4532B05686C` | `dev.com.guitar-note-atlas` |
+| Pixel 11 Pro XL layout approximation, API 37.1 | AVD `GNA_Pixel_11_Pro_XL` | `dev.com.guitarnoteatlas` |
+| Galaxy S26 layout approximation, stock Android API 37.1 | AVD `GNA_Galaxy_S26` | `dev.com.guitarnoteatlas` |
+| Pixel Tablet, API 37.1 | AVD `Pixel_Tablet` | `dev.com.guitarnoteatlas` |
+| Pixel Fold, API 37.1 | AVD `GNA_Pixel_Fold` | `dev.com.guitarnoteatlas` |
 | Physical Pixel 4a, Android 13 | `08281JEC229228` | `dev.com.guitarnoteatlas` |
 | Physical Samsung Galaxy Tab A11+, SM-X230 | `R5GL7221G8R` | `dev.com.guitarnoteatlas` |
+| Physical Pixel 8, Android 17 | `3A301FDJH0044R` | `dev.com.guitarnoteatlas` |
 
-The iPhone simulator is booted with the current bundled Release build. Its first-run tutorial prompt has been dismissed; Audio Player is always available. The app was left stopped in full-neck overview with the simulator upright in landscape. Native UI inspection confirms the fretboard, key header and audio controls are visible. Keep the testing simulators running and refresh them alongside connected physical devices. Other project simulators are separate.
+Keep the iOS testing simulators available and refresh them alongside connected physical devices. Start Android emulators in small batches from Android Studio's Running Devices + or Device Manager; the host has 24 GB RAM and audio should be checked with only one emulator playing. An AVD name is stable; its `emulator-5554`-style adb serial can change between launches. Match it with `adb -s <serial> emu avd name` before installing. Other project simulators remain separate. Use the Xcode 27.1 RC developer directory and `/tmp/gna-bundled-duo` build for Duo, as described in the setup notes; that build also runs on the older iOS targets.
 
 ## Automated checks
 
@@ -445,3 +488,35 @@ Before release, listen on bundled iOS and Android builds and the Expo Audio fall
 - Reduce tablet footer buttons from 79 to 71 points, retaining the eight-point blue baseline. Preserve single-label baselines relative to each button's top; keep the first stacked label's top spacing and shorten the distance to its second lane by four points. Font sizes and mobile footer dimensions/baselines stay unchanged.
 - Share the new tablet footer height with practice body budgets, cutout bands and the scale menu. Preserve the separate thin iPad home-indicator background band.
 - All 163 tests, production web export and bundled iOS/Android Release builds pass. Native iPad and Samsung maximized-window verification confirm the reduced bottom gap and complete single/stacked labels; proof: `docs/pr-51/ipad-footer-label-spacing.png` and `docs/pr-51/samsung-footer-label-spacing.png`. All six test devices installed and launched successfully; iPhone 12 retains its mobile footer layout.
+## Direct-cut Android fold transitions — October 10, 2026
+
+- Set the app window's `ROTATION_ANIMATION_JUMPCUT` preference and fullscreen flag before requesting native orientation, including on the outgoing window before a fold. Keep the existing inner-tablet/outer-phone sizing and native orientation policy. No startup replay, splash delay or system animation-setting changes. Android documents the opaque/fullscreen requirement in [WindowManager.LayoutParams](https://developer.android.com/reference/android/view/WindowManager.LayoutParams#rotationAnimation).
+- All 168 tests pass, including repeated plugin generation and upgrading previously generated activities. Bundled ARM64 Android Release build succeeds; iOS/web code is unchanged.
+- Installed on the running Pixel Fold emulator. Verified close → open retains the same app process, outer portrait/inner landscape configurations, `rotAnim=JUMPCUT` and `FULLSCREEN` on both screens. Checked final native captures for the compact outer and two-neck inner layouts. Manufacturer-controlled display transitions can differ; perceived motion remains a device/manual check. Other simulators remain closed.
+
+## Cover fold display handoffs — October 10, 2026
+
+- The earlier direct-cut preference alone left intermediate React canvases visible. Recorded the incoming physical inner display: the old rotated canvas appeared first, followed by a small compact canvas, then the settled tablet view. Endpoint captures and window attributes did not expose this defect.
+- Add a native app-blue cover with the existing outlined splash title. Hinge sensor changes start it early where available; display-class configuration changes start/refresh it before React receives the configuration. React acknowledges the current generation after 200 ms without viewport changes; native code checks the actual content bounds and waits two rendering frames before removing the cover. Older acknowledgements cannot dismiss a newer cover. A 1.5-second fallback releases it if a hinge moves without a display handoff or an acknowledgement never arrives. No global Android animation settings are changed.
+- Keep the React provider tree mounted while waiting for portrait geometry. This avoids resetting preference/startup loading, practice position, the settings popover and the audio engine during a transient landscape-shaped phone window.
+- Recorded both incoming physical displays during closing/opening on the bundled Pixel Fold emulator build. At the first captured frame and 100 ms the splash cover is visible; at 200 ms the final compact/tablet canvas is visible, without the earlier intermediate canvases. Contact sheet: `docs/feature-polish/pixel-fold-transition-cover.png` (cover-screen frames rotated for readability). Times are relative to recording start, not total transition duration.
+- A second open → closed → open cycle retained process PID 12281, the selected 5th-string/pinky position, open Audio Settings and the same active AudioFlinger track 7/start timestamp throughout. The yellow note highlight resumed on the tablet. Playback was stopped and the popover closed after testing; Fold remains unfolded and upright. Physical foldable/OEM transitions still require device testing.
+- All 169 tests, production web export and Android/iOS simulator Release builds pass. The bundled ARM64 Android release is installed on Fold. Samsung's latest install is waiting for its Play Protect prompt to be dismissed; closed simulators remain closed.
+
+## Audio Settings typography and count-in indicator — October 10, 2026
+
+- Return the Blackout heading to black. Center its measured ink bounds with a vector close ×. Match sublevel labels to the Options menu’s Proletarsk font at normal weight; NOTES and ACCOMPANIMENT remain bold. Move tempo/subdivision arrows eight points toward their fixed value slots, leaving more space beside Tap. Anchor fraction characters as well as music glyphs so suffixes and denominator changes cannot recenter the display.
+- Track the pending count-in separately from playback/loading. The button remains blank until the audio-clock callback supplies 1, then shows 1–4 and Stop at playback onset. A clock-driven transport test verifies the blank interval before the first scheduled click and each subsequent indicator state.
+- All 170 tests, production web export and bundled Android/iOS simulator Release builds pass. Checked the scrolling phone panel at 667 × 320 and complete tablet panel at 1600 × 900, including dotted subdivision and computed font weights. Native Fold verification confirms black/aligned heading, section weights, spacing and the first count indicator. Screenshot: `docs/feature-polish/audio-settings-polish.png`.
+- Latest bundled Android build installed and launched successfully on both Fold and the physical Samsung; its earlier Play Protect installation wait is resolved. Playback stopped after testing. Other simulators remain intentionally closed; the latest iOS bundle is ready.
+
+## Menu reveal below the header — October 10, 2026
+
+- Wrap the animated scale menu in a stationary clipping viewport bounded by the shared header bottom and footer top. Translate the panel by its own available height, preserving the existing 200 ms easing and sliding coverage of the mounted audio buttons. Closed menu content is excluded from native accessibility.
+- Browser phone/tablet verification confirms the clip starts at y=38/y=51, respectively, matching the header bottom. The open menu remains scrollable beneath the header, and closing reveals the audio controls.
+- Recorded the native Fold cover-screen menu opening/closing. Sampled intermediate frames show the panel confined below the blue bar on both transitions; Menu, scale title and Options remain visible. Contact sheet: `docs/feature-polish/menu-header-reveal.png`.
+- All 170 tests, production web export, bundled ARM64 Android Release and iOS simulator Release builds pass. Updated and launched the physical Samsung and Fold; closed iOS simulators remain closed.
+
+### Menu bottom breathing room — October 10, 2026
+
+- Add six points of bottom content padding after the final scale-menu section. Browser checks at the scroll limit confirm six-pixel content padding with the last row ending at y=261 above the y=267 footer boundary on a 667 × 320 phone, and y=815.18 above y=821 on a 1600 × 900 tablet (fractional row rasterization). Production web export and bundled Android/iOS simulator Release builds pass.

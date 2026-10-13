@@ -100,6 +100,9 @@ const Tutorial = () => {
       </Pressable>
       <Pressable
         android_disableSound
+        accessibilityLabel="Exit tutorial"
+        accessibilityRole="button"
+        hitSlop={8}
         style={withPressedOpacity([styles.exit, { right: exitRight, top: insets.top + 12 }])}
         onPress={(event) => {
           event.stopPropagation();

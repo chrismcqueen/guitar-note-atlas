@@ -9,7 +9,8 @@ const appConfig = JSON.parse(
 test("keeps phones portrait-only and iPad natively landscape while rendering full-screen", () => {
   assert.equal(appConfig.orientation, "portrait");
   assert.equal(appConfig.ios.supportsTablet, true);
-  assert.equal(appConfig.ios.requireFullScreen, true);
+  assert.equal(appConfig.ios.requireFullScreen, false);
+  assert.equal(appConfig.ios.infoPlist["UIRequiresFullScreen~ipad"], true);
   assert.deepEqual(appConfig.ios.infoPlist.UISupportedInterfaceOrientations, [
     "UIInterfaceOrientationPortrait",
   ]);
@@ -18,4 +19,5 @@ test("keeps phones portrait-only and iPad natively landscape while rendering ful
   ]);
   // A global Expo initial mask overrides the per-device supported orientations.
   assert.equal(appConfig.plugins[0], "expo-screen-orientation");
+  assert.ok(appConfig.plugins.includes("./plugins/withIOSSceneLifecycle"));
 });

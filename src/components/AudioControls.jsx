@@ -17,11 +17,16 @@ import AudioSettingsScroll from "./AudioSettingsScroll";
 import VerticalStepButtons from "./VerticalStepButtons";
 import VolumeSlider from "./VolumeSlider";
 import { audioSettingsStyles } from "./audioSettingsStyles";
+import { getTransportIndicator } from "../utils/transportIndicator.mjs";
 
 const CONTROL_HIT_SLOP = 3;
 const TAP_TEMPO_RESET_MS = 2000;
 const AUDIO_BUTTON_SIZE = 44;
 const AUDIO_BUTTON_GAP = 10;
+const AUDIO_TARGET_PADDING = 8;
+// Leave a two-point neutral lane between the neighboring touch targets.
+const PLAY_HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 4 };
+const SETTINGS_HIT_SLOP = { top: 10, bottom: 10, left: 4, right: 8 };
 export const AUDIO_CONTROL_GROUP_WIDTH = AUDIO_BUTTON_SIZE + AUDIO_BUTTON_GAP + 38;
 
 const audioControlPlacement = (dimensions, insets) => {
@@ -36,7 +41,7 @@ const audioControlPlacement = (dimensions, insets) => {
 export const AudioTrigger = () => {
   const { dimensions, navigationInsets: insets } = useContext(Store);
   const { showMenu } = useContext(OverlayStore);
-  const { canPlay, countInBeat, isLoading, isPlaying, openPopover, play, popoverOpen, error } = useContext(AudioPlaybackStore);
+  const { canPlay, countInBeat, countInPending, isLoading, isPlaying, openPopover, play, popoverOpen, error } = useContext(AudioPlaybackStore);
   const { left, top } = audioControlPlacement(dimensions, insets);
 
   // The settings card replaces both controls until it is dismissed.
@@ -46,8 +51,8 @@ export const AudioTrigger = () => {
     <View
       accessibilityElementsHidden={showMenu}
       importantForAccessibility={showMenu ? "no-hide-descendants" : "auto"}
-      pointerEvents={showMenu ? "none" : "auto"}
-      style={[styles.triggerGroup, { left, top }]}
+      pointerEvents={showMenu ? "none" : "box-none"}
+      style={[styles.triggerGroup, { left: left - AUDIO_TARGET_PADDING, top: top - AUDIO_TARGET_PADDING }]}
     >
       <Pressable
         android_disableSound
@@ -56,12 +61,13 @@ export const AudioTrigger = () => {
         accessibilityValue={countInBeat > 0 ? { text: `Count in ${countInBeat} of 4` } : undefined}
         accessibilityState={{ busy: isLoading, disabled: !canPlay && !isPlaying }}
         disabled={!canPlay && !isPlaying}
+        hitSlop={PLAY_HIT_SLOP}
         onPress={play}
         style={withPressedOpacity([styles.trigger, !isPlaying && styles.triggerIdle])}
       >
-        <TransportIcon count={countInBeat} loading={isLoading} playing={isPlaying} color={isPlaying ? theme.colors.white : theme.colors.blue} />
+        <TransportIcon count={countInBeat} pending={countInPending} loading={isLoading} playing={isPlaying} color={isPlaying ? theme.colors.white : theme.colors.blue} />
       </Pressable>
-      <Pressable android_disableSound accessibilityLabel="Expand audio settings" accessibilityRole="button" onPress={openPopover} style={withPressedOpacity([styles.trigger, styles.triggerIdle, styles.settingsTrigger])}>
+      <Pressable android_disableSound accessibilityLabel="Expand audio settings" accessibilityRole="button" hitSlop={SETTINGS_HIT_SLOP} onPress={openPopover} style={withPressedOpacity([styles.trigger, styles.triggerIdle, styles.settingsTrigger])}>
         <MixerIcon filled={false} />
         {!!error && <View style={styles.errorDot} />}
       </Pressable>
@@ -77,14 +83,15 @@ const COUNT_CENTERS = {
   3: { x: 12.65, y: 19.783 },
   4: { x: 12.25, y: 19.667 },
 };
-const TransportIcon = ({ count, loading, playing, color }) => (
-  <Svg accessible={false} pointerEvents="none" width={24} height={24} viewBox="0 0 24 24">
-    {count > 0 ? <DegreeLabel label={count} fill={color} fontSize={24} {...COUNT_CENTERS[count]} />
-      : loading ? [6, 12, 18].map(cx => <Circle key={cx} cx={cx} cy={12} r={1.5} fill={color} />)
-        : playing ? <Rect x={5} y={5} width={14} height={14} fill={color} />
-          : <Path d="M7 4 L22 12 L7 20 Z" fill={color} />}
-  </Svg>
-);
+const TransportIcon = ({ count, pending, loading, playing, color }) => {
+  const indicator = getTransportIndicator({ count, pending, loading, playing });
+  return <Svg accessible={false} pointerEvents="none" width={24} height={24} viewBox="0 0 24 24">
+    {indicator === "count" && <DegreeLabel label={count} fill={color} fontSize={24} {...COUNT_CENTERS[count]} />}
+    {indicator === "loading" && [6, 12, 18].map(cx => <Circle key={cx} cx={cx} cy={12} r={1.5} fill={color} />)}
+    {indicator === "stop" && <Rect x={5} y={5} width={14} height={14} fill={color} />}
+    {indicator === "play" && <Path d="M7 4 L22 12 L7 20 Z" fill={color} />}
+  </Svg>;
+};
 
 const MixerIcon = ({ filled }) => (
   <View accessible={false} style={styles.mixerIcon}>
@@ -195,10 +202,15 @@ export const AudioPopover = () => {
       />
       <View style={[styles.card, cardFrame]}>
         <View style={styles.titleRow}>
-          <Pressable android_disableSound accessibilityLabel="Close audio settings" accessibilityRole="button" hitSlop={CONTROL_HIT_SLOP} onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
-            <Text style={styles.closeText}>×</Text>
+          <Pressable android_disableSound accessibilityLabel="Close audio settings" accessibilityRole="button" hitSlop={6} onPress={() => setPopoverOpen(false)} style={withPressedOpacity(styles.closeButton)}>
+            <Svg accessible={false} width={32} height={32} viewBox="0 0 32 32"><Path d="M10 10 L22 22 M22 10 L10 22" fill="none" stroke={theme.colors.blue} strokeWidth={2.5} /></Svg>
           </Pressable>
-          <Text style={styles.title}>Audio Settings</Text>
+          <View accessible accessibilityRole="header" accessibilityLabel="Audio Settings" style={styles.title}>
+            <Svg accessible={false} width="100%" height={32}>
+              {/* Blackout's ink bounds at size 20 center on y=16 at this baseline. */}
+              <SvgText fill={theme.colors.black} fontFamily="blackout" fontSize={20} textAnchor="middle" x="50%" y={23.44}>AUDIO SETTINGS</SvgText>
+            </Svg>
+          </View>
           <View accessible={false} style={styles.closeButton} />
         </View>
 
@@ -220,12 +232,12 @@ export const AudioPopover = () => {
             </Pressable>
           </View>
           <View style={styles.controlCluster}>
-            <VerticalStepButtons upLabel="Increase tempo" downLabel="Decrease tempo" upHandlers={fasterTempoPress} downHandlers={slowerTempoPress} upDisabled={tempo >= MAX_TEMPO} downDisabled={tempo <= MIN_TEMPO} />
+            <VerticalStepButtons color={theme.colors.blue} upLabel="Increase tempo" downLabel="Decrease tempo" upHandlers={fasterTempoPress} downHandlers={slowerTempoPress} upDisabled={tempo >= MAX_TEMPO} downDisabled={tempo <= MIN_TEMPO} />
             <View style={styles.tempoValue}>
               <TextInput
                 accessibilityLabel="Tempo in beats per minute"
                 keyboardType="number-pad"
-                hitSlop={CONTROL_HIT_SLOP}
+                hitSlop={{ top: 10, bottom: 10, left: 3, right: 3 }}
                 maxLength={3}
                 onBlur={commitTempo}
                 onChangeText={setTempoText}
@@ -239,7 +251,7 @@ export const AudioPopover = () => {
           </View>
         </View>
 
-        <Text style={[audioSettingsStyles.label, styles.sectionLabel]}>NOTES</Text>
+        <Text style={[audioSettingsStyles.label, audioSettingsStyles.sectionLabel, styles.sectionLabel]}>NOTES</Text>
         <View style={[styles.toggleRow, styles.sectionRow]}>
           <Toggle accessibilityLabel="Notes" label="Notes" onPress={() => setNotesEnabled(!notesEnabled)} selected={notesEnabled} />
           <Toggle accessibilityLabel="Loop" icon={require("../../assets/audio/icons/loop.png")} onPress={() => setLoopEnabled(!loopEnabled)} selected={loopEnabled} />
@@ -252,9 +264,12 @@ export const AudioPopover = () => {
         <View style={styles.noteRateRow}>
           <Text style={[audioSettingsStyles.label, styles.label]}>SUBDIVISION</Text>
           <View style={styles.controlCluster}>
-            <VerticalStepButtons upLabel="Select shorter subdivision" downLabel="Select longer subdivision" upHandlers={shorterSubdivisionPress} downHandlers={longerSubdivisionPress} upDisabled={!canSelectShorterRate} downDisabled={!canSelectLongerRate} />
+            <VerticalStepButtons color={theme.colors.blue} upLabel="Select shorter subdivision" downLabel="Select longer subdivision" upHandlers={shorterSubdivisionPress} downHandlers={longerSubdivisionPress} upDisabled={!canSelectShorterRate} downDisabled={!canSelectLongerRate} />
             <View accessible accessibilityLabel={`Subdivision: ${selectedNoteRate.name}`} style={styles.rateValue}>
-              <Text accessible={false} style={styles.rateLabel}>{selectedNoteRate.label}</Text>
+              <Svg accessible={false} pointerEvents="none" width={74} height={18} viewBox="0 0 74 18">
+                {/* Fixed character lanes: adding a dot, triplet or second denominator digit never recenters the fraction. */}
+                {[...selectedNoteRate.label].map((character, index) => <SvgText key={index} fill={theme.colors.black} fontFamily="proletarsk" fontSize={15} x={24 + index * 8} y={14}>{character}</SvgText>)}
+              </Svg>
               <Svg accessible={false} pointerEvents="none" width={30} height={24} viewBox="0 0 30 24">
                 {/* Fixed note origin/baseline: flags, dots and triplets never recenter the note. */}
                 <SvgText fill={theme.colors.black} fontFamily="opus" fontSize={16} x={12} y={21}>{selectedNoteRate.notation[0]}</SvgText>
@@ -266,7 +281,7 @@ export const AudioPopover = () => {
         </View>
 
         <VolumeSlider label="VOLUME" name="Notes" value={notesVolume} onChange={setNotesVolume} />
-        <Text style={[audioSettingsStyles.label, styles.sectionLabel]}>ACCOMPANIMENT</Text>
+        <Text style={[audioSettingsStyles.label, audioSettingsStyles.sectionLabel, styles.sectionLabel]}>ACCOMPANIMENT</Text>
         <View style={[styles.toggleRow, styles.sectionRow]}>
           {[['off', 'Off'], ['metronome', 'Click'], ['drums', 'Drums']].map(([mode, label]) => (
             <Toggle key={mode} accessibilityLabel={`Accompaniment ${label}`} label={label} selected={accompaniment === mode} onPress={() => setAccompaniment(mode)} />
@@ -301,15 +316,14 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   closeButton: { alignItems: "center", height: 32, justifyContent: "center", width: 32 },
-  closeText: { color: theme.colors.blue, fontSize: 29, lineHeight: 30 },
-  controlCluster: { alignItems: "center", flexDirection: "row", gap: 12, justifyContent: "flex-end", width: 136 },
-  controlLead: { alignItems: "center", flex: 1, flexDirection: "row" },
+  controlCluster: { alignItems: "center", flexDirection: "row", gap: 4, justifyContent: "flex-end", width: 136 },
+  controlLead: { alignItems: "center", flex: 1, flexDirection: "row", paddingVertical: 3, marginVertical: -3 },
   dismissLayer: { backgroundColor: theme.colors.overlay, left: 0, position: "absolute", top: 0, zIndex: 0 },
   error: { color: "#A12622", fontSize: 12, marginTop: 8, textAlign: "center" },
   label: { flex: 1, height: 24 },
-  mobileHint: { color: theme.colors.grey, fontSize: 12, lineHeight: 16, textAlign: "center" },
+  mobileHint: { color: theme.colors.grey, fontFamily: "proletarsk", fontSize: 12, lineHeight: 16, textAlign: "center" },
   sectionLabel: { marginTop: 12 },
-  sectionRow: { marginTop: 6 },
+  sectionRow: { marginTop: 3 },
   mixerIcon: { gap: 5, width: 24 },
   mixerKnob: { backgroundColor: theme.colors.white, borderRadius: 3, height: 6, position: "absolute", top: -2, width: 6 },
   mixerKnobIdle: { backgroundColor: theme.colors.blue },
@@ -318,22 +332,24 @@ const styles = StyleSheet.create({
   noteRateRow: { alignItems: "center", flexDirection: "row", marginTop: 10 },
   popoverLayer: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent", zIndex: 4500 },
   rateValue: { alignItems: "center", height: 42, width: 74 },
-  rateLabel: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 15, height: 18, lineHeight: 18, padding: 0, includeFontPadding: false, textAlign: "center", width: 74 },
   settingsContent: { paddingBottom: 8 },
   tapTempoButton: { alignItems: "center", borderColor: theme.colors.blue, borderRadius: 4, borderWidth: 1.5, height: 38, justifyContent: "center", marginRight: 6, width: 42 },
   tapTempoText: { color: theme.colors.blue, fontFamily: "proletarsk", fontSize: 13, lineHeight: 24, includeFontPadding: false },
   tempoInput: { color: theme.colors.black, fontFamily: "proletarsk", fontSize: 19, height: 24, lineHeight: 24, includeFontPadding: false, padding: 0, textAlign: "right", width: 30 },
   tempoWithoutHint: { marginTop: 0 },
   tempoRow: { alignItems: "center", flexDirection: "row", marginTop: 12 },
-  tempoValue: { alignItems: "center", flexDirection: "row", justifyContent: "center", width: 74 },
-  title: { color: theme.colors.black, flex: 1, fontFamily: "blackout", fontSize: 20, textAlign: "center" },
-  titleRow: { alignItems: "center", backgroundColor: theme.colors.white, flexDirection: "row", flexShrink: 0, height: 32, marginBottom: 6, zIndex: 1 },
+  tempoValue: { alignItems: "center", flexDirection: "row", justifyContent: "center", width: 74, paddingVertical: 10, marginVertical: -10 },
+  title: { flex: 1, height: 32 },
+  // Expand parent hit bounds without moving header ink or the scroll viewport.
+  titleRow: { alignItems: "center", backgroundColor: theme.colors.white, flexDirection: "row", flexShrink: 0, height: 44, marginTop: -6, marginBottom: 0, zIndex: 1 },
   toggle: { alignItems: "center", borderColor: theme.colors.lightBlue, borderRadius: 5, borderWidth: 1.5, flex: 1, justifyContent: "center", minHeight: 38 },
   toggleIcon: { height: 27, resizeMode: "contain", tintColor: theme.colors.blue, width: 41 },
   toggleIconSelected: { tintColor: theme.colors.white },
-  toggleRow: { flexDirection: "row", gap: 8, marginTop: 12 },
+  toggleRow: { flexDirection: "row", gap: 8, marginTop: 9, marginBottom: -3, paddingVertical: 3 },
   toggleSelected: { backgroundColor: theme.colors.blue, borderColor: theme.colors.blue },
-  triggerGroup: { position: "absolute", alignItems: "center", flexDirection: "row", gap: AUDIO_BUTTON_GAP, zIndex: 300 },
+  // Native hitSlop stops at parent bounds. Padding makes the invisible margin
+  // hittable; the equal anchor offset preserves both visible button positions.
+  triggerGroup: { position: "absolute", alignItems: "center", flexDirection: "row", gap: AUDIO_BUTTON_GAP, padding: AUDIO_TARGET_PADDING, zIndex: 300 },
   settingsTrigger: { height: 40, width: 38, borderRadius: 8 },
   errorDot: { position: "absolute", right: 0, top: 0, width: 8, height: 8, borderRadius: 4, backgroundColor: "#A12622" },
   toggleLabel: { fontSize: 14, color: theme.colors.blue, fontFamily: "proletarsk" },
