@@ -57,6 +57,6 @@ For bundled app builds, use the installed Java 17 toolchain (`/opt/homebrew/opt/
 
 ## Physical devices and next coverage
 
-Keep the Samsung Tab A11+, Pixel 4a and Pixel 8 in USB refreshes whenever connected. The physical Pixel 8 (shiba), running Android 17, was authorized over USB on October 12; its adb identity is `3A301FDJH0044R`. Physical devices remain the best checks for audio artifacts, touch behavior, camera clearance and manufacturer window/orientation policies.
+Keep the Samsung Tab A11+, Pixel 4a and Pixel 8 in USB refreshes whenever connected. The physical Pixel 8 (shiba), running Android 17, was authorized over USB on October 12; its adb identity is `3A301FDJH0044R`. Pixel 8 is also paired with this Mac through Android Wireless debugging. When available on the same Wi-Fi, its adb target is `adb-3A301FDJH0044R-DVUI8b._adb-tls-connect._tcp`; verify it with `adb devices -l` before installing and explicitly select that target to avoid the simultaneous USB entry. Connection ports can change; retain the pairing rather than recording a fixed IP/port or pairing code. Physical devices remain the best checks for audio artifacts, touch behavior, camera clearance and manufacturer window/orientation policies.
 
 The existing large iPad Pro 13-inch profiles are useful for an occasional maximum-size tablet check. Next prioritize enlarged Android/iOS text, narrow resizable tablet windows, fold/unfold transitions while playing or with a popover open, and an older supported Android OS. More similarly sized modern phones add less coverage than these cases.
