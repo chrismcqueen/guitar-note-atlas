@@ -5,9 +5,8 @@ import { data } from "../../data";
 import { OverlayStore, Store } from "../../Store";
 import { storeGlobalState } from "../utils/functions";
 import { theme } from "../utils/theme";
-import { phoneHeaderHeight, tabletHeaderHeight } from "./Header";
 import { pressedOpacity } from "../utils/pressable";
-import { PHONE_FOOTER_HEIGHT, TABLET_FOOTER_HEIGHT } from "../utils/practiceLayout.mjs";
+import { getPracticeHeaderLayout, PHONE_FOOTER_HEIGHT, TABLET_FOOTER_HEIGHT } from "../utils/practiceLayout.mjs";
 
 const splitToColumns = (items) => {
   const midpoint = Math.ceil(items.length / 2);
@@ -24,13 +23,14 @@ const harmonicMinorModes = splitToColumns(data.scales["Harmonic Minor"]);
 const harmonicMajorModes = splitToColumns(data.scales["Harmonic Major"]);
 
 const Menu = () => {
-  const { dimensions, insets, footerBottomInset, globalState, setGlobalState } = useContext(Store);
+  const { dimensions, navigationInsets, footerBottomInset, globalState, setGlobalState } = useContext(Store);
   const { showMenu } = useContext(OverlayStore);
   const menuAnim = useRef(new Animated.Value(1)).current;
   const [mounted, setMounted] = useState(false);
   const isTablet = dimensions.width >= 1000 && dimensions.height >= 550;
-  const menuTop = (isTablet ? tabletHeaderHeight : phoneHeaderHeight) + (isTablet ? 0 : insets.top);
+  const menuTop = getPracticeHeaderLayout(dimensions, navigationInsets, Platform.OS).headerBottom;
   const footerHeight = (isTablet ? TABLET_FOOTER_HEIGHT : PHONE_FOOTER_HEIGHT) + footerBottomInset;
+  const menuHeight = Math.max(0, dimensions.height - menuTop - footerHeight);
   const menuItemFontSize = isTablet ? dimensions.width / 40 : 19;
   const menuRowHeight = isTablet ? dimensions.width / 27 : 28;
   const sectionHeaderFontSize = isTablet ? dimensions.width / 36 : 21;
@@ -107,6 +107,14 @@ const Menu = () => {
   if (!mounted) return null;
 
   return (
+    // Clip the moving panel to the body so it emerges from beneath the header
+    // and retracts behind it without ever drawing over its controls or title.
+    <View
+      pointerEvents={showMenu ? "box-none" : "none"}
+      accessibilityElementsHidden={!showMenu}
+      importantForAccessibility={showMenu ? "auto" : "no-hide-descendants"}
+      style={[styles.menuViewport, { top: menuTop, bottom: footerHeight }]}
+    >
     <Animated.ScrollView
       pointerEvents={showMenu ? "auto" : "none"}
       removeClippedSubviews={Platform.OS === "android"}
@@ -114,16 +122,13 @@ const Menu = () => {
       style={[
         styles.menu,
         {
-          bottom: footerHeight,
           opacity: menuAnim.interpolate({
             inputRange: [0, 0.9, 1],
             outputRange: [1, 1, 0],
           }),
-          width: "100%",
-          top: menuTop,
           transform: [{ translateY: menuAnim.interpolate({
             inputRange: [0, 1],
-            outputRange: [0, -dimensions.height],
+            outputRange: [0, -menuHeight],
           }) }],
         },
       ]}
@@ -283,19 +288,26 @@ const Menu = () => {
         </View>
       </View>
     </Animated.ScrollView>
+    </View>
   );
 };
 
 export default Menu;
 
 const styles = StyleSheet.create({
-  menu: {
-    backgroundColor: theme.colors.blue,
+  menuViewport: {
+    left: 0,
+    overflow: "hidden",
     position: "absolute",
+    right: 0,
     zIndex: 1000,
   },
+  menu: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: theme.colors.blue,
+  },
   menuContent: {
-    paddingBottom: 0,
+    paddingBottom: 6,
   },
   menuHeader: {
     fontFamily: "proletarsk",

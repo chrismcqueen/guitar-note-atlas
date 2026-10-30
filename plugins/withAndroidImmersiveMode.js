@@ -2,6 +2,8 @@ const { withAndroidManifest, withMainActivity } = require("@expo/config-plugins"
 
 const RESTRICTED_RESIZABILITY_PROPERTY =
   "android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY";
+const ORIENTATION_OVERRIDE_PROPERTY =
+  "android.window.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE";
 
 const IMPORTS = `import android.content.pm.ActivityInfo
 import android.content.res.Configuration
@@ -23,12 +25,24 @@ const BEFORE_SUPER = `    applyOrientationPolicy()
 `;
 
 const AFTER_SUPER = `
+    FoldTransitionCover.attach(this)
     fitWindowCaption()
     hideSystemBars()
 `;
 
 const ORIENTATION_METHODS = `
   private fun applyOrientationPolicy() {
+    // Configure the outgoing window too: waiting for a fold configuration
+    // callback is too late to prevent Android rotating the previous frame.
+    // This changes presentation only; the native orientation policy and
+    // responsive tablet/phone layouts remain independent of animation.
+    val attributes = window.attributes
+    if (attributes.rotationAnimation != WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT ||
+        attributes.flags and WindowManager.LayoutParams.FLAG_FULLSCREEN == 0) {
+      attributes.rotationAnimation = WindowManager.LayoutParams.ROTATION_ANIMATION_JUMPCUT
+      attributes.flags = attributes.flags or WindowManager.LayoutParams.FLAG_FULLSCREEN
+      window.attributes = attributes
+    }
     // Use the display's maximum bounds, not the current freeform window size.
     val density = resources.displayMetrics.density
     val shortestDisplayDp = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -40,10 +54,13 @@ const ORIENTATION_METHODS = `
       windowManager.defaultDisplay.getRealMetrics(metrics)
       minOf(metrics.widthPixels, metrics.heightPixels) / density
     }
-    val orientation = when {
-      shortestDisplayDp < 600 -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-      isInMultiWindowMode -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-      else -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+    // Keep the tablet request fixed even in Samsung's maximized freeform mode.
+    // Resizing is independent: the activity stays resizable and JS uses its
+    // current window size to switch between tablet and compact practice views.
+    val orientation = if (shortestDisplayDp < 600) {
+      ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    } else {
+      ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
     }
     if (requestedOrientation != orientation) requestedOrientation = orientation
   }
@@ -64,6 +81,23 @@ const CAPTION_METHOD = `
       }
       window.decorView.requestApplyInsets()
     }
+  }
+`;
+
+const CONFIGURATION_METHOD = `
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    FoldTransitionCover.configurationChanging(this)
+    super.onConfigurationChanged(newConfig)
+    // Fold/unfold can replace the active display without recreating the activity.
+    applyOrientationPolicy()
+    hideSystemBars()
+  }
+`;
+
+const DESTROY_METHOD = `
+  override fun onDestroy() {
+    FoldTransitionCover.detach()
+    super.onDestroy()
   }
 `;
 
@@ -103,6 +137,13 @@ module.exports = function withAndroidImmersiveMode(config) {
       }
 
       application.property = application.property || [];
+      const orientationOverride = application.property.find(
+        (property) => property.$?.["android:name"] === ORIENTATION_OVERRIDE_PROPERTY,
+      );
+      if (orientationOverride) orientationOverride.$["android:value"] = "false";
+      else application.property.push({
+        $: { "android:name": ORIENTATION_OVERRIDE_PROPERTY, "android:value": "false" },
+      });
       const existingProperty = application.property.find(
         (property) => property.$?.["android:name"] === RESTRICTED_RESIZABILITY_PROPERTY,
       );
@@ -125,6 +166,11 @@ module.exports = function withAndroidImmersiveMode(config) {
   return withMainActivity(config, (mainActivityConfig) => {
     let source = mainActivityConfig.modResults.contents;
 
+    if (!source.includes("import expo.modules.atlasdisplay.FoldTransitionCover")) {
+      const anchor = source.includes("import androidx.core.view.WindowInsetsControllerCompat") ? "import androidx.core.view.WindowInsetsControllerCompat" : "import android.os.Bundle";
+      source = source.replace(anchor, `${anchor}\nimport expo.modules.atlasdisplay.FoldTransitionCover`);
+    }
+
     if (!source.includes("androidx.core.view.WindowCompat")) {
       source = source.replace("import android.os.Bundle", `import android.os.Bundle\n${IMPORTS}`);
     }
@@ -146,6 +192,8 @@ module.exports = function withAndroidImmersiveMode(config) {
 
     // Upgrade the earlier generated launch-only orientation policy in place.
     source = source.replace(/    requestedOrientation =\n      if \(resources.configuration.smallestScreenWidthDp >= 600\) \{[\s\S]*?\n      \}/, "    applyOrientationPolicy()");
+    // Existing prebuilds must get the same policy as newly generated activities.
+    source = source.replace(/\n  private fun applyOrientationPolicy\(\) \{[\s\S]*?\n  \}/, ORIENTATION_METHODS.split("\n  override fun onMultiWindowModeChanged")[0].trimEnd());
     if (!source.includes("private fun applyOrientationPolicy")) {
       source = source.replace("\n  /**\n   * Returns the name of the main component", `${ORIENTATION_METHODS}\n  /**\n   * Returns the name of the main component`);
     }
@@ -163,6 +211,20 @@ module.exports = function withAndroidImmersiveMode(config) {
         "\n  /**\n   * Returns the name of the main component",
         `${METHODS}\n  /**\n   * Returns the name of the main component`,
       );
+    }
+
+    if (!source.includes("override fun onConfigurationChanged")) {
+      const anchor = source.includes("\n  override fun onDestroy()") ? "\n  override fun onDestroy()" : "\n  /**\n   * Returns the name of the main component";
+      source = source.replace(anchor, `${CONFIGURATION_METHOD}${anchor}`);
+    }
+    if (!source.includes("FoldTransitionCover.configurationChanging(this)")) {
+      source = source.replace("super.onConfigurationChanged(newConfig)", "FoldTransitionCover.configurationChanging(this)\n    super.onConfigurationChanged(newConfig)");
+    }
+    if (!source.includes("FoldTransitionCover.attach(this)")) {
+      source = source.replace("super.onCreate(null)", "super.onCreate(null)\n    FoldTransitionCover.attach(this)");
+    }
+    if (!source.includes("override fun onDestroy()")) {
+      source = source.replace("\n  /**\n   * Returns the name of the main component", `${DESTROY_METHOD}\n  /**\n   * Returns the name of the main component`);
     }
 
     mainActivityConfig.modResults.contents = source;

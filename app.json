@@ -13,7 +13,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "requireFullScreen": true,
+      "requireFullScreen": false,
       "bundleIdentifier": "dev.com.guitar-note-atlas",
       "buildNumber": "1.0.0",
       "infoPlist": {
@@ -21,6 +21,7 @@
         "LSApplicationCategoryType": "public.app-category.music",
         "UIStatusBarHidden": true,
         "UIStatusBarHidden~ipad": true,
+        "UIRequiresFullScreen~ipad": true,
         "UISupportedInterfaceOrientations": [
           "UIInterfaceOrientationPortrait"
         ],
@@ -47,6 +48,7 @@
     "plugins": [
       "expo-screen-orientation",
       "./plugins/withAndroidImmersiveMode",
+      "./plugins/withIOSSceneLifecycle",
       "expo-font",
       [
         "expo-navigation-bar",

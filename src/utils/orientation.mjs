@@ -20,6 +20,9 @@ export const getLandscapeInsets = (insets, windowDimensions) => {
 // practice layout. A small tablet window must never become a rotated phone.
 export const isTabletDisplay = ({ height, width }) => Math.min(height, width) >= 600;
 
+export const usesTabletShell = ({ platform, window, screen = window, isPad = false }) =>
+  platform === "ios" ? isPad || isTabletDisplay(window) : isTabletDisplay(screen);
+
 export const getAppViewport = ({ window, screen = window, platform, insets = {}, tablet = isTabletDisplay(screen) }) => {
   const portraitShell = (platform === "ios" || platform === "android") && !tablet;
   // Android freeform caption/status/navigation bars can cover the activity.
@@ -33,10 +36,19 @@ export const getAppViewport = ({ window, screen = window, platform, insets = {},
     width: window.width,
     height: Math.min(usableHeight, window.width * 0.75),
   };
-  // Keep the compact controls usable even in a very small desktop window.
-  const scale = portraitShell ? 1 : Math.min(1, available.width / 568, available.height / 320);
+  // Small tablets and unfolded phones fit the two-neck tablet canvas to their
+  // available space. Choose by usable space so folding or narrowing a window returns
+  // to compact mode; a phone's rotated shell never opts into tablet mode.
+  // Duo's inner scene can be upright as well as wide. Fit the same tablet
+  // canvas into that narrower regular-size window instead of rotating it.
+  const tabletCanvas = tablet && !portraitShell && available.width >= (platform === "ios" ? 600 : 800) && available.height >= 440;
+  const minimum = tabletCanvas ? { width: 1000, height: 550 } : { width: 568, height: 320 };
+  const scale = portraitShell ? 1 : Math.min(1, available.width / minimum.width, available.height / minimum.height);
   return {
-    dimensions: { width: available.width / scale, height: available.height / scale },
+    dimensions: {
+      width: tabletCanvas ? Math.max(1000, available.width / scale) : available.width / scale,
+      height: tabletCanvas ? Math.max(550, available.height / scale) : available.height / scale,
+    },
     rotated,
     scale,
     padding,

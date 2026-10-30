@@ -30,6 +30,7 @@ export const AudioPlaybackProvider = ({ children }) => {
   const [settings, setSettings] = useState(DEFAULTS);
   const [activeNote, setActiveNote] = useState(null);
   const [countInBeat, setCountInBeat] = useState(0);
+  const [countInPending, setCountInPending] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -74,6 +75,11 @@ export const AudioPlaybackProvider = ({ children }) => {
     previousGuitar.current = null;
     setActiveNote(null);
     setCountInBeat(0);
+    setCountInPending(false);
+  }, []);
+  const receiveCount = useCallback((beat) => {
+    setCountInBeat(beat);
+    if (beat > 0) setCountInPending(false);
   }, []);
   const pause = useCallback(() => {
     command.current += 1;
@@ -141,8 +147,8 @@ export const AudioPlaybackProvider = ({ children }) => {
     if (native.current === undefined) {
       native.current = createNativeAudioTransport({
         onNote: setActiveNote,
-        onCount: setCountInBeat,
-        onEnded: () => { running.current = false; notesRequested.current = false; fallbackIndex.current = 0; setIsPlaying(false); },
+        onCount: receiveCount,
+        onEnded: () => { running.current = false; notesRequested.current = false; fallbackIndex.current = 0; setCountInPending(false); setIsPlaying(false); },
       });
       native.current?.setVolumes(next);
     }
@@ -159,7 +165,7 @@ export const AudioPlaybackProvider = ({ children }) => {
       }
     }
     await Promise.all(entries.map(([key, source]) => ensurePlayer(key, source)));
-  }, [ensurePlayer]);
+  }, [ensurePlayer, receiveCount]);
 
   useEffect(() => {
     if (audioReady || !settingsLoaded || !globalState.key || !globalState.scale) return;
@@ -230,7 +236,7 @@ export const AudioPlaybackProvider = ({ children }) => {
               if ((event.beat - timeline.countBeats) % 4 === 0) trigger("drum:kick");
               if ((event.beat - timeline.countBeats) % 4 === 2) trigger("drum:snare");
             }
-            setCountInBeat(event.count > 0 ? 5 - event.count : 0);
+            receiveCount(event.count > 0 ? 5 - event.count : 0);
           } else if (event.kind === "note") {
             trigger(`guitar:${event.note.sample}`, event.note.playbackRate);
             setActiveNote(event.note);
@@ -241,7 +247,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     };
     fallbackTimer.current = setInterval(tick, 16);
     tick();
-  }, [stop, trigger]);
+  }, [receiveCount, stop, trigger]);
 
   const tapClick = useCallback(() => {
     if (!mounted.current || !audioReady) return;
@@ -262,6 +268,7 @@ export const AudioPlaybackProvider = ({ children }) => {
     setIsLoading(true);
     try {
       const next = configRef.current;
+      if (!preservingClock) setCountInPending(count && next.countIn);
       const playable = { ...next, notesEnabled: notesRequested.current && next.notesEnabled && next.plan.notes.length > 0 };
       if (!playable.notesEnabled && playable.accompaniment === "off") {
         pause(); return;
@@ -333,7 +340,7 @@ export const AudioPlaybackProvider = ({ children }) => {
   }, []);
   const value = {
     audioReady, startupError, retryAudioLoad,
-    activeNote, countInBeat, error, isLoading, isPlaying, popoverOpen, overview, ...settings,
+    activeNote, countInBeat, countInPending, error, isLoading, isPlaying, popoverOpen, overview, ...settings,
     loopEnabled: settings.loop, sequenceEmpty: plan.notes.length === 0,
     canPlay: (config.notesEnabled && plan.notes.length > 0) || config.accompaniment !== "off",
     play, stop, tapClick, setPopoverOpen, openPopover: () => setPopoverOpen(true),

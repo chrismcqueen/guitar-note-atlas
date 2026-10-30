@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getAppViewport, getViewportInsets } from '../src/utils/orientation.mjs';
+import { getAppViewport, getViewportInsets, usesTabletShell } from '../src/utils/orientation.mjs';
 import { positionFingerLabelY } from '../src/utils/positions.mjs';
 import { getFooterGeometry } from '../src/utils/footerSelection.mjs';
 import { settingsOffsetForGesture } from '../src/utils/settingsScroll.mjs';
@@ -54,6 +54,25 @@ test('Menu and Options centers mirror each other on both platforms and layout si
 
 const screen = { width: 1280, height: 800 };
 
+test('Duo follows the live scene through open, rotate, close and reopen despite a stale main screen', () => {
+  const staleScreen = { width: 393, height: 852 };
+  for (const window of [{ width: 1024, height: 768 }, { width: 768, height: 1024 },
+    { width: 393, height: 852 }, { width: 1024, height: 768 }]) {
+    const tablet = usesTabletShell({ platform: 'ios', window, screen: staleScreen });
+    const viewport = getAppViewport({ platform: 'ios', window, screen: staleScreen, tablet });
+    const inner = Math.min(window.width, window.height) >= 600;
+    assert.equal(tablet, inner);
+    assert.equal(viewport.rotated, !inner);
+    assert.equal(viewport.dimensions.width >= 1000 && viewport.dimensions.height >= 550, inner);
+    const nativeWidth = (viewport.rotated ? viewport.dimensions.height : viewport.dimensions.width) * viewport.scale;
+    const nativeHeight = (viewport.rotated ? viewport.dimensions.width : viewport.dimensions.height) * viewport.scale;
+    assert.ok(nativeWidth <= window.width + 1e-8);
+    assert.ok(nativeHeight <= window.height + 1e-8);
+  }
+  assert.equal(usesTabletShell({ platform: 'ios', window: { width: 500, height: 700 }, isPad: true }), true);
+  assert.equal(usesTabletShell({ platform: 'android', window: { width: 500, height: 700 }, screen }), true);
+});
+
 test('tablet resizing uses the available window and never rotates a small portrait window', () => {
   for (const window of [screen, { width: 1100, height: 650 }, { width: 800, height: 550 }, { width: 500, height: 700 }, { width: 304, height: 400 }, { width: 900, height: 250 }]) {
     const viewport = getAppViewport({ window, screen, platform: 'android' });
@@ -78,6 +97,32 @@ test('portrait phones retain their established rotated shell on both platforms',
       dimensions: { width: 852, height: 393 }, rotated: true, scale: 1, padding: { top: 0, bottom: 0 },
     });
   }
+});
+
+test('foldable inner displays fit the tablet canvas while outer screens and small windows stay compact', () => {
+  for (const inner of [{ width: 2208 / 2.625, height: 1840 / 2.625 }, { width: 800, height: 600 }, { width: 920, height: 640 }]) {
+    const viewport = getAppViewport({ window: inner, screen: inner, platform: 'android' });
+    assert.equal(viewport.rotated, false);
+    assert.ok(viewport.dimensions.width >= 1000);
+    assert.ok(viewport.dimensions.height >= 550);
+    assert.ok(viewport.scale >= 0.8);
+    assert.ok(viewport.dimensions.width * viewport.scale <= inner.width + 1e-8);
+    assert.ok(viewport.dimensions.height * viewport.scale <= inner.height + 1e-8);
+    const inset = getViewportInsets({ left: 20, right: 10, top: 0, bottom: 0 }, inner, viewport);
+    assert.equal(inset.left * viewport.scale, 20);
+    assert.equal(settingsOffsetForGesture(0, { dx: 0, dy: -80 }, false, 300, viewport.scale), 80 / viewport.scale);
+  }
+  const inner = { width: 841, height: 701 };
+  for (const window of [{ width: 799, height: 600 }, { width: 841, height: 439 }, { width: 500, height: 700 }]) {
+    const viewport = getAppViewport({ window, screen: inner, platform: 'android' });
+    assert.equal(viewport.rotated, false);
+    assert.ok(viewport.dimensions.width < 1000 || viewport.dimensions.height < 550);
+  }
+  const outer = { width: 1080 / 2.625, height: 2092 / 2.625 };
+  const phone = getAppViewport({ window: outer, screen: outer, platform: 'android' });
+  assert.equal(phone.rotated, true);
+  assert.equal(phone.scale, 1);
+  assert.ok(phone.dimensions.height < 550);
 });
 
 test('iPad renders directly in native landscape and never rotates a smaller tablet window', () => {

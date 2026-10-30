@@ -48,7 +48,8 @@ class AtlasDisplayGeometryModule : Module() {
     if (bars.top > 0) addRect(0, 0, decor.width, bars.top)
     if (bars.right > 0) addRect(decor.width - bars.right, 0, decor.width, decor.height)
     if (bars.bottom > 0) addRect(0, decor.height - bars.bottom, decor.width, decor.height)
-    return mapOf("width" to root.width / density, "height" to root.height / density, "rects" to rects)
+    return mapOf("width" to root.width / density, "height" to root.height / density, "rects" to rects,
+      "transitionId" to FoldTransitionCover.generation, "transitioning" to FoldTransitionCover.visible)
   }
 
   private fun publishGeometry() {
@@ -69,6 +70,9 @@ class AtlasDisplayGeometryModule : Module() {
     Name("AtlasDisplayGeometry")
     Events("onGeometryChanged")
     AsyncFunction("getGeometry") { geometry() }.runOnQueue(Queues.MAIN)
+    AsyncFunction("completeTransition") { id: Int, width: Double, height: Double ->
+      FoldTransitionCover.complete(id, width, height)
+    }.runOnQueue(Queues.MAIN)
     OnStartObserving {
       appContext.currentActivity?.runOnUiThread {
         stopObserving()

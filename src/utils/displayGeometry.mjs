@@ -3,7 +3,7 @@ import { PHONE_FOOTER_HEIGHT, TABLET_FOOTER_HEIGHT, getPracticeHeaderLayout, PRA
 // Inverse of RotatedViewport's clockwise 90-degree transform. Cutout bounds
 // are relative to the native React root, including any letterbox margins.
 export const getViewportObstructions = (geometry, viewport) => {
-  if (!geometry) return null;
+  if (!geometry?.rects) return null;
   const { dimensions: { width, height }, rotated, scale, padding = { top: 0, bottom: 0 } } = viewport;
   const originX = (geometry.width - (rotated ? height : width) * scale) / 2;
   const originY = padding.top + (geometry.height - padding.top - padding.bottom - (rotated ? width : height) * scale) / 2;
